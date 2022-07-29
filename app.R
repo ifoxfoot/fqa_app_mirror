@@ -17,6 +17,7 @@ ui <- fluidPage(
 
               #input one
               selectInput("db", label = "Select Regional FQAI Database",
+                          #yes
                           choices = fqacalc::db_names()),
 
               #input two
