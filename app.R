@@ -15,27 +15,51 @@ ui <- fluidPage(
            fluidRow(
             sidebarPanel(
 
-              #input one
+              #input regional data base
               selectInput("db", label = "Select Regional FQAI Database",
                           choices = fqacalc::db_names()),
 
-              #input two
-              fileInput("upload", NULL, buttonLabel = "Upload...", multiple = F),
+              #input data entry method
+              radioButtons("method", label = "Select Data Entry Method",
+                           choices = c("Upload a File" = "upload",
+                                       "Enter Species Manually" = "enter")),
 
-              #input three
-              uiOutput("latin_names"),
+              #when data entry method is upload, allow user to uploat
+              conditionalPanel(
 
-              #input four
-              actionButton("add_species_manual", "Add Species"),
+                condition = "input.method == 'upload'",
 
+                #input file upload
+                fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
+
+                ), #conditional 1 parenthesis
+
+              #when data entry method is not upload, enter manually
+              conditionalPanel(
+
+                condition = "input.method != 'upload'",
+
+                #input latin name
+                uiOutput("latin_names"),
+
+                #input add species button
+                actionButton("add_species", "Add Species"),
+
+                #input delete speces button
+                actionButton("delete_species", "Delete Species")
+
+                ), #conditional 2 parenthesis
 
               ),#side panel parenthesis
 
             mainPanel(
 
-              conditionalPanel("input.add != 0",
-                               DTOutput("DT2")
-                               )#conditional panel parenthesis
+              conditionalPanel("input.method = 'upload' && input.uploaded_file != 0",
+                               DTOutput("DT1")),
+
+
+              conditionalPanel("input.method != 'upload' && input.add_species != 0",
+                               DTOutput("DT2")),#conditional panel parenthesis
 
               )#main panel parenthesis
 
@@ -67,21 +91,45 @@ server <- function(input, output, session) {
   #create an object with no values
   store <- reactiveValues()
 
-  observeEvent(input$add_species_manual,{
-    new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+  #when add species button is clicked, add species to df
+  observeEvent(input$add_species,{
+
+    #find species
+     new_entry <- data.frame(fqacalc::view_db(input$db) %>%
                               dplyr::filter(scientific_name == input$latin_names))
+
+      #if there is a value already stored, add new species, else store new entry
     if("value" %in% names(store)){
-      store$value<-bind_rows(store$value, new_entry)
+      store$value <- bind_rows(store$value, new_entry)
     } else {
       store$value <- new_entry
     }
 
-    })#observe event parenthesis
+     })#observe event parenthesis
+#
+#   #when delete species button is clicked, delete species from df
+#   observeEvent(input$delete_species,{
+#
+#     #find species
+#     new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+#                               dplyr::filter(scientific_name == input$latin_names))
+#
+#     #if there is a value already stored, add new species, else store new entry
+#     if("value" %in% names(store)){
+#       store$value<-bind_rows(store$value, new_entry)
+#     } else {
+#       store$value <- new_entry
+#     }
+#
+#   })#observe event parenthesis
 
 
+  #render output table from uploaded file
+  output$DT1 <- renderDT(input$uploaded_file)
+
+  #render output table from manually entered species
   output$DT2 <- renderDT({
     store$value
-
     })#output data table parenthesis
 
 
