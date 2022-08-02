@@ -4,8 +4,8 @@ library(fqacalc)
 library(tidyverse)
 library(DT)
 
-#define table
-this_table = data.frame(row.names = names(fqacalc::crooked_island))
+#define table for data entered manually
+data_entered = data.frame(row.names = names(fqacalc::crooked_island))
 
 #define UI for application (User Interface)
 ui <- fluidPage(
@@ -14,41 +14,42 @@ ui <- fluidPage(
 
     #tab panel 1
     tabPanel("Calculate FQA Metrics",
-           fluidRow(
-            sidebarPanel(
+             fluidRow(
+               sidebarPanel(
 
-              #input regional data base
-              selectInput("db", label = "Select Regional FQAI Database",
+                 #input regional data base
+                 selectInput("db", label = "Select Regional FQAI Database",
                           choices = fqacalc::db_names()),
 
-              #input data entry method
-              radioButtons("method", label = "Select Data Entry Method",
+                 #input data entry method
+                 radioButtons("method", label = "Select Data Entry Method",
                            choices = c("Upload a File" = "upload",
                                        "Enter Species Manually" = "enter")),
 
-              #when data entry method is upload, allow user to uploat
-              conditionalPanel(
+                 #when data entry method is upload, allow user to upload files
+                 conditionalPanel(
 
-                condition = "input.method == 'upload'",
+                   condition = "input.method == 'upload'",
 
-                #input file upload
-                fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
+                   #input file upload
+                   fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
 
-                ), #conditional 1 parenthesis
+                   ), #conditional 1 parenthesis
 
-              #when data entry method is not upload, enter manually
-              conditionalPanel(
 
-                condition = "input.method != 'upload'",
+                #when data entry method is not upload, enter manually
+                conditionalPanel(
 
-                #input latin name
-                uiOutput("latin_names"),
+                  condition = "input.method != 'upload'",
 
-                #input add species button
-                actionButton("add_species", "Add Species"),
+                  #input latin name
+                  uiOutput("latin_names"),
 
-                #input delete speces button
-                actionButton("delete_species", "Delete Species")
+                  #input add species button
+                  actionButton("add_species", "Add Species"),
+
+                  #input delete speces button
+                  actionButton("delete_species", "Delete Species")
 
                 ), #conditional 2 parenthesis
 
@@ -56,12 +57,12 @@ ui <- fluidPage(
 
             mainPanel(
 
-              #when user uploads table show that
+              #when user uploads file, show uploaded table
               conditionalPanel("input.method = 'upload' && input.uploaded_file != 0",
                                DTOutput("DT_upload")),
 
 
-              #when user enters species manually show that
+              #when user enters species manually, show what they enter
               conditionalPanel("input.method != 'upload' && input.add_species != 0",
                                DTOutput("DT_manual")),#conditional panel parenthesis
 
@@ -71,7 +72,7 @@ ui <- fluidPage(
 
            ),#tab panel 1 parenthesis
 
-     #tab panel 2
+    #tab panel 2
     tabPanel("Caclulate FQA Transect Metrics",
            fluidRow(
              mainPanel(
@@ -122,7 +123,7 @@ server <- function(input, output, session) {
     })# latin names parenthesis
 
   #create an object with no values to store inputs
-  this_table <- reactiveVal(this_table)
+  data_entered <- reactiveVal(data_entered)
 
   #When add species is clicked, add row
   observeEvent(input$add_species, {
@@ -132,10 +133,10 @@ server <- function(input, output, session) {
                               dplyr::filter(scientific_name == input$latin_names))
 
     #bind new entry to table
-    t = rbind(new_entry, this_table())
+    t = rbind(new_entry, data_entered())
 
     #pring table
-    this_table(t)
+    data_entered(t)
 
     })
 
@@ -143,7 +144,7 @@ server <- function(input, output, session) {
   observeEvent(input$delete_species,{
 
     #call table
-    t = this_table()
+    t = data_entered()
 
     #print table
     print(nrow(t))
@@ -154,13 +155,13 @@ server <- function(input, output, session) {
     }
 
     #else show the regular table
-    this_table(t)
+    data_entered(t)
 
     })
 
   #render output table from manually entered species
   output$DT_manual <- renderDT({
-    datatable(this_table(), selection = 'single', options = list(dom = 't'))
+    datatable(data_entered(), selection = 'single', options = list(dom = 't'))
     })
 
   }#server brackets
