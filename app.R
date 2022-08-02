@@ -4,6 +4,8 @@ library(fqacalc)
 library(tidyverse)
 library(DT)
 
+#define table
+this_table = data.frame(row.names = names(fqacalc::crooked_island))
 
 #define UI for application (User Interface)
 ui <- fluidPage(
@@ -54,12 +56,14 @@ ui <- fluidPage(
 
             mainPanel(
 
+              #when user uploads table show that
               conditionalPanel("input.method = 'upload' && input.uploaded_file != 0",
-                               DTOutput("DT1")),
+                               DTOutput("DT_upload")),
 
 
+              #when user enters species manually show that
               conditionalPanel("input.method != 'upload' && input.add_species != 0",
-                               DTOutput("DT2")),#conditional panel parenthesis
+                               DTOutput("DT_manual")),#conditional panel parenthesis
 
               )#main panel parenthesis
 
@@ -81,60 +85,83 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  #output for fqa calc species list
-  output$latin_names <- renderUI({
-    latin_names <- unique(fqacalc::view_db(input$db)$scientific_name)
-    selectizeInput("latin_names", "Select Species", latin_names)
-    })# latin names parenthesis
+  #RENDER FILE UPLOAD
+
+  #creating reactive upload
+  file_upload <- reactive({
+
+    #require that a file be uploaded
+    req(input$uploaded_file)
+
+    #getting extension
+    ext <- tools::file_ext(input$uploaded_file$name)
+
+    #reading in differently based on extension
+    switch(ext,
+           csv = vroom::vroom(input$uploaded_file$datapath, delim = ","),
+           tsv = vroom::vroom(input$uploaded_file$datapath, delim = "\t"),
+           validate("Invalid file; Please upload a .csv or .tsv file"))
 
 
-  #create an object with no values
-  store <- reactiveValues()
-
-  #when add species button is clicked, add species to df
-  observeEvent(input$add_species,{
-
-    #find species
-     new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                              dplyr::filter(scientific_name == input$latin_names))
-
-      #if there is a value already stored, add new species, else store new entry
-    if("value" %in% names(store)){
-      store$value <- bind_rows(store$value, new_entry)
-    } else {
-      store$value <- new_entry
-    }
-
-     })#observe event parenthesis
-#
-#   #when delete species button is clicked, delete species from df
-#   observeEvent(input$delete_species,{
-#
-#     #find species
-#     new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-#                               dplyr::filter(scientific_name == input$latin_names))
-#
-#     #if there is a value already stored, add new species, else store new entry
-#     if("value" %in% names(store)){
-#       store$value<-bind_rows(store$value, new_entry)
-#     } else {
-#       store$value <- new_entry
-#     }
-#
-#   })#observe event parenthesis
-
+    })#file upload reactive parenthesis
 
   #render output table from uploaded file
-  output$DT1 <- renderDT(input$uploaded_file)
+  output$DT_upload <- renderDT(file_upload())
+
+  #ENTER SPECIES MANUALLY
+
+  #species drop-down list based on region
+  output$latin_names <- renderUI({
+
+    #create list of latin names based on regional list selected
+    latin_names <- unique(fqacalc::view_db(input$db)$scientific_name)
+
+    #create a dropdown option
+    selectizeInput("latin_names", "Select Species", latin_names)
+
+    })# latin names parenthesis
+
+  #create an object with no values to store inputs
+  this_table <- reactiveVal(this_table)
+
+  #When add species is clicked, add row
+  observeEvent(input$add_species, {
+
+    #find species
+    new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+                              dplyr::filter(scientific_name == input$latin_names))
+
+    #bind new entry to table
+    t = rbind(new_entry, this_table())
+
+    #pring table
+    this_table(t)
+
+    })
+
+  #when delete species is clicked, delete row
+  observeEvent(input$delete_species,{
+
+    #call table
+    t = this_table()
+
+    #print table
+    print(nrow(t))
+
+    #if rows are selected, delete them
+    if (!is.null(input$DT_manual_rows_selected)) {
+      t <- t[-as.numeric(input$DT_manual_rows_selected),]
+    }
+
+    #else show the regular table
+    this_table(t)
+
+    })
 
   #render output table from manually entered species
-  output$DT2 <- renderDT({
-    store$value
-    })#output data table parenthesis
-
-
-
-
+  output$DT_manual <- renderDT({
+    datatable(this_table(), selection = 'single', options = list(dom = 't'))
+    })
 
   }#server brackets
 
