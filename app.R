@@ -34,6 +34,9 @@ ui <- fluidPage(
                    #input file upload
                    fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
 
+                   #button to delete uploaded file
+                   actionButton("delete_upload", "Delete Uploaded File")
+
                    ), #conditional 1 parenthesis
 
 
@@ -49,7 +52,10 @@ ui <- fluidPage(
                   actionButton("add_species", "Add Species"),
 
                   #input delete speces button
-                  actionButton("delete_species", "Delete Species")
+                  actionButton("delete_species", "Delete Species"),
+
+                  #button to delete all entries
+                  actionButton("delete_manual_entries", "Delete All Entries")
 
                 ), #conditional 2 parenthesis
 
@@ -86,40 +92,33 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  #RENDER FILE UPLOAD
 
+#RENDER FILE UPLOAD
+#-------------------------------------------------------------------------------
   #creating reactive upload
   file_upload <- reactive({
-
     #require that a file be uploaded
-    req(input$uploaded_file)
-
+    req(input$uploaded_file | input$delete_upload)
     #getting extension
     ext <- tools::file_ext(input$uploaded_file$name)
-
     #reading in differently based on extension
     switch(ext,
            csv = vroom::vroom(input$uploaded_file$datapath, delim = ","),
            tsv = vroom::vroom(input$uploaded_file$datapath, delim = "\t"),
            validate("Invalid file; Please upload a .csv or .tsv file"))
-
-
     })#file upload reactive parenthesis
 
   #render output table from uploaded file
   output$DT_upload <- renderDT(file_upload())
 
-  #ENTER SPECIES MANUALLY
-
+#ENTER SPECIES MANUALLY
+#-------------------------------------------------------------------------------
   #species drop-down list based on region
   output$latin_names <- renderUI({
-
     #create list of latin names based on regional list selected
-    latin_names <- unique(fqacalc::view_db(input$db)$scientific_name)
-
+    latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
     #create a dropdown option
-    selectizeInput("latin_names", "Select Species", latin_names)
-
+    selectizeInput("latin_names", "Select Species", latin_names, selected = "")
     })# latin names parenthesis
 
   #create an object with no values to store inputs
@@ -127,36 +126,27 @@ server <- function(input, output, session) {
 
   #When add species is clicked, add row
   observeEvent(input$add_species, {
-
     #find species
     new_entry <- data.frame(fqacalc::view_db(input$db) %>%
                               dplyr::filter(scientific_name == input$latin_names))
-
     #bind new entry to table
-    t = rbind(new_entry, data_entered())
-
-    #pring table
-    data_entered(t)
-
+    new_table = rbind(new_entry, data_entered())
+    #print table
+    data_entered(new_table)
     })
 
   #when delete species is clicked, delete row
   observeEvent(input$delete_species,{
-
     #call table
     t = data_entered()
-
     #print table
     print(nrow(t))
-
     #if rows are selected, delete them
     if (!is.null(input$DT_manual_rows_selected)) {
       t <- t[-as.numeric(input$DT_manual_rows_selected),]
     }
-
     #else show the regular table
     data_entered(t)
-
     })
 
   #render output table from manually entered species
