@@ -46,6 +46,9 @@ ui <- fluidPage(
                    #input file upload widget
                    fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
 
+                   #input what column to use to bind to FQA database
+                   uiOutput("colname"),
+
                    #input button to delete uploaded file
                    actionButton("delete_upload", "Delete Uploaded File")
 
@@ -82,7 +85,7 @@ ui <- fluidPage(
 
               #when user enters species manually, show what they enter
               conditionalPanel("input.method == 'enter'",
-                               DTOutput("DT_manual")),#conditional panel parenthesis
+                               DTOutput("DT_manual")),
 
               )#main panel parenthesis
 
@@ -96,7 +99,7 @@ ui <- fluidPage(
                 conditionalPanel(
                   condition = "input.method == 'upload'",
                   #output table of metrics
-                  tableOutput("DT_all_upload"),
+                  tableOutput("DT_metrics_upload"),
                   #output
                   plotOutput("c_hist_upload")
                   ),#conditional 1 parenthesis
@@ -133,20 +136,36 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
 
-#RENDER FILE UPLOAD
-#-------------------------------------------------------------------------------
-  #creating reactive upload
-  file_upload <- reactive({
+#UPLOAD FILE--------------------------------------------------------------------
+
+  #create reactive object where uploads will be stored
+  file_upload <- reactiveVal()
+
+  #When file is uploaded, upload and store in reactive object above
+  observeEvent(input$uploaded_file, {
     #require that a file be uploaded
     req(input$uploaded_file)
     #getting extension
     ext <- tools::file_ext(input$uploaded_file$name)
     #reading in differently based on extension
-    switch(ext,
+    new_file <- switch(ext,
            csv = vroom::vroom(input$uploaded_file$datapath, delim = ","),
            tsv = vroom::vroom(input$uploaded_file$datapath, delim = "\t"),
            validate("Invalid file; Please upload a .csv or .tsv file"))
-    })#file upload reactive parenthesis
+    #store upload in reactive object
+    file_upload(new_file)
+    })
+
+  #species drop-down list based on region
+  output$colname <- renderUI({
+    #require that a file be uploaded
+    req(input$uploaded_file)
+    #create list of latin names based on regional list selected
+    colnames <- colnames(file_upload())
+    #create a dropdown option
+    selectizeInput("column", "Which Column Contains Latin Names?",
+                   colnames, selected = NULL)
+  })
 
   #render output table from uploaded file
   output$DT_upload <- renderDT(
@@ -157,39 +176,54 @@ server <- function(input, output, session) {
                              dom = 't')
   ))
 
-  # #when delete all is clicked, clear all entries
-  # observeEvent(input$delete_upload, {
-  #   #make an empty df
-  #   file_upload() <- NULL
-  # })
+  #when delete all is clicked, clear all entries
+  observeEvent(input$delete_upload, {
+    #make an empty df
+    empty_df <- NULL
+    #replace reactive file upload with empty file
+    file_upload(empty_df)
+  })
 
-  # #metrics table output on FQA page
-  # output$DT_metrics_upload <- renderTable({
-  #   fqacalc::all_metrics(x = file_upload(), db = input$db)
-  # })
-  #
-  # #ggplot output
-  # output$c_hist_upload <- renderPlot({
-  #   ggplot(data = unique(file_upload()),
-  #          aes(x = file_upload()$c,
-  #              fill = file_upload()$native)) +
-  #     geom_histogram(bins = 11) +
-  #     labs(title = "Conservation Coefficient Histogram",
-  #          x = "Conservation Coefficient Score",
-  #          fill = "Native or Exotic") +
-  #     theme_classic()
-  # })
+  #metrics table output on FQA page
+  output$DT_metrics_upload <- renderTable({
+    fqacalc::all_metrics(x = file_upload()
+                          %>% rename("scientific_name" = input$column),
+                         key = "scientific_name",
+                         db = input$db)
+  })
+
+  #ggplot output
+  output$c_hist_upload <- renderPlot({
+
+    #first bind to list
+    accepted_entries_upload <- accepted_entries(x = file_upload()
+                     %>% rename("scientific_name" = input$column),
+                     key = "scientific_name",
+                     db = input$db)
+
+    #ggplot
+    graph <- ggplot(data = accepted_entries_upload,
+           aes(x = accepted_entries_upload$c,
+               fill = accepted_entries_upload$native)) +
+      geom_histogram(bins = 11) +
+      labs(title = "Conservation Coefficient Histogram",
+           x = "Conservation Coefficient Score",
+           fill = "Native or Exotic") +
+      theme_classic()
+
+    #call gaphy
+    graph
+  })
 
 
-#ENTER SPECIES MANUALLY
-#-------------------------------------------------------------------------------
+#ENTER SPECIES MANUALLY---------------------------------------------------------
   #species drop-down list based on region
   output$latin_name <- renderUI({
     #create list of latin names based on regional list selected
-    latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
+    latin_names <- c(unique(fqacalc::view_db(input$db)$scientific_name))
     #create a dropdown option
     selectizeInput("species", "Select Species", latin_names, selected = NULL)
-    })# latin names parenthesis
+    })
 
   #create an object with no values to store inputs
   data_entered <- reactiveVal(data_entered)
