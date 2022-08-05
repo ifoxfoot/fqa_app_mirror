@@ -4,12 +4,14 @@ library(fqacalc)
 library(tidyverse)
 library(shinyglide)
 library(DT)
+library(shinyjs)
 
 #define table for data entered manually
 data_entered = data.frame(row.names = names(fqacalc::crooked_island))
 
 #define UI for application (User Interface)
 ui <- fluidPage(
+  useShinyjs(),
 
   navbarPage("FQA",
 
@@ -21,8 +23,10 @@ ui <- fluidPage(
                #labels for glide buttons
                next_label = "Calculate FQA Metrics",
                previous_label = "Go Back to Data Entry",
-
+               #customizing where they appear
+               controls_position = "bottom",
                screen(
+                 #next_condition = "input.column || output.DT_manual.rows > 2",
 
              fluidRow(
                sidebarPanel(
@@ -45,6 +49,7 @@ ui <- fluidPage(
 
                    #input file upload widget
                    fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
+
 
                    #input what column to use to bind to FQA database
                    uiOutput("colname"),
@@ -80,12 +85,12 @@ ui <- fluidPage(
 
               #when user uploads file, show uploaded table
               conditionalPanel("input.method == 'upload' && input.uploaded_file != 0",
-                               DTOutput("DT_upload")),
+                               dataTableOutput("DT_upload")),
 
 
               #when user enters species manually, show what they enter
               conditionalPanel("input.method == 'enter'",
-                               DTOutput("DT_manual")),
+                               dataTableOutput("DT_manual")),
 
               )#main panel parenthesis
 
@@ -94,10 +99,11 @@ ui <- fluidPage(
             ),#screen 1 parenthesis
 
             screen(
+
               fluidRow(
 
                 conditionalPanel(
-                  condition = "input.method == 'upload'",
+                  condition = "input.method == 'upload' && input.column",
                   #output table of metrics
                   tableOutput("DT_metrics_upload"),
                   #output
@@ -158,23 +164,20 @@ server <- function(input, output, session) {
 
   #species drop-down list based on region
   output$colname <- renderUI({
-    #require that a file be uploaded
-    req(input$uploaded_file)
     #create list of latin names based on regional list selected
-    colnames <- colnames(file_upload())
+    colnames <- c("", colnames(file_upload()))
     #create a dropdown option
     selectizeInput("column", "Which Column Contains Latin Names?",
                    colnames, selected = NULL)
   })
 
   #render output table from uploaded file
-  output$DT_upload <- renderDT(
+  output$DT_upload <- DT::renderDT({
     datatable(file_upload(),
               selection = 'single',
-              options = list(autoWidth = FALSE,
-                             scrollX = TRUE,
-                             dom = 't')
-  ))
+              options = list(autoWidth = TRUE,
+                             scrollX = TRUE))
+  })
 
   #when delete all is clicked, clear all entries
   observeEvent(input$delete_upload, {
@@ -182,6 +185,8 @@ server <- function(input, output, session) {
     empty_df <- NULL
     #replace reactive file upload with empty file
     file_upload(empty_df)
+    #reset upload button
+    shinyjs::reset("uploaded_file")
   })
 
   #metrics table output on FQA page
@@ -196,10 +201,7 @@ server <- function(input, output, session) {
   output$c_hist_upload <- renderPlot({
 
     #first bind to list
-    accepted_entries_upload <- accepted_entries(x = file_upload()
-                     %>% rename("scientific_name" = input$column),
-                     key = "scientific_name",
-                     db = input$db)
+    accepted_entries_upload <- accepted_entries(file_upload())
 
     #ggplot
     graph <- ggplot(data = accepted_entries_upload,
@@ -220,24 +222,28 @@ server <- function(input, output, session) {
   #species drop-down list based on region
   output$latin_name <- renderUI({
     #create list of latin names based on regional list selected
-    latin_names <- c(unique(fqacalc::view_db(input$db)$scientific_name))
+    latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
     #create a dropdown option
-    selectizeInput("species", "Select Species", latin_names, selected = NULL)
+    selectizeInput("species", "Select Species", latin_names,
+                   selected = NULL,
+                   multiple = TRUE)
     })
 
   #create an object with no values to store inputs
   data_entered <- reactiveVal(data_entered)
-
   #When add species is clicked, add row
   observeEvent(input$add_species, {
     #find species
     new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                              dplyr::filter(scientific_name == input$species))
+                              dplyr::filter(scientific_name %in% input$species))
     #bind new entry to table
     new_table = rbind(new_entry, data_entered())
     #print table
     data_entered(new_table)
+    #reset drop down menu of latin names
+    shinyjs::reset("species")
     })
+
 
   #when delete species is clicked, delete row
   observeEvent(input$delete_species,{
@@ -262,12 +268,11 @@ server <- function(input, output, session) {
   })
 
   #render output table from manually entered species on data entry page
-  output$DT_manual <- renderDT({
+  output$DT_manual <- DT::renderDT({
     datatable(data_entered(),
               selection = 'single',
-              options = list(autoWidth = FALSE,
-                             scrollX = TRUE,
-                             dom = 't'))
+              options = list(autoWidth = TRUE,
+                             scrollX = TRUE))
   })
 
   #metrics table output on FQA page
