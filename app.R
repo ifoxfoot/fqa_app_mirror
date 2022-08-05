@@ -11,6 +11,7 @@ data_entered = data.frame(row.names = names(fqacalc::crooked_island))
 
 #define UI for application (User Interface)
 ui <- fluidPage(
+  #call this package for reset function
   useShinyjs(),
 
   navbarPage("FQA",
@@ -25,11 +26,14 @@ ui <- fluidPage(
                previous_label = "Go Back to Data Entry",
                #customizing where they appear
                controls_position = "bottom",
+               height = "100%",
+
                screen(
                  #next_condition = "input.column || output.DT_manual.rows > 2",
 
              fluidRow(
                sidebarPanel(
+
                  titlePanel("Enter Data"),
 
                  #input regional data base
@@ -105,21 +109,26 @@ ui <- fluidPage(
                 conditionalPanel(
                   condition = "input.method == 'upload' && input.column",
                   #output table of metrics
-                  tableOutput("DT_metrics_upload"),
+                  column(4,
+                  tableOutput("DT_metrics_upload")),
                   #output
-                  plotOutput("c_hist_upload")
+                  column(8,
+                  plotOutput("c_hist_upload"))
                   ),#conditional 1 parenthesis
 
                 conditionalPanel(
                   condition = "input.method == 'enter'",
                   #output table of metrics
-                  tableOutput("DT_metrics_manual"),
+                  column(4,
+                  tableOutput("DT_metrics_manual")),
                   #output
-                  plotOutput("c_hist_manual")
+                  column(8,
+                  plotOutput("c_hist_manual"))
                 )#conditional 2 parenthesis
 
 
-                )#fuildRow parenthesis
+
+                )#fiuldRow parenthesis
 
               )#screen 2 parenthesis
 
@@ -157,7 +166,9 @@ server <- function(input, output, session) {
     new_file <- switch(ext,
            csv = vroom::vroom(input$uploaded_file$datapath, delim = ","),
            tsv = vroom::vroom(input$uploaded_file$datapath, delim = "\t"),
-           validate("Invalid file; Please upload a .csv or .tsv file"))
+           validate("Invalid file; Please upload a .csv or .tsv file")) %>%
+      #drop empty data
+      filter(., rowSums(is.na(.)) != ncol(.))
     #store upload in reactive object
     file_upload(new_file)
     })
@@ -190,7 +201,7 @@ server <- function(input, output, session) {
   })
 
   #metrics table output on FQA page
-  output$DT_metrics_upload <- renderTable({
+  output$DT_metrics_upload <- renderDT({
     fqacalc::all_metrics(x = file_upload()
                           %>% rename("scientific_name" = input$column),
                          key = "scientific_name",
@@ -201,7 +212,10 @@ server <- function(input, output, session) {
   output$c_hist_upload <- renderPlot({
 
     #first bind to list
-    accepted_entries_upload <- accepted_entries(file_upload())
+    accepted_entries_upload <- accepted_entries(x = file_upload()
+                                                %>% rename("scientific_name" = input$column),
+                                                key = "scientific_name",
+                                                db = input$db)
 
     #ggplot
     graph <- ggplot(data = accepted_entries_upload,
@@ -213,7 +227,7 @@ server <- function(input, output, session) {
            fill = "Native or Exotic") +
       theme_classic()
 
-    #call gaphy
+    #call graph
     graph
   })
 
@@ -276,7 +290,7 @@ server <- function(input, output, session) {
   })
 
   #metrics table output on FQA page
-  output$DT_metrics_manual <- renderTable({
+  output$DT_metrics_manual <- renderDT({
     fqacalc::all_metrics(x = data_entered(), db = input$db)
   })
 
@@ -285,7 +299,8 @@ server <- function(input, output, session) {
     ggplot(data = unique(data_entered()),
            aes(x = data_entered()$c,
                fill = data_entered()$native)) +
-      geom_histogram(bins = 11) +
+      geom_histogram() +
+      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(0,10)) +
       labs(title = "Conservation Coefficient Histogram",
            x = "Conservation Coefficient Score",
            fill = "Native or Exotic") +
