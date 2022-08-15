@@ -7,7 +7,7 @@ library(DT)
 library(shinyjs)
 
 #define table for data entered manually
-data_entered = data.frame(row.names = names(fqacalc::crooked_island))
+data_entered = data.frame()
 
 #define UI for application (User Interface)
 ui <- fluidPage(
@@ -168,7 +168,8 @@ server <- function(input, output, session) {
            tsv = vroom::vroom(input$uploaded_file$datapath, delim = "\t"),
            validate("Invalid file; Please upload a .csv or .tsv file")) %>%
       #drop empty data
-      filter(., rowSums(is.na(.)) != ncol(.))
+      filter(., rowSums(is.na(.)) != ncol(.)) %>%
+      as.data.frame(.)
     #store upload in reactive object
     file_upload(new_file)
     })
@@ -201,34 +202,35 @@ server <- function(input, output, session) {
   })
 
   #metrics table output on FQA page
-  output$DT_metrics_upload <- renderDT({
-    fqacalc::all_metrics(x = file_upload()
+  output$DT_metrics_upload <- renderTable({
+    all_metrics <- fqacalc::all_metrics(x = file_upload()
                           %>% rename("scientific_name" = input$column),
                          key = "scientific_name",
                          db = input$db)
+
+    all_metrics
   })
 
   #ggplot output
   output$c_hist_upload <- renderPlot({
 
-    #first bind to list
-    accepted_entries_upload <- accepted_entries(x = file_upload()
-                                                %>% rename("scientific_name" = input$column),
-                                                key = "scientific_name",
-                                                db = input$db)
-
     #ggplot
-    graph <- ggplot(data = accepted_entries_upload,
-           aes(x = accepted_entries_upload$c,
-               fill = accepted_entries_upload$native)) +
-      geom_histogram(bins = 11) +
-      labs(title = "Conservation Coefficient Histogram",
-           x = "Conservation Coefficient Score",
-           fill = "Native or Exotic") +
-      theme_classic()
+    graph <- ggplot(data = fqacalc::accepted_entries
+                (x = as.data.frame(as.data.frame(file_upload()) %>%
+                                    rename("scientific_name" = input$column)),
+                                  key = "scientific_name",
+                                  db = input$db),
+       aes(x = c,
+           fill = native)) +
+    geom_histogram(col = "black") +
+      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
+    labs(title = "Conservation Coefficient Histogram",
+       x = "Conservation Coefficient Score",
+       fill = "Native or Exotic") +
+    theme_classic()
 
-    #call graph
-    graph
+  #call graph
+  graph
   })
 
 
@@ -245,6 +247,7 @@ server <- function(input, output, session) {
 
   #create an object with no values to store inputs
   data_entered <- reactiveVal(data_entered)
+
   #When add species is clicked, add row
   observeEvent(input$add_species, {
     #find species
@@ -290,7 +293,7 @@ server <- function(input, output, session) {
   })
 
   #metrics table output on FQA page
-  output$DT_metrics_manual <- renderDT({
+  output$DT_metrics_manual <- renderTable({
     fqacalc::all_metrics(x = data_entered(), db = input$db)
   })
 
@@ -299,8 +302,8 @@ server <- function(input, output, session) {
     ggplot(data = unique(data_entered()),
            aes(x = data_entered()$c,
                fill = data_entered()$native)) +
-      geom_histogram() +
-      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(0,10)) +
+      geom_histogram(col = "black") +
+      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
       labs(title = "Conservation Coefficient Histogram",
            x = "Conservation Coefficient Score",
            fill = "Native or Exotic") +
