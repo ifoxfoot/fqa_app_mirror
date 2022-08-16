@@ -29,7 +29,6 @@ ui <- fluidPage(
                height = "100%",
 
                screen(
-                 #next_condition = "input.column || output.DT_manual.rows > 2",
 
              fluidRow(
                sidebarPanel(
@@ -128,7 +127,7 @@ ui <- fluidPage(
 
 
 
-                )#fiuldRow parenthesis
+                )#fluid Row parenthesis
 
               )#screen 2 parenthesis
 
@@ -302,8 +301,8 @@ server <- function(input, output, session) {
   #ggplot output
   output$c_hist_manual <- renderPlot({
     ggplot(data = unique(data_entered()),
-           aes(x = data_entered()$c,
-               fill = data_entered()$native)) +
+           aes(x = c,
+               fill = native)) +
       geom_histogram(col = "black") +
       scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
       labs(title = "Conservation Coefficient Histogram",
