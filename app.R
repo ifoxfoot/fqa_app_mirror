@@ -222,12 +222,14 @@ server <- function(input, output, session) {
                                   db = input$db),
        aes(x = c,
            fill = native)) +
-    geom_histogram(col = "black") +
+      geom_histogram(col = "black") +
       scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
-    labs(title = "Conservation Coefficient Histogram",
-       x = "Conservation Coefficient Score",
-       fill = "Native or Exotic") +
-    theme_classic()
+      labs(title = "Conservation Coefficient Histogram",
+           x = "Conservation Coefficient Score",
+           fill = "Native or Exotic") +
+      theme_classic() +
+      theme(title = element_text(face="bold"))
+
 
   #call graph
   graph
@@ -307,7 +309,8 @@ server <- function(input, output, session) {
       labs(title = "Conservation Coefficient Histogram",
            x = "Conservation Coefficient Score",
            fill = "Native or Exotic") +
-      theme_classic()
+      theme_classic() +
+      theme(title = element_text(face = "bold"))
   })
 
   }#server brackets
