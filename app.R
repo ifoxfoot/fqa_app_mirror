@@ -194,14 +194,15 @@ server <- function(input, output, session) {
   observeEvent(input$column,{
     #require the column to be selected
     req(input$column)
-    #catch the error
-    x <- tryCatch(fqacalc::all_metrics(x = file_upload()
+    #catch the warning
+    a <- tryCatch(fqacalc::all_metrics(x = file_upload()
                                           %>% rename("scientific_name" = input$column),
-                                        key = "scientific_name",
-                                        db = input$db),
+                                       key = "scientific_name",
+                                       db = input$db),
+
                   warning = function(w) {w} )
-   #store the mesage
-   mess <- x$message
+   #store the message
+   mess <- a$message
    #show notification
    showNotification(mess, duration = NULL, type = "error")
    })
