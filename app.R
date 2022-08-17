@@ -1,18 +1,35 @@
 #load package
-library(shiny)
-library(fqacalc)
-library(tidyverse)
-library(shinyglide)
-library(DT)
-library(shinyjs)
+library(shiny) #for app
+library(fqacalc) #for fqai metrics
+library(tidyverse) #for data wrangling/displaying
+library(shinyglide) #for glide panels
+library(DT) #for dsiplaying tables
+library(shinyjs) #for reset buttons
+library(shinyFeedback) #for warning messages near widgets
 
 #define table for data entered manually
 data_entered = data.frame()
 
 #define UI for application (User Interface)
 ui <- fluidPage(
+
+  #controls where notifications are displayed
+  tags$head(
+    tags$style(
+      HTML("#shiny-notification-panel {
+             position:fixed;
+             top: calc(50%);
+             left: calc(50% - 150px);
+             }
+             "
+      )
+    )
+  ),
+
   #call this package for reset function
   useShinyjs(),
+  #call this package for warningish messages
+  shinyFeedback::useShinyFeedback(),
 
   navbarPage("FQA",
 
@@ -173,6 +190,23 @@ server <- function(input, output, session) {
     file_upload(new_file)
     })
 
+  #this allows popups for warnings about duplicates/non-matching species
+  observeEvent(input$column,{
+    #require the column to be selected
+    req(input$column)
+    #catch the error
+    x <- tryCatch(fqacalc::all_metrics(x = file_upload()
+                                          %>% rename("scientific_name" = input$column),
+                                        key = "scientific_name",
+                                        db = input$db),
+                  warning = function(w) {w} )
+   #store the mesage
+   mess <- x$message
+   #show notification
+   showNotification(mess, duration = NULL, type = "error")
+   })
+
+
   #species drop-down list based on region
   output$colname <- renderUI({
     #create list of latin names based on regional list selected
@@ -200,15 +234,19 @@ server <- function(input, output, session) {
     shinyjs::reset("uploaded_file")
   })
 
+
   #metrics table output on FQA page
   output$DT_metrics_upload <- renderTable({
     all_metrics <- fqacalc::all_metrics(x = file_upload()
-                          %>% rename("scientific_name" = input$column),
-                         key = "scientific_name",
-                         db = input$db)
+                                %>% rename("scientific_name" = input$column),
+                                key = "scientific_name",
+                                db = input$db)
 
     all_metrics
   })
+
+
+
 
   #ggplot output
   output$c_hist_upload <- renderPlot({
@@ -247,7 +285,9 @@ server <- function(input, output, session) {
     })
 
   #create an object with no values to store inputs
-  data_entered <- reactiveVal(data_entered)
+  data_entered <- reactiveVal({
+    data_entered
+    })
 
   #When add species is clicked, add row
   observeEvent(input$add_species, {
@@ -256,6 +296,12 @@ server <- function(input, output, session) {
                               dplyr::filter(scientific_name %in% input$species))
     #bind new entry to table
     new_table = rbind(new_entry, data_entered())
+
+    #these lines discourage using multiple regional databases when entering data
+    one_region <- length(unique(new_table$fqa_db)) == 1
+    shinyFeedback::feedbackDanger("db", !one_region,
+                                  "selecting multiple regions is not recommended")
+
     #print table
     data_entered(new_table)
     #reset drop down menu of latin names
