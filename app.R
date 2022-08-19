@@ -190,23 +190,6 @@ server <- function(input, output, session) {
     file_upload(new_file)
     })
 
-  #this allows popups for warnings about duplicates/non-matching species
-  observeEvent(input$column,{
-    #require the column to be selected
-    req(input$column)
-    #catch the warning
-    a <- tryCatch(fqacalc::all_metrics(x = file_upload()
-                                          %>% rename("scientific_name" = input$column),
-                                       key = "scientific_name",
-                                       db = input$db),
-
-                  warning = function(w) {w} )
-   #store the message
-   mess <- a$message
-   #show notification
-   showNotification(mess, duration = NULL, type = "error")
-   })
-
 
   #species drop-down list based on region
   output$colname <- renderUI({
@@ -215,6 +198,23 @@ server <- function(input, output, session) {
     #create a dropdown option
     selectizeInput("column", "Which Column Contains Latin Names?",
                    colnames, selected = NULL)
+  })
+
+  #this allows popups for warnings about duplicates/non-matching species
+  observeEvent(input$column,{
+    req(input$column)
+    #list to store warnings
+    warning_list <- list()
+    #catch warnings
+    withCallingHandlers(
+      fqacalc::accepted_entries(x = file_upload()
+                                %>% rename("scientific_name" = input$column),
+                                key = "scientific_name",
+                                db = input$db),
+      #add to list
+      warning=function(w) {warning_list <<- c(warning_list, list(w$message))})
+    #show each list item in notification
+    lapply(warning_list, showNotification, type = "error", duration = NULL)
   })
 
   #render output table from uploaded file
@@ -234,7 +234,6 @@ server <- function(input, output, session) {
     #reset upload button
     shinyjs::reset("uploaded_file")
   })
-
 
   #metrics table output on FQA page
   output$DT_metrics_upload <- renderTable({
@@ -297,17 +296,31 @@ server <- function(input, output, session) {
                               dplyr::filter(scientific_name %in% input$species))
     #bind new entry to table
     new_table = rbind(new_entry, data_entered())
-
     #these lines discourage using multiple regional databases when entering data
-    one_region <- length(unique(new_table$fqa_db)) == 1
+    one_region <- length(unique(new_table$fqa_db)) <= 1
     shinyFeedback::feedbackDanger("db", !one_region,
                                   "selecting multiple regions is not recommended")
-
     #print table
     data_entered(new_table)
     #reset drop down menu of latin names
     shinyjs::reset("species")
     })
+
+  #this allows popups for warnings about duplicates/non-matching species
+  observeEvent(input$add_species,{
+    req(input$add_species)
+    #list to store warnings
+    warning_list <- list()
+    #catch warnings
+    withCallingHandlers(
+      fqacalc::accepted_entries(x = data_entered(),
+                                key = "scientific_name",
+                                db = input$db),
+      #add to list
+      warning=function(w) {warning_list <<- c(warning_list, list(w$message))})
+    #show each list item in notification
+    lapply(warning_list, showNotification, type = "error", duration = NULL)
+  })
 
 
   #when delete species is clicked, delete row
