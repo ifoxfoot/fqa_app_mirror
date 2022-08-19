@@ -6,12 +6,17 @@ library(shinyglide) #for glide panels
 library(DT) #for dsiplaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
+# library(bslib) #interactive theme
+
 
 #define table for data entered manually
 data_entered = data.frame()
 
 #define UI for application (User Interface)
 ui <- fluidPage(
+  # #interactive theme
+  # theme = bs_theme(),
+
 
   #controls where notifications are displayed
   tags$head(
@@ -135,6 +140,7 @@ ui <- fluidPage(
                 conditionalPanel(
                   condition = "input.method == 'enter'",
                   #output table of metrics
+                  textOutput("regional_list_manual"),
                   column(4,
                   tableOutput("DT_metrics_manual")),
                   #output
@@ -166,6 +172,8 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
+  # #interactive theme
+  # bs_themer()
 
 #UPLOAD FILE--------------------------------------------------------------------
 
@@ -344,6 +352,8 @@ server <- function(input, output, session) {
     #assign it to the reactive value
     data_entered(empty_df)
   })
+
+  output$regional_list_manual <- renderText({paste("Calculating metrics based on ", input$db)})
 
   #render output table from manually entered species on data entry page
   output$DT_manual <- DT::renderDT({
