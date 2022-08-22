@@ -6,17 +6,13 @@ library(shinyglide) #for glide panels
 library(DT) #for dsiplaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
-# library(bslib) #interactive theme
-
+library(bslib) #interactive theme
 
 #define table for data entered manually
 data_entered = data.frame()
 
 #define UI for application (User Interface)
 ui <- fluidPage(
-  # #interactive theme
-  # theme = bs_theme(),
-
 
   #controls where notifications are displayed
   tags$head(
@@ -172,8 +168,6 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  # #interactive theme
-  # bs_themer()
 
 #UPLOAD FILE--------------------------------------------------------------------
 
@@ -229,8 +223,8 @@ server <- function(input, output, session) {
   output$DT_upload <- DT::renderDT({
     datatable(file_upload(),
               selection = 'single',
-              options = list(autoWidth = TRUE,
-                             scrollX = TRUE))
+              options = list(autoWidth = TRUE, scrollX = TRUE)
+              )
   })
 
   #when delete all is clicked, clear all entries
@@ -274,7 +268,6 @@ server <- function(input, output, session) {
            fill = "Native or Exotic") +
       theme_classic() +
       theme(title = element_text(face="bold"))
-
 
   #call graph
   graph
@@ -359,8 +352,8 @@ server <- function(input, output, session) {
   output$DT_manual <- DT::renderDT({
     datatable(data_entered(),
               selection = 'single',
-              options = list(autoWidth = TRUE,
-                             scrollX = TRUE))
+              options = list(autoWidth = TRUE, scrollX = TRUE)
+              )
   })
 
   #metrics table output on FQA page
