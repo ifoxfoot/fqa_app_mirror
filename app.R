@@ -212,9 +212,10 @@ server <- function(input, output, session) {
       fqacalc::accepted_entries(x = file_upload()
                                 %>% rename("scientific_name" = input$column),
                                 key = "scientific_name",
-                                db = input$db),
+                                db = input$db,
+                                native = F),
       #add to list
-      warning=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      message=function(w) {warning_list <<- c(warning_list, list(w$message))})
     #show each list item in notification
     lapply(warning_list, showNotification, type = "error", duration = NULL)
   })
@@ -258,7 +259,8 @@ server <- function(input, output, session) {
                 (x = as.data.frame(as.data.frame(file_upload()) %>%
                                     rename("scientific_name" = input$column)),
                                   key = "scientific_name",
-                                  db = input$db),
+                                  db = input$db,
+                  native = FALSE),
        aes(x = c,
            fill = native)) +
       geom_histogram(col = "black") +
@@ -316,9 +318,10 @@ server <- function(input, output, session) {
     withCallingHandlers(
       fqacalc::accepted_entries(x = data_entered(),
                                 key = "scientific_name",
-                                db = input$db),
+                                db = input$db,
+                                native = FALSE),
       #add to list
-      warning=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      message=function(w) {warning_list <<- c(warning_list, list(w$message))})
     #show each list item in notification
     lapply(warning_list, showNotification, type = "error", duration = NULL)
   })
