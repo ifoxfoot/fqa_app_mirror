@@ -214,15 +214,16 @@ ui <- fluidPage(
                                      "usfs_ecodata"
                                    ))
 
-
                      ), #conditional 2 parenthesis
 
                    ),#sidebarPanel parenthesis
 
                    mainPanel(
+                     conditionalPanel(
+                       condition = "input.cover_input_method == 'enter'",
 
-                     #manually entered data for cover metrics
-                     rHandsontableOutput("cover_manual_table"),
+                       #manually entered data for cover metrics
+                       rHandsontableOutput("cover_manual_table"))
 
                      )#main panel parenthesis
 
@@ -511,7 +512,8 @@ server <- function(input, output, session) {
                   #gets rid of row names
                   rowHeaders = NULL,
                   #controls size
-                  stretchH = "all")
+                  stretchH = "all"
+                  )
   })
 
   #save rhandsontable edits
