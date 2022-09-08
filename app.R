@@ -6,10 +6,12 @@ library(shinyglide) #for glide panels
 library(DT) #for dsiplaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
+library(rhandsontable) #for editable tables
 library(bslib) #interactive theme
+library(thematic) #for theming r graphics
 
 #define table for data entered manually
-data_entered = data.frame()
+data_entered_manual = data.frame()
 
 #define UI for application (User Interface)
 ui <- fluidPage(
@@ -34,6 +36,8 @@ ui <- fluidPage(
 
   navbarPage("FQA",
 
+#FQI TAB------------------------------------------------------------------------
+
     #tab panel 1
     tabPanel("Calculate FQA Metrics",
 
@@ -54,29 +58,29 @@ ui <- fluidPage(
                  titlePanel("Enter Data"),
 
                  #input regional data base
-                 selectInput("db", label = "Select Regional FQAI Database",
+                 selectInput("FQI_db", label = "Select Regional FQAI Database",
                           choices = fqacalc::db_names(),
                           selected = "michigan_2014"),
 
                  #input data entry method
-                 radioButtons("method", label = "Select Data Entry Method",
+                 radioButtons("FQI_method", label = "Select Data Entry Method",
                            choices = c("Upload a File" = "upload",
                                        "Enter Species Manually" = "enter")),
 
                  #when data entry method is upload, allow user to upload files
                  conditionalPanel(
 
-                   condition = "input.method == 'upload'",
+                   condition = "input.FQI_method == 'upload'",
 
                    #input file upload widget
-                   fileInput("uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
+                   fileInput("FQI_uploaded_file", NULL, buttonLabel = "Upload...", multiple = F),
 
 
                    #input what column to use to bind to FQA database
-                   uiOutput("colname"),
+                   uiOutput("FQI_colname"),
 
                    #input button to delete uploaded file
-                   actionButton("delete_upload", "Delete Uploaded File")
+                   actionButton("FQI_delete_upload", "Delete Uploaded File")
 
                    ), #conditional 1 parenthesis
 
@@ -84,19 +88,19 @@ ui <- fluidPage(
                 #when data entry method is enter, allow user to enter data manually
                 conditionalPanel(
 
-                  condition = "input.method == 'enter'",
+                  condition = "input.FQI_method == 'enter'",
 
                   #input latin name
-                  uiOutput("latin_name"),
+                  uiOutput("FQI_latin_name"),
 
                   #input add species button
-                  actionButton("add_species", "Add Species"),
+                  actionButton("FQI_add_species", "Add Species"),
 
                   #input delete speces button
-                  actionButton("delete_species", "Delete Species"),
+                  actionButton("FQI_delete_species", "Delete Species"),
 
                   #button to delete all entries
-                  actionButton("delete_manual_entries", "Delete All Entries")
+                  actionButton("FQI_delete_manual_entries", "Delete All Entries")
 
                 ), #conditional 2 parenthesis
 
@@ -105,13 +109,13 @@ ui <- fluidPage(
             mainPanel(
 
               #when user uploads file, show uploaded table
-              conditionalPanel("input.method == 'upload' && input.uploaded_file != 0",
-                               dataTableOutput("DT_upload")),
+              conditionalPanel("input.FQI_method == 'upload' && input.FQI_uploaded_file != 0",
+                               dataTableOutput("FQI_DT_upload")),
 
 
               #when user enters species manually, show what they enter
-              conditionalPanel("input.method == 'enter'",
-                               dataTableOutput("DT_manual")),
+              conditionalPanel("input.FQI_method == 'enter'",
+                               dataTableOutput("FQI_DT_manual")),
 
               )#main panel parenthesis
 
@@ -124,27 +128,25 @@ ui <- fluidPage(
               fluidRow(
 
                 conditionalPanel(
-                  condition = "input.method == 'upload' && input.column",
+                  condition = "input.FQI_method == 'upload' && input.FQI_column",
                   #output table of metrics
                   column(4,
-                  tableOutput("DT_metrics_upload")),
+                  tableOutput("FQI_DT_metrics_upload")),
                   #output
                   column(8,
-                  plotOutput("c_hist_upload"))
+                  plotOutput("FQI_c_hist_upload"))
                   ),#conditional 1 parenthesis
 
                 conditionalPanel(
-                  condition = "input.method == 'enter'",
+                  condition = "input.FQI_method == 'enter'",
                   #output table of metrics
-                  textOutput("regional_list_manual"),
+                  textOutput("FQI_regional_list_manual"),
                   column(4,
-                  tableOutput("DT_metrics_manual")),
+                  tableOutput("FQI_DT_metrics_manual")),
                   #output
                   column(8,
-                  plotOutput("c_hist_manual"))
+                  plotOutput("FQI_c_hist_manual"))
                 )#conditional 2 parenthesis
-
-
 
                 )#fluid Row parenthesis
 
@@ -154,13 +156,99 @@ ui <- fluidPage(
 
           ),#tab panel 1 parenthesis
 
+# COVER TAB --------------------------------------------------------------------
+
     #tab panel 2
     tabPanel("Caclulate FQA Transect Metrics",
-           fluidRow(
-             mainPanel(
-                       )#main panel parenthesis
+
+             #allow glide to be used in this tab
+             glide(
+               #labels for glide buttons
+               next_label = "Calculate FQA Metrics",
+               previous_label = "Go Back to Data Entry",
+               #customizing where they appear
+               controls_position = "bottom",
+               height = "100%",
+
+               screen(
+                 fluidRow(
+
+                   sidebarPanel(
+
+                     #title of side bar
+                     titlePanel("Enter Data"),
+
+                     #input regional data base
+                     selectInput("cover_db", label = "Select Regional FQAI Database",
+                                 choices = fqacalc::db_names(),
+                                 selected = "michigan_2014"),
+
+                     #input data entry method
+                     radioButtons("cover_input_method", label = "Select Data Entry Method",
+                                  choices = c( "Enter Species Manually" = "enter",
+                                               "Upload a File" = "upload")),
+
+                     #when data entry method is upload, allow user to upload files
+                     conditionalPanel(
+
+                       condition = "input.cover_input_method == 'upload'",
+
+                       "UNDER CONSTRUCTION"
+
+                     ), #conditional 1 parenthesis
+
+
+                     #when data entry cover_input_method is enter, allow user to enter data manually
+                     conditionalPanel(
+
+                       condition = "input.cover_input_method == 'enter'",
+
+                       #select cover method to use
+                       selectInput("cover_method_select",
+                                   "Cover Method",
+                                   choices = c(
+                                     "percent_cover",
+                                     "braun-blanquet",
+                                     "carolina_veg_survey",
+                                     "daubenmire",
+                                     "usfs_ecodata"
+                                   ))
+
+
+                     ), #conditional 2 parenthesis
+
+                   ),#sidebarPanel parenthesis
+
+                   mainPanel(
+
+                     #manually entered data for cover metrics
+                     rHandsontableOutput("cover_manual_table"),
+
+                     )#main panel parenthesis
+
                    )#fluid row parenthesis
-           ),#tab panel 2 parenthesis
+
+                 ),#screen 1 parenthesis
+
+               screen(
+
+                 fluidRow(
+
+                   conditionalPanel(
+                     condition = "input.cover_input_method == 'enter'",
+                     #output table of metrics
+                     column(4,
+                            tableOutput("cover_metrics_manual")),
+                     #output plot here
+                   ),#conditional 1 parenthesis
+
+                 )#fluid row parenthesis
+
+               )#screen two parenthesis
+
+             )#glide parenthesis
+
+    ),#tab panel 2 parenthesis
 
   )#navbar parenthesis
 
@@ -169,50 +257,50 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
 
-#UPLOAD FILE--------------------------------------------------------------------
+# UPLOAD FILE FQI ---------------------------------------------------------------
 
   #create reactive object where uploads will be stored
-  file_upload <- reactiveVal()
+  FQI_file_upload <- reactiveVal()
 
   #When file is uploaded, upload and store in reactive object above
-  observeEvent(input$uploaded_file, {
+  observeEvent(input$FQI_uploaded_file, {
     #require that a file be uploaded
-    req(input$uploaded_file)
+    req(input$FQI_uploaded_file)
     #getting extension
-    ext <- tools::file_ext(input$uploaded_file$name)
+    ext <- tools::file_ext(input$FQI_uploaded_file$name)
     #reading in differently based on extension
     new_file <- switch(ext,
-           csv = vroom::vroom(input$uploaded_file$datapath, delim = ","),
-           tsv = vroom::vroom(input$uploaded_file$datapath, delim = "\t"),
+           csv = vroom::vroom(input$FQI_uploaded_file$datapath, delim = ","),
+           tsv = vroom::vroom(input$FQI_uploaded_file$datapath, delim = "\t"),
            validate("Invalid file; Please upload a .csv or .tsv file")) %>%
       #drop empty data
       filter(., rowSums(is.na(.)) != ncol(.)) %>%
       as.data.frame(.)
     #store upload in reactive object
-    file_upload(new_file)
+    FQI_file_upload(new_file)
     })
 
 
   #species drop-down list based on region
-  output$colname <- renderUI({
+  output$FQI_colname <- renderUI({
     #create list of latin names based on regional list selected
-    colnames <- c("", colnames(file_upload()))
+    colnames <- c("", colnames(FQI_file_upload()))
     #create a dropdown option
-    selectizeInput("column", "Which Column Contains Latin Names?",
+    selectizeInput("FQI_column", "Which Column Contains Latin Names?",
                    colnames, selected = NULL)
   })
 
   #this allows popups for warnings about duplicates/non-matching species
-  observeEvent(input$column,{
-    req(input$column)
+  observeEvent(input$FQI_column,{
+    req(input$FQI_column)
     #list to store warnings
     warning_list <- list()
     #catch warnings
     withCallingHandlers(
-      fqacalc::accepted_entries(x = file_upload()
-                                %>% rename("scientific_name" = input$column),
+      fqacalc::accepted_entries(x = FQI_file_upload()
+                                %>% rename("scientific_name" = input$FQI_column),
                                 key = "scientific_name",
-                                db = input$db,
+                                db = input$FQI_db,
                                 native = F),
       #add to list
       message=function(w) {warning_list <<- c(warning_list, list(w$message))})
@@ -221,29 +309,29 @@ server <- function(input, output, session) {
   })
 
   #render output table from uploaded file
-  output$DT_upload <- DT::renderDT({
-    datatable(file_upload(),
+  output$FQI_DT_upload <- DT::renderDT({
+    datatable(FQI_file_upload(),
               selection = 'single',
               options = list(autoWidth = TRUE, scrollX = TRUE)
               )
   })
 
   #when delete all is clicked, clear all entries
-  observeEvent(input$delete_upload, {
+  observeEvent(input$FQI_delete_upload, {
     #make an empty df
     empty_df <- NULL
     #replace reactive file upload with empty file
-    file_upload(empty_df)
+    FQI_file_upload(empty_df)
     #reset upload button
-    shinyjs::reset("uploaded_file")
+    shinyjs::reset("FQI_uploaded_file")
   })
 
   #metrics table output on FQA page
-  output$DT_metrics_upload <- renderTable({
-    all_metrics <- fqacalc::all_metrics(x = file_upload()
-                                %>% rename("scientific_name" = input$column),
+  output$FQI_DT_metrics_upload <- renderTable({
+    all_metrics <- fqacalc::all_metrics(x = FQI_file_upload()
+                                %>% rename("scientific_name" = input$FQI_column),
                                 key = "scientific_name",
-                                db = input$db)
+                                db = input$FQI_db)
 
     all_metrics
   })
@@ -252,14 +340,14 @@ server <- function(input, output, session) {
 
 
   #ggplot output
-  output$c_hist_upload <- renderPlot({
+  output$FQI_c_hist_upload <- renderPlot({
 
     #ggplot
     graph <- ggplot(data = fqacalc::accepted_entries
-                (x = as.data.frame(as.data.frame(file_upload()) %>%
-                                    rename("scientific_name" = input$column)),
+                (x = as.data.frame(as.data.frame(FQI_file_upload()) %>%
+                                    rename("scientific_name" = input$FQI_column)),
                                   key = "scientific_name",
-                                  db = input$db,
+                                  db = input$FQI_db,
                   native = FALSE),
        aes(x = c,
            fill = native)) +
@@ -276,49 +364,50 @@ server <- function(input, output, session) {
   })
 
 
-#ENTER SPECIES MANUALLY---------------------------------------------------------
+#ENTER MANUALLY FQI-------------------------------------------------------------
+
   #species drop-down list based on region
-  output$latin_name <- renderUI({
+  output$FQI_latin_name <- renderUI({
     #create list of latin names based on regional list selected
-    latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
+    latin_names <- c("", unique(fqacalc::view_db(input$FQI_db)$scientific_name))
     #create a dropdown option
-    selectizeInput("species", "Select Species", latin_names,
+    selectizeInput("FQI_species", "Select Species", latin_names,
                    selected = NULL,
                    multiple = TRUE)
     })
 
   #create an object with no values to store inputs
-  data_entered <- reactiveVal({
-    data_entered
+  data_entered_manual <- reactiveVal({
+    data_entered_manual
     })
 
   #When add species is clicked, add row
-  observeEvent(input$add_species, {
+  observeEvent(input$FQI_add_species, {
     #find species
-    new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                              dplyr::filter(scientific_name %in% input$species))
+    new_entry <- data.frame(fqacalc::view_db(input$FQI_db) %>%
+                              dplyr::filter(scientific_name %in% input$FQI_species))
     #bind new entry to table
-    new_table = rbind(new_entry, data_entered())
+    new_table = rbind(new_entry, data_entered_manual())
     #these lines discourage using multiple regional databases when entering data
     one_region <- length(unique(new_table$fqa_db)) <= 1
-    shinyFeedback::feedbackDanger("db", !one_region,
+    shinyFeedback::feedbackDanger("FQI_db", !one_region,
                                   "selecting multiple regions is not recommended")
     #print table
-    data_entered(new_table)
+    data_entered_manual(new_table)
     #reset drop down menu of latin names
-    shinyjs::reset("species")
+    shinyjs::reset("FQI_species")
     })
 
   #this allows popups for warnings about duplicates/non-matching species
-  observeEvent(input$add_species,{
-    req(input$add_species)
+  observeEvent(input$FQI_add_species,{
+    req(input$FQI_add_species)
     #list to store warnings
     warning_list <- list()
     #catch warnings
     withCallingHandlers(
-      fqacalc::accepted_entries(x = data_entered(),
+      fqacalc::accepted_entries(x = data_entered_manual(),
                                 key = "scientific_name",
-                                db = input$db,
+                                db = input$FQI_db,
                                 native = FALSE),
       #add to list
       message=function(w) {warning_list <<- c(warning_list, list(w$message))})
@@ -328,45 +417,45 @@ server <- function(input, output, session) {
 
 
   #when delete species is clicked, delete row
-  observeEvent(input$delete_species,{
+  observeEvent(input$FQI_delete_species,{
     #call table
-    t = data_entered()
+    t = data_entered_manual()
     #print table
     print(nrow(t))
     #if rows are selected, delete them
-    if (!is.null(input$DT_manual_rows_selected)) {
-      t <- t[-as.numeric(input$DT_manual_rows_selected),]
+    if (!is.null(input$FQI_DT_manual_rows_selected)) {
+      t <- t[-as.numeric(input$FQI_DT_manual_rows_selected),]
     }
     #else show the regular table
-    data_entered(t)
+    data_entered_manual(t)
     })
 
   #when delete all is clicked, clear all entries
-  observeEvent(input$delete_manual_entries, {
+  observeEvent(input$FQI_delete_manual_entries, {
     #make an empty df
     empty_df <- data.frame(row.names = names(fqacalc::crooked_island))
     #assign it to the reactive value
-    data_entered(empty_df)
+    data_entered_manual(empty_df)
   })
 
-  output$regional_list_manual <- renderText({paste("Calculating metrics based on ", input$db)})
+  output$FQI_regional_list_manual <- renderText({paste("Calculating metrics based on ", input$FQI_db)})
 
   #render output table from manually entered species on data entry page
-  output$DT_manual <- DT::renderDT({
-    datatable(data_entered(),
+  output$FQI_DT_manual <- DT::renderDT({
+    datatable(data_entered_manual(),
               selection = 'single',
               options = list(autoWidth = TRUE, scrollX = TRUE)
               )
   })
 
   #metrics table output on FQA page
-  output$DT_metrics_manual <- renderTable({
-    fqacalc::all_metrics(x = data_entered(), db = input$db)
+  output$FQI_DT_metrics_manual <- renderTable({
+    fqacalc::all_metrics(x = data_entered_manual(), db = input$FQI_db)
   })
 
   #ggplot output
-  output$c_hist_manual <- renderPlot({
-    ggplot(data = unique(data_entered()),
+  output$FQI_c_hist_manual <- renderPlot({
+    ggplot(data = unique(data_entered_manual()),
            aes(x = c,
                fill = native)) +
       geom_histogram(col = "black") +
@@ -378,7 +467,69 @@ server <- function(input, output, session) {
       theme(title = element_text(face = "bold"))
   })
 
-  }#server brackets
+# ENTER MANUALLY COVER----------------------------------------------------------
+
+  #create reactive list of species depending on db for dropdown menus in table
+  cover_species <- reactive({
+    #create list of latin names based on regional list selected
+    cover_species <-  c(unique(fqacalc::view_db(input$cover_db)$scientific_name))
+  })
+
+  #list of what values appear in dropdown menu depending on cover_method_select
+  cover_method <- reactive({
+    if(input$cover_method_select == "braun-blanquet") {
+      c("+", "1", "2", "3", "4", "5")
+    }
+    else  if(input$cover_method_select == "daubenmire") {
+      c("1", "2", "3", "4", "5", "6")
+    }
+    else if(input$cover_method_select == "carolina_veg_survey"){
+      c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+    }
+    else  if(input$cover_method_select == "usfs_ecodata"){
+      c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98")
+    }
+    else{
+      c("1":"100")
+    }
+  })
+
+
+  #create a df object with no values to store inputs from rhandsontable
+  cover_data_entered <- reactive({
+    #define table for data entered manually
+    start_data = data.frame(plot_id = as.integer(NA),
+                            scientific_name = factor(NA, levels = cover_species()),
+                            cover = factor(NA, levels = cover_method()))
+  })
+
+  #render rhandsontable for editing
+  output$cover_manual_table <- renderRHandsontable({
+    rhandsontable(cover_data_entered(),
+                  #allows viewer to see dropdown
+                  overflow = "visible",
+                  #gets rid of row names
+                  rowHeaders = NULL,
+                  #controls size
+                  stretchH = "all")
+  })
+
+  #save rhandsontable edits
+  hottable_output <- observe({
+    as.data.frame(hot_to_r(input$cover_manual_table))
+  })
+
+
+  #metrics table output on FQA page
+  output$cover_metrics_manual <- renderTable({
+    fqacalc::all_cover_metrics(x = hot_to_r(input$cover_manual_table),
+                               key = "scientific_name",
+                               db = input$cover_db,
+                               cover_metric = input$cover_method_select)
+  })
+
+
+}#server brackets
 
 #run the application
 shinyApp(ui, server)
