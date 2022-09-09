@@ -124,6 +124,9 @@ ui <- fluidPage(
             ),#screen 1 parenthesis
 
             screen(
+              h3(textOutput({"FQI_regional_list_manual"})),
+
+              br(),
 
               fluidRow(
 
@@ -140,7 +143,6 @@ ui <- fluidPage(
                 conditionalPanel(
                   condition = "input.FQI_method == 'enter'",
                   #output table of metrics
-                  textOutput("FQI_regional_list_manual"),
                   column(4,
                   tableOutput("FQI_DT_metrics_manual")),
                   #output
@@ -233,6 +235,10 @@ ui <- fluidPage(
                  ),#screen 1 parenthesis
 
                screen(
+
+                 h3(textOutput({"cover_regional_list_manual"})),
+
+                 br(),
 
                  fluidRow(
 
@@ -445,7 +451,8 @@ server <- function(input, output, session) {
     data_entered_manual(empty_df)
   })
 
-  output$FQI_regional_list_manual <- renderText({paste("Calculating metrics based on ", input$FQI_db)})
+  output$FQI_regional_list_manual <- renderText({paste("Calculating metrics based on ",
+                                                input$FQI_db)})
 
   #render output table from manually entered species on data entry page
   output$FQI_DT_manual <- DT::renderDT({
@@ -475,6 +482,9 @@ server <- function(input, output, session) {
   })
 
 # ENTER MANUALLY COVER----------------------------------------------------------
+
+  output$cover_regional_list_manual <- renderText({paste("Calculating metrics based on ",
+                                                       input$cover_db)})
 
   #create reactive list of species depending on db for dropdown menus in table
   cover_species <- reactive({
