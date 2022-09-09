@@ -249,9 +249,9 @@ ui <- fluidPage(
 
                screen(
 
-                 h3(textOutput({"cover_regional_list_manual"})),
-
-                 br(),
+                 # h3(textOutput({"cover_regional_list_manual"})),
+                 #
+                 # br(),
 
 
 
@@ -260,11 +260,13 @@ ui <- fluidPage(
 
                      fluidRow(
 
-                     #plot output
-                     column(8, plotOutput("cover_c_hist_manual")),
+                       #plot output
+                       column(7,
+                              h3(textOutput({"cover_regional_list_manual"})),
+                              plotOutput("cover_c_hist_manual")),
 
                      #output table of metrics
-                     column(4,tableOutput("cover_metrics_manual")),
+                     column(5,tableOutput("cover_metrics_manual")),
 
                    )#fluid row parenthesis
 
