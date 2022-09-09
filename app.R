@@ -223,7 +223,8 @@ ui <- fluidPage(
                        condition = "input.cover_input_method == 'enter'",
 
                        #manually entered data for cover metrics
-                       rHandsontableOutput("cover_manual_table"))
+                       rHandsontableOutput("cover_manual_table")),
+
 
                      )#main panel parenthesis
 
@@ -237,9 +238,14 @@ ui <- fluidPage(
 
                    conditionalPanel(
                      condition = "input.cover_input_method == 'enter'",
+
+                     #plot output
+                     column(8, plotOutput("cover_c_hist_manual")),
+
                      #output table of metrics
-                     column(4,
-                            tableOutput("cover_metrics_manual")),
+                     column(4,tableOutput("cover_metrics_manual")),
+
+
                      #output plot here
                    ),#conditional 1 parenthesis
 
@@ -512,7 +518,8 @@ server <- function(input, output, session) {
                   #gets rid of row names
                   rowHeaders = NULL,
                   #controls size
-                  stretchH = "all"
+                  stretchH = "all",
+                  height = 400
                   )
   })
 
@@ -528,6 +535,31 @@ server <- function(input, output, session) {
                                key = "scientific_name",
                                db = input$cover_db,
                                cover_metric = input$cover_method_select)
+  })
+
+
+  #ggplot output
+  output$cover_c_hist_manual <- renderPlot({
+
+    #ggplot
+    graph <- ggplot(data = fqacalc::accepted_entries
+                    (x = hot_to_r(input$cover_manual_table),
+                    key = "scientific_name",
+                    db = input$cover_db,
+                    native = FALSE,
+                    allow_duplicates = FALSE),
+                    aes(x = c,
+                        fill = native)) +
+      geom_histogram(col = "black") +
+      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
+      labs(title = "Conservation Coefficient Histogram",
+           x = "Conservation Coefficient Score",
+           fill = "Native or Exotic") +
+      theme_classic() +
+      theme(title = element_text(face="bold"))
+
+    #call graph
+    graph
   })
 
 
