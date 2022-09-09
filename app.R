@@ -13,8 +13,15 @@ library(thematic) #for theming r graphics
 #define table for data entered manually
 data_entered_manual = data.frame()
 
+#thematic for theming of plots
+thematic::thematic_shiny()
+
+
 #define UI for application (User Interface)
 ui <- fluidPage(
+
+  #testing theme
+  theme = bslib::bs_theme(version = 4),
 
   #controls where notifications are displayed
   tags$head(
@@ -29,6 +36,8 @@ ui <- fluidPage(
     )
   ),
 
+
+
   #call this package for reset function
   useShinyjs(),
   #call this package for warningish messages
@@ -36,10 +45,14 @@ ui <- fluidPage(
 
   navbarPage("FQA",
 
+             #setting bootstrap to version 4
+             theme = bslib::bs_theme(version = 4),
+
 #FQI TAB------------------------------------------------------------------------
 
     #tab panel 1
     tabPanel("Calculate FQA Metrics",
+
 
              #allow glide to be used in this tab
              glide(
@@ -124,33 +137,31 @@ ui <- fluidPage(
             ),#screen 1 parenthesis
 
             screen(
+              #banner telling you what regional list you're using
               h3(textOutput({"FQI_regional_list_manual"})),
 
-              br(),
-
-              fluidRow(
+              #break so there is space
+              #br(),
 
                 conditionalPanel(
                   condition = "input.FQI_method == 'upload' && input.FQI_column",
                   #output table of metrics
-                  column(4,
-                  tableOutput("FQI_DT_metrics_upload")),
+                  fluidRow(
+                  column(4, tableOutput("FQI_DT_metrics_upload")),
                   #output
-                  column(8,
-                  plotOutput("FQI_c_hist_upload"))
+                  column(8, plotOutput("FQI_c_hist_upload"))
+                  )#fuildrow parenthesis
                   ),#conditional 1 parenthesis
 
                 conditionalPanel(
                   condition = "input.FQI_method == 'enter'",
                   #output table of metrics
-                  column(4,
-                  tableOutput("FQI_DT_metrics_manual")),
+                  fluidRow(
+                  column(4, tableOutput("FQI_DT_metrics_manual")),
                   #output
-                  column(8,
-                  plotOutput("FQI_c_hist_manual"))
+                  column(8, plotOutput("FQI_c_hist_manual"))
+                  )#fluidrow parenthesis
                 )#conditional 2 parenthesis
-
-                )#fluid Row parenthesis
 
               )#screen 2 parenthesis
 
@@ -161,7 +172,7 @@ ui <- fluidPage(
 # COVER TAB --------------------------------------------------------------------
 
     #tab panel 2
-    tabPanel("Caclulate FQA Transect Metrics",
+    tabPanel("Caclulate Cover-Weighted FQA Metrics",
 
              #allow glide to be used in this tab
              glide(
@@ -169,7 +180,7 @@ ui <- fluidPage(
                next_label = "Calculate FQA Metrics",
                previous_label = "Go Back to Data Entry",
                #customizing where they appear
-               controls_position = "bottom",
+               controls_position = "top",
                height = "100%",
 
                screen(
@@ -224,6 +235,8 @@ ui <- fluidPage(
                      conditionalPanel(
                        condition = "input.cover_input_method == 'enter'",
 
+                       br(),
+
                        #manually entered data for cover metrics
                        rHandsontableOutput("cover_manual_table")),
 
@@ -240,10 +253,12 @@ ui <- fluidPage(
 
                  br(),
 
-                 fluidRow(
+
 
                    conditionalPanel(
                      condition = "input.cover_input_method == 'enter'",
+
+                     fluidRow(
 
                      #plot output
                      column(8, plotOutput("cover_c_hist_manual")),
@@ -251,11 +266,9 @@ ui <- fluidPage(
                      #output table of metrics
                      column(4,tableOutput("cover_metrics_manual")),
 
+                   )#fluid row parenthesis
 
-                     #output plot here
-                   ),#conditional 1 parenthesis
-
-                 )#fluid row parenthesis
+                 )#conditional 1 parenthesis
 
                )#screen two parenthesis
 
@@ -269,6 +282,8 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
+  #interactive theme
+  bs_themer()
 
 # UPLOAD FILE FQI ---------------------------------------------------------------
 
@@ -368,9 +383,7 @@ server <- function(input, output, session) {
       scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
       labs(title = "Conservation Coefficient Histogram",
            x = "Conservation Coefficient Score",
-           fill = "Native or Exotic") +
-      theme_classic() +
-      theme(title = element_text(face="bold"))
+           fill = "Native or Exotic")
 
   #call graph
   graph
@@ -476,9 +489,7 @@ server <- function(input, output, session) {
       scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
       labs(title = "Conservation Coefficient Histogram",
            x = "Conservation Coefficient Score",
-           fill = "Native or Exotic") +
-      theme_classic() +
-      theme(title = element_text(face = "bold"))
+           fill = "Native or Exotic")
   })
 
 # ENTER MANUALLY COVER----------------------------------------------------------
@@ -564,9 +575,7 @@ server <- function(input, output, session) {
       scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
       labs(title = "Conservation Coefficient Histogram",
            x = "Conservation Coefficient Score",
-           fill = "Native or Exotic") +
-      theme_classic() +
-      theme(title = element_text(face="bold"))
+           fill = "Native or Exotic")
 
     #call graph
     graph
