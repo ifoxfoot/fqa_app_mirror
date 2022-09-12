@@ -36,6 +36,11 @@ ui <- fluidPage(
     )
   ),
 
+  # tags$style(
+  #   ".glide-controls { position: absolute; top: 18px; right: 15px; width: 160px; }"
+  # ),
+
+
 
 
   #call this package for reset function
@@ -60,6 +65,7 @@ ui <- fluidPage(
                next_label = "Calculate FQA Metrics",
                previous_label = "Go Back to Data Entry",
                #customizing where they appear
+               custom_controls = div(class = "glide-controls", glideControls()),
                controls_position = "bottom",
                height = "100%",
 
@@ -180,7 +186,8 @@ ui <- fluidPage(
                next_label = "Calculate FQA Metrics",
                previous_label = "Go Back to Data Entry",
                #customizing where they appear
-               controls_position = "top",
+               custom_controls = div(class = "glide-controls", glideControls()),
+               controls_position = "bottom",
                height = "100%",
 
                screen(
@@ -342,7 +349,10 @@ server <- function(input, output, session) {
   output$FQI_DT_upload <- DT::renderDT({
     datatable(FQI_file_upload(),
               selection = 'single',
-              options = list(autoWidth = TRUE, scrollX = TRUE)
+              options = list(autoWidth = TRUE,
+                             scrollX = TRUE,
+                             searching = FALSE,
+                             lengthChange = FALSE)
               )
   })
 
@@ -473,7 +483,10 @@ server <- function(input, output, session) {
   output$FQI_DT_manual <- DT::renderDT({
     datatable(data_entered_manual(),
               selection = 'single',
-              options = list(autoWidth = TRUE, scrollX = TRUE)
+              options = list(autoWidth = TRUE,
+                             scrollX = TRUE,
+                             searching = FALSE,
+                             lengthChange = FALSE)
               )
   })
 
