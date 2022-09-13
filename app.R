@@ -36,18 +36,18 @@ ui <- fluidPage(
     )
   ),
 
+  #this css edits the shiny glide button positioning
   # tags$style(
   #   ".glide-controls { position: absolute; top: 18px; right: 15px; width: 160px; }"
   # ),
 
-
-
-
   #call this package for reset function
   useShinyjs(),
-  #call this package for warningish messages
+
+  #call this package for warning/validation messages
   shinyFeedback::useShinyFeedback(),
 
+  #initiate navbar
   navbarPage("FQA",
 
              #setting bootstrap to version 4
@@ -146,9 +146,6 @@ ui <- fluidPage(
               #banner telling you what regional list you're using
               h3(textOutput({"FQI_regional_list_manual"})),
 
-              #break so there is space
-              #br(),
-
                 conditionalPanel(
                   condition = "input.FQI_method == 'upload' && input.FQI_column",
                   #output table of metrics
@@ -242,11 +239,8 @@ ui <- fluidPage(
                      conditionalPanel(
                        condition = "input.cover_input_method == 'enter'",
 
-                       br(),
-
                        #manually entered data for cover metrics
                        rHandsontableOutput("cover_manual_table")),
-
 
                      )#main panel parenthesis
 
@@ -256,20 +250,16 @@ ui <- fluidPage(
 
                screen(
 
-                 # h3(textOutput({"cover_regional_list_manual"})),
-                 #
-                 # br(),
-
-
-
+                 #conditional panel when cover input method is manual entry
                    conditionalPanel(
                      condition = "input.cover_input_method == 'enter'",
 
                      fluidRow(
 
-                       #plot output
                        column(7,
+                              #text saying which list user is using
                               h3(textOutput({"cover_regional_list_manual"})),
+                              #plot output
                               plotOutput("cover_c_hist_manual")),
 
                      #output table of metrics
@@ -285,6 +275,10 @@ ui <- fluidPage(
 
     ),#tab panel 2 parenthesis
 
+  tabPanel("About FQA",
+           #rmarkdown here
+           ),#tab panel 3 parenthesis
+
   )#navbar parenthesis
 
 )#ui parenthesis
@@ -292,7 +286,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   #interactive theme
-  bs_themer()
+  #bs_themer()
 
 # UPLOAD FILE FQI ---------------------------------------------------------------
 
