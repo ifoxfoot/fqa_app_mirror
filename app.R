@@ -293,6 +293,9 @@ server <- function(input, output, session) {
   #create reactive object where uploads will be stored
   FQI_file_upload <- reactiveVal()
 
+  #create reactive object where accepted entries will be stored
+  FQI_accepted_upload <- reactiveVal()
+
   #When file is uploaded, upload and store in reactive object above
   observeEvent(input$FQI_uploaded_file, {
     #require that a file be uploaded
@@ -333,10 +336,23 @@ server <- function(input, output, session) {
                                 key = "scientific_name",
                                 db = input$FQI_db,
                                 native = F),
-      #add to list
-      message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+    #add to list
+    message=function(w) {warning_list <<- c(warning_list, list(w$message))})
     #show each list item in notification
     lapply(warning_list, showNotification, type = "error", duration = NULL)
+  })
+
+  #when data is entered find accepted values and store them reactivly
+  observeEvent(input$FQI_column,{
+    req(input$FQI_column)
+    #calculate accepted entries
+    accepted <- fqacalc::accepted_entries(x = FQI_file_upload() %>%
+                                            rename("scientific_name" = input$FQI_column),
+                                key = "scientific_name",
+                                db = input$FQI_db,
+                                native = F)
+    #store it
+    FQI_accepted_upload(accepted)
   })
 
   #render output table from uploaded file
@@ -370,33 +386,16 @@ server <- function(input, output, session) {
     all_metrics
   })
 
-
-
-
   #ggplot output
   output$FQI_c_hist_upload <- renderPlot({
-
-    #ggplot
-    graph <- ggplot(data = fqacalc::accepted_entries
-                (x = as.data.frame(as.data.frame(FQI_file_upload()) %>%
-                                    rename("scientific_name" = input$FQI_column)),
-                                  key = "scientific_name",
-                                  db = input$FQI_db,
-                  native = FALSE),
-       aes(x = c,
-           fill = native)) +
-      geom_histogram(col = "black") +
-      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
-      labs(title = "Conservation Coefficient Histogram",
-           x = "Conservation Coefficient Score",
-           fill = "Native or Exotic")
-
-  #call graph
-  graph
+    c_score_plot(FQI_accepted_upload())
   })
 
 
 #ENTER MANUALLY FQI-------------------------------------------------------------
+
+  #create an object with no values but correct col names to store inputs
+  data_entered_manual <- reactiveVal({data_entered_manual})
 
   #species drop-down list based on region
   output$FQI_latin_name <- renderUI({
@@ -406,11 +405,6 @@ server <- function(input, output, session) {
     selectizeInput("FQI_species", "Select Species", latin_names,
                    selected = NULL,
                    multiple = TRUE)
-    })
-
-  #create an object with no values to store inputs
-  data_entered_manual <- reactiveVal({
-    data_entered_manual
     })
 
   #When add species is clicked, add row
@@ -491,14 +485,7 @@ server <- function(input, output, session) {
 
   #ggplot output
   output$FQI_c_hist_manual <- renderPlot({
-    ggplot(data = unique(data_entered_manual()),
-           aes(x = c,
-               fill = native)) +
-      geom_histogram(col = "black") +
-      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
-      labs(title = "Conservation Coefficient Histogram",
-           x = "Conservation Coefficient Score",
-           fill = "Native or Exotic")
+    c_score_plot(FQI_accepted_upload(unique(data_entered_manual())))
   })
 
 # ENTER MANUALLY COVER----------------------------------------------------------
@@ -553,11 +540,6 @@ server <- function(input, output, session) {
                   )
   })
 
-  #save rhandsontable edits
-  hottable_output <- observe({
-    as.data.frame(hot_to_r(input$cover_manual_table))
-  })
-
 
   #metrics table output on FQA page
   output$cover_metrics_manual <- renderTable({
@@ -570,24 +552,11 @@ server <- function(input, output, session) {
 
   #ggplot output
   output$cover_c_hist_manual <- renderPlot({
-
-    #ggplot
-    graph <- ggplot(data = fqacalc::accepted_entries
-                    (x = hot_to_r(input$cover_manual_table),
-                    key = "scientific_name",
-                    db = input$cover_db,
-                    native = FALSE,
-                    allow_duplicates = FALSE),
-                    aes(x = c,
-                        fill = native)) +
-      geom_histogram(col = "black") +
-      scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
-      labs(title = "Conservation Coefficient Histogram",
-           x = "Conservation Coefficient Score",
-           fill = "Native or Exotic")
-
-    #call graph
-    graph
+    c_score_plot(fqacalc::accepted_entries(x = hot_to_r(input$cover_manual_table),
+                                          key = "scientific_name",
+                                          db = input$cover_db,
+                                          native = F,
+                                          cover_metric = input$cover_method_select))
   })
 
 
