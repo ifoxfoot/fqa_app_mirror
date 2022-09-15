@@ -1,0 +1,49 @@
+---
+title: "About FQA Assessments"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(here)
+library(sf)
+library(tmap)
+```
+
+## Floristic Quality Assessments
+
+Floristic Quality Assessment (FQA) provides a standardized way to rapidly assess the integrity of an area based on the botanic species that are present. FQA works by assigning each plant a score from 0 to 10. This score is called a Conservation Coefficient or C Score. Scores of 0 indicate plants that are invasive or prefer highly disturbed habitat, while higher scores represent higher fidelity to undisturbed habitat. Because plants may exhibit different levels of fidelity to intact habitat in different regions, expert botanists have convened to produce regional FQA lists.
+
+This allows local land managers to quickly assess areas by making a list of species that are present in their area of interest and then calculating floristic quality metrics.
+
+Common metrics include mean C (the mean of C values for all species present) and FQI (the mean c multiplied by the square root of the total number of species.
+
+## FQA Databases
+
+There are 48 regional FQA lists which are currently approved for use by the US Army Core of Engineers. 
+
+Take a look at what regional lists might be applicable in your area
+
+```{r, fig.align = "center"}
+#read in data
+regional_fqa_map <- read_sf(here("spatial_data","data_not_ready.gpkg")) %>%
+  st_make_valid() %>%
+  st_simplify(preserveTopology = TRUE, dTolerance = 1000)
+
+#Map
+tmap_mode("view")
+
+tm_shape(regional_fqa_map) +
+  tm_polygons("FQA_database", legend.show = F) +
+  tmap_options(max.categories = 41) +
+  tm_layout(title = "This Map Is Not Done!! :)")
+```
+
+You can also view and download complete regional databases here.
+
+```{r}
+#run this in the console before doing anything
+# xml2::write_html(rvest::html_node(xml2::read_html("rmarkdowns/about_fqa.html"), "body"), file = "rmarkdowns/about_fqa2.html")
+```
+

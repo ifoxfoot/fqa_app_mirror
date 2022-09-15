@@ -3,17 +3,17 @@ library(shiny) #for app
 library(fqacalc) #for fqai metrics
 library(tidyverse) #for data wrangling/displaying
 library(shinyglide) #for glide panels
-library(DT) #for dsiplaying tables
+library(DT) #for displaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
 library(rhandsontable) #for editable tables
 library(bslib) #interactive theme
-library(thematic) #for theming r graphics
+library(thematic) #for theme r graphics
 
 #define table for data entered manually
 data_entered_manual = data.frame()
 
-#thematic for theming of plots
+#thematic for theme of plots
 thematic::thematic_shiny()
 
 
@@ -275,8 +275,11 @@ ui <- fluidPage(
 
     ),#tab panel 2 parenthesis
 
+# ABOUT ------------------------------------------------------------------------
+
   tabPanel("About FQA",
            #rmarkdown here
+             includeHTML("rmarkdowns/about_fqa2.html")
            ),#tab panel 3 parenthesis
 
   )#navbar parenthesis
@@ -288,7 +291,7 @@ server <- function(input, output, session) {
   #interactive theme
   #bs_themer()
 
-# UPLOAD FILE FQI ---------------------------------------------------------------
+# UPLOAD FILE FQI --------------------------------------------------------------
 
   #create reactive object where uploads will be stored
   FQI_file_upload <- reactiveVal()
@@ -558,6 +561,10 @@ server <- function(input, output, session) {
                                           native = F,
                                           cover_metric = input$cover_method_select))
   })
+
+# ABOUT ------------------------------------------------------------------------
+
+
 
 
 }#server brackets
