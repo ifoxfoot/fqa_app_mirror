@@ -548,13 +548,19 @@ server <- function(input, output, session) {
       c("1":"100")
     }
     #create a dropdown option
-    selectizeInput("cover", "Cover Value", cover_vals,
+    selectizeInput("cover", "Cover Value", c("", cover_vals),
                    selected = NULL,
                    multiple = FALSE)
   })
 
   #create an object with no values but correct col names to store inputs
   cover_data_entered_manual <- reactiveVal({data_entered})
+
+  #make it so add species button can't be clicked until all fields full
+  observe({
+    vals <- c(input$cover, input$cover_species, input$cover_plot_id_manual)
+    toggleState("cover_add_species", !"" %in% vals)
+  })
 
   #save edits
   observeEvent(input$cover_add_species, {
@@ -566,6 +572,10 @@ server <- function(input, output, session) {
     new_table = rbind(new_row, cover_data_entered_manual())
     #make it reactive
     cover_data_entered_manual(new_table)
+
+    #reset drop down menu of latin names
+    shinyjs::reset("cover_species")
+    shinyjs::reset("cover")
   })
 
   #render output table from manually entered species on data entry page
