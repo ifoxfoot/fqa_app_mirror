@@ -6,12 +6,13 @@ library(shinyglide) #for glide panels
 library(DT) #for displaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
-library(rhandsontable) #for editable tables
+library(tmap) #for interactive map
+library(sf) #for spatial data
 library(bslib) #interactive theme
 library(thematic) #for theme r graphics
 
 #define table for data entered manually
-data_entered_manual = data.frame()
+data_entered = data.frame()
 
 #thematic for theme of plots
 thematic::thematic_shiny()
@@ -35,6 +36,10 @@ ui <- fluidPage(
       )
     )
   ),
+
+  #changing color of download button
+  tags$head(tags$style(
+    ".downloadButton{background:#007bff;} .downloadButton{color: #fff;}")),
 
   #this css edits the shiny glide button positioning
   # tags$style(
@@ -205,6 +210,15 @@ ui <- fluidPage(
                                   choices = c( "Enter Species Manually" = "enter",
                                                "Upload a File" = "upload")),
 
+                     #select cover method to use
+                     selectInput("cover_method_select", label = "Cover Method",
+                                 choices = c(
+                                   "percent_cover",
+                                   "braun-blanquet",
+                                   "carolina_veg_survey",
+                                   "daubenmire",
+                                   "usfs_ecodata")),
+
                      #when data entry method is upload, allow user to upload files
                      conditionalPanel(
 
@@ -214,33 +228,27 @@ ui <- fluidPage(
 
                      ), #conditional 1 parenthesis
 
-
-                     #when data entry cover_input_method is enter, allow user to enter data manually
-                     conditionalPanel(
-
-                       condition = "input.cover_input_method == 'enter'",
-
-                       #select cover method to use
-                       selectInput("cover_method_select",
-                                   "Cover Method",
-                                   choices = c(
-                                     "percent_cover",
-                                     "braun-blanquet",
-                                     "carolina_veg_survey",
-                                     "daubenmire",
-                                     "usfs_ecodata"
-                                   ))
-
-                     ), #conditional 2 parenthesis
-
                    ),#sidebarPanel parenthesis
 
                    mainPanel(
                      conditionalPanel(
                        condition = "input.cover_input_method == 'enter'",
 
-                       #manually entered data for cover metrics
-                       rHandsontableOutput("cover_manual_table")),
+                       #buttons for data entry
+                       fluidRow(
+                         column(2, textInput("cover_plot_id_manual", "Plot ID")),
+
+                         #input latin name
+                         column(4, uiOutput("cover_name_manual")),
+
+                         column(4, uiOutput("cover_options")),
+
+                         column(2, actionButton("cover_add_species", "Add Species"))),
+
+                       #datatable of entered data
+                       dataTableOutput("cover_DT_manual"),
+
+                       )#conditional panel parenthesis
 
                      )#main panel parenthesis
 
@@ -279,8 +287,25 @@ ui <- fluidPage(
 
   tabPanel("About FQA",
            #rmarkdown here
-             includeHTML("rmarkdowns/about_fqa2.html")
+           includeHTML("rmarkdowns/about_fqa2.html"),
+
+           tmapOutput("tmap")
+
            ),#tab panel 3 parenthesis
+
+   tabPanel("View Regional FQA Lists",
+
+            #input regional data base
+            selectInput("view_db", label = "Select Regional FQAI Database",
+                        choices = fqacalc::db_names(),
+                        selected = "michigan_2014"),
+
+            downloadButton("downloadFQA", label = "Download", class = "downloadButton"),
+
+            #show datatable
+            dataTableOutput("regional_database")
+
+            )
 
   )#navbar parenthesis
 
@@ -398,7 +423,7 @@ server <- function(input, output, session) {
 #ENTER MANUALLY FQI-------------------------------------------------------------
 
   #create an object with no values but correct col names to store inputs
-  data_entered_manual <- reactiveVal({data_entered_manual})
+  data_entered_manual <- reactiveVal({data_entered})
 
   #species drop-down list based on region
   output$FQI_latin_name <- renderUI({
@@ -493,20 +518,23 @@ server <- function(input, output, session) {
 
 # ENTER MANUALLY COVER----------------------------------------------------------
 
-  output$cover_regional_list_manual <- renderText({paste("Calculating metrics based on ",
-                                                       input$cover_db)})
-
-  #create reactive list of species depending on db for dropdown menus in table
-  cover_species <- reactive({
+  #species drop-down list based on region
+  output$cover_name_manual <- renderUI({
     #create list of latin names based on regional list selected
-    cover_species <-  c(unique(fqacalc::view_db(input$cover_db)$scientific_name))
+    latin_names <- c("", unique(fqacalc::view_db(input$cover_db)$scientific_name))
+    #create a dropdown option
+    selectizeInput("cover_species", "Species", latin_names,
+                   selected = NULL,
+                   multiple = FALSE)
   })
 
-  #list of what values appear in dropdown menu depending on cover_method_select
-  cover_method <- reactive({
-    if(input$cover_method_select == "braun-blanquet") {
-      c("+", "1", "2", "3", "4", "5")
-    }
+  #species drop-down list based on region
+  output$cover_options <- renderUI({
+    cover_vals <-
+      #list of what values appear in dropdown menu depending on cover_method_select
+      if(input$cover_method_select == "braun-blanquet") {
+        c("+", "1", "2", "3", "4", "5")
+      }
     else  if(input$cover_method_select == "daubenmire") {
       c("1", "2", "3", "4", "5", "6")
     }
@@ -519,34 +547,41 @@ server <- function(input, output, session) {
     else{
       c("1":"100")
     }
+    #create a dropdown option
+    selectizeInput("cover", "Cover Value", cover_vals,
+                   selected = NULL,
+                   multiple = FALSE)
   })
 
+  #create an object with no values but correct col names to store inputs
+  cover_data_entered_manual <- reactiveVal({data_entered})
 
-  #create a df object with no values to store inputs from rhandsontable
-  cover_data_entered <- reactive({
-    #define table for data entered manually
-    start_data = data.frame(plot_id = as.integer(NA),
-                            scientific_name = factor(NA, levels = cover_species()),
-                            cover = factor(NA, levels = cover_method()))
+  #save edits
+  observeEvent(input$cover_add_species, {
+    #combine entries into one-row df
+    new_row <- data.frame(plot_id = input$cover_plot_id_manual,
+                          scientific_name = input$cover_species,
+                          cover = input$cover)
+    #bind new entry to table
+    new_table = rbind(new_row, cover_data_entered_manual())
+    #make it reactive
+    cover_data_entered_manual(new_table)
   })
 
-  #render rhandsontable for editing
-  output$cover_manual_table <- renderRHandsontable({
-    rhandsontable(cover_data_entered(),
-                  #allows viewer to see dropdown
-                  overflow = "visible",
-                  #gets rid of row names
-                  rowHeaders = NULL,
-                  #controls size
-                  stretchH = "all",
-                  height = 400
-                  )
+  #render output table from manually entered species on data entry page
+  output$cover_DT_manual <- DT::renderDT({
+    datatable(cover_data_entered_manual(),
+              selection = 'single',
+              options = list(
+                scrollX = TRUE,
+                searching = FALSE,
+                lengthChange = FALSE))
   })
 
 
   #metrics table output on FQA page
   output$cover_metrics_manual <- renderTable({
-    fqacalc::all_cover_metrics(x = hot_to_r(input$cover_manual_table),
+    fqacalc::all_cover_metrics(x = cover_data_entered_manual(),
                                key = "scientific_name",
                                db = input$cover_db,
                                cover_metric = input$cover_method_select)
@@ -555,7 +590,7 @@ server <- function(input, output, session) {
 
   #ggplot output
   output$cover_c_hist_manual <- renderPlot({
-    c_score_plot(fqacalc::accepted_entries(x = hot_to_r(input$cover_manual_table),
+    c_score_plot(fqacalc::accepted_entries(x = cover_data_entered_manual(),
                                           key = "scientific_name",
                                           db = input$cover_db,
                                           native = F,
@@ -564,8 +599,35 @@ server <- function(input, output, session) {
 
 # ABOUT ------------------------------------------------------------------------
 
+  #interactive map output
+  output$tmap <- renderTmap({
+    tmap_function("spatial_data/data_not_ready.gpkg")
+  })
 
+# VIEW -------------------------------------------------------------------------
 
+  #download button
+  output$downloadFQA <- downloadHandler(
+      filename = function() {
+        paste(input$view_db, Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv(fqacalc::view_db(input$view_db), con)
+      }
+    )
+
+  #fqa datatable output
+  output$regional_database <- renderDataTable({
+    datatable(fqacalc::view_db(input$view_db),
+              #options
+              options = list(scrollX=TRUE,
+                             scrollY= TRUE,
+                             lengthMenu = c(5,10,15),
+                             paging = TRUE, searching = TRUE,
+                             fixedColumns = TRUE, autoWidth = TRUE,
+                             ordering = TRUE))
+
+  })
 
 }#server brackets
 
