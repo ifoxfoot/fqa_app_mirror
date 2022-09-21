@@ -29,8 +29,9 @@ ui <- fluidPage(
     tags$style(
       HTML("#shiny-notification-panel {
              position:fixed;
-             top: calc(50%);
-             left: calc(50% - 150px);
+             top: calc(40%);
+             left: calc(50%);
+             opacity: 1;
              }
              "
       )
@@ -222,6 +223,17 @@ ui <- fluidPage(
                      #when data entry method is upload, allow user to upload files
                      conditionalPanel(
 
+                       condition = "input.cover_input_method == 'enter'",
+
+                       #input delete species button
+                       actionButton("cover_delete_species", "Delete Species"),
+
+                       #button to delete all entries
+                       actionButton("cover_delete_manual_entries", "Delete All Entries")),
+
+                    #when data entry method is upload, allow user to upload files
+                    conditionalPanel(
+
                        condition = "input.cover_input_method == 'upload'",
 
                        "UNDER CONSTRUCTION"
@@ -295,17 +307,22 @@ ui <- fluidPage(
 
    tabPanel("View Regional FQA Lists",
 
-            #input regional data base
-            selectInput("view_db", label = "Select Regional FQAI Database",
-                        choices = fqacalc::db_names(),
-                        selected = "michigan_2014"),
+            fluidRow(
 
-            downloadButton("downloadFQA", label = "Download", class = "downloadButton"),
+            #input regional data base
+            column(4, selectInput("view_db", label = "Select Regional FQAI Database",
+                        choices = fqacalc::db_names(),
+                        selected = "michigan_2014")),
+
+            column(4, div(style = "margin-top: 31px;",
+                   downloadButton("downloadFQA", label = "Download", class = "downloadButton"))),
+
+            ),#fluid row parenthesis
 
             #show datatable
             dataTableOutput("regional_database")
 
-            )
+            )#tabPanel parenthesis
 
   )#navbar parenthesis
 
@@ -406,12 +423,12 @@ server <- function(input, output, session) {
 
   #metrics table output on FQA page
   output$FQI_DT_metrics_upload <- renderTable({
-    all_metrics <- fqacalc::all_metrics(x = FQI_file_upload()
-                                %>% rename("scientific_name" = input$FQI_column),
-                                key = "scientific_name",
-                                db = input$FQI_db)
+    fqacalc::all_metrics(x = FQI_file_upload()
+                         %>% rename("scientific_name" = input$FQI_column),
+                         key = "scientific_name",
+                         db = input$FQI_db)
 
-    all_metrics
+
   })
 
   #ggplot output
@@ -513,7 +530,7 @@ server <- function(input, output, session) {
 
   #ggplot output
   output$FQI_c_hist_manual <- renderPlot({
-    c_score_plot(FQI_accepted_upload(unique(data_entered_manual())))
+    c_score_plot(distinct(data_entered_manual()))
   })
 
 # ENTER MANUALLY COVER----------------------------------------------------------
@@ -578,6 +595,7 @@ server <- function(input, output, session) {
     shinyjs::reset("cover")
   })
 
+
   #render output table from manually entered species on data entry page
   output$cover_DT_manual <- DT::renderDT({
     datatable(cover_data_entered_manual(),
@@ -588,6 +606,27 @@ server <- function(input, output, session) {
                 lengthChange = FALSE))
   })
 
+  #when delete species is clicked, delete row
+  observeEvent(input$cover_delete_species,{
+    #call table
+    t = cover_data_entered_manual()
+    #print table
+    print(nrow(t))
+    #if rows are selected, delete them
+    if (!is.null(input$cover_DT_manual_rows_selected)) {
+      t <- t[-as.numeric(input$cover_DT_manual_rows_selected),]
+    }
+    #else show the regular table
+    cover_data_entered_manual(t)
+  })
+
+  #when delete all is clicked, clear all entries
+  observeEvent(input$cover_delete_manual_entries, {
+    #make an empty df
+    empty_df <- data.frame(row.names = names(fqacalc::crooked_island))
+    #assign it to the reactive value
+    cover_data_entered_manual(empty_df)
+  })
 
   #metrics table output on FQA page
   output$cover_metrics_manual <- renderTable({
@@ -619,7 +658,7 @@ server <- function(input, output, session) {
   #download button
   output$downloadFQA <- downloadHandler(
       filename = function() {
-        paste(input$view_db, Sys.Date(), '.csv', sep='')
+        paste(input$view_db, "_", Sys.Date(), '.csv')
       },
       content = function(con) {
         write.csv(fqacalc::view_db(input$view_db), con)
