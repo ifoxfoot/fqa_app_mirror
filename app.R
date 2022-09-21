@@ -6,6 +6,8 @@ library(shinyglide) #for glide panels
 library(DT) #for displaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
+library(shinyWidgets) #for dashboard layout
+library(shinydashboard) #for boxes
 library(tmap) #for interactive map
 library(sf) #for spatial data
 library(bslib) #interactive theme
@@ -46,6 +48,10 @@ ui <- fluidPage(
   # tags$style(
   #   ".glide-controls { position: absolute; top: 18px; right: 15px; width: 160px; }"
   # ),
+
+  # use this in non shinydashboard app
+  #setBackgroundColor(color = "ghostwhite"),
+  useShinydashboard(),
 
   #call this package for reset function
   useShinyjs(),
@@ -165,6 +171,24 @@ ui <- fluidPage(
                 conditionalPanel(
                   condition = "input.FQI_method == 'enter'",
                   #output table of metrics
+                  fluidRow(
+                    valueBox(
+                      htmlOutput("fqi_species_richness_manual"),
+                      "Species Richness",
+                      icon = icon("tree"), color = "green"
+                    ),
+                    valueBox(
+                      htmlOutput("fqi_mean_c_manual"),
+                      "Mean C",
+                      icon = icon("seedling"), color = "green"
+                    ),
+                    valueBox(
+                      htmlOutput("fqi_fqi_manual"),
+                      "Total FQI",
+                      icon = icon("pagelines"), color = "green"
+                    )
+
+                  ),#fluidRow partenthesis
                   fluidRow(
                   column(4, tableOutput("FQI_DT_metrics_manual")),
                   #output
@@ -521,6 +545,18 @@ server <- function(input, output, session) {
                              searching = FALSE,
                              lengthChange = FALSE)
               )
+  })
+
+  output$fqi_species_richness_manual <- renderUI({
+    fqacalc::species_richness(x = data_entered_manual(), db = input$FQI_db, native = F)
+  })
+
+  output$fqi_mean_c_manual <- renderUI({
+    fqacalc::mean_c(x = data_entered_manual(), db = input$FQI_db, native = F)
+  })
+
+  output$fqi_fqi_manual <- renderUI({
+    fqacalc::FQI(x = data_entered_manual(), db = input$FQI_db, native = F)
   })
 
   #metrics table output on FQA page
