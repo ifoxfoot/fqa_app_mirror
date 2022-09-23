@@ -73,12 +73,13 @@ ui <- fluidPage(
 
              #allow glide to be used in this tab
              glide(
+               id = "fqi",
                #labels for glide buttons
                next_label = "Calculate FQA Metrics",
                previous_label = "Go Back to Data Entry",
                #customizing where they appear
                custom_controls = div(class = "glide-controls", glideControls()),
-               controls_position = "bottom",
+               controls_position = "top",
                height = "100%",
 
                screen(
@@ -159,7 +160,7 @@ ui <- fluidPage(
               h3(textOutput({"FQI_regional_list_manual"})),
 
                 conditionalPanel(
-                  condition = "input.FQI_method == 'upload' && input.FQI_column",
+                  condition = "input.FQI_method == 'upload'",
                   #output table of metrics
                   fluidRow(
                   column(4, tableOutput("FQI_DT_metrics_upload")),
@@ -209,12 +210,13 @@ ui <- fluidPage(
 
              #allow glide to be used in this tab
              glide(
+               id = "cover",
                #labels for glide buttons
                next_label = "Calculate FQA Metrics",
                previous_label = "Go Back to Data Entry",
                #customizing where they appear
                custom_controls = div(class = "glide-controls", glideControls()),
-               controls_position = "bottom",
+               controls_position = "top",
                height = "100%",
 
                screen(
@@ -300,16 +302,27 @@ ui <- fluidPage(
 
                      fluidRow(
 
+
+
                        column(7,
                               #text saying which list user is using
                               h3(textOutput({"cover_regional_list_manual"})),
+                              downloadButton("download_cover", "Download Report"),
                               #plot output
                               plotOutput("cover_c_hist_manual")),
+
+
 
                      #output table of metrics
                      column(5,tableOutput("cover_metrics_manual")),
 
-                   )#fluid row parenthesis
+                   ),#fluid row parenthesis
+
+                     fluidRow(box(title = "Species Summary", status = "primary",
+                         tableOutput("cover_species_manual"), width = 12)),
+
+                     fluidRow(box(title = "Plot Summary", status = "primary",
+                         tableOutput("cover_plot_manual"), width = 12))
 
                  )#conditional 1 parenthesis
 
@@ -445,8 +458,13 @@ server <- function(input, output, session) {
     shinyjs::reset("FQI_uploaded_file")
   })
 
+  ##second screen ----------------------------------------------------------------
+
   #metrics table output on FQA page
   output$FQI_DT_metrics_upload <- renderTable({
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
+
     fqacalc::all_metrics(x = FQI_file_upload()
                          %>% rename("scientific_name" = input$FQI_column),
                          key = "scientific_name",
@@ -457,6 +475,9 @@ server <- function(input, output, session) {
 
   #ggplot output
   output$FQI_c_hist_upload <- renderPlot({
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
+
     c_score_plot(FQI_accepted_upload())
   })
 
@@ -547,25 +568,39 @@ server <- function(input, output, session) {
               )
   })
 
+##second screen-----------------------------------------------------------------
+
   output$fqi_species_richness_manual <- renderUI({
-    fqacalc::species_richness(x = data_entered_manual(), db = input$FQI_db, native = F)
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
+    round(
+      fqacalc::species_richness(x = data_entered_manual(), db = input$FQI_db, native = F),
+          3)
   })
 
   output$fqi_mean_c_manual <- renderUI({
-    fqacalc::mean_c(x = data_entered_manual(), db = input$FQI_db, native = F)
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
+    round(fqacalc::mean_c(x = data_entered_manual(), db = input$FQI_db, native = F), 3)
   })
 
   output$fqi_fqi_manual <- renderUI({
-    fqacalc::FQI(x = data_entered_manual(), db = input$FQI_db, native = F)
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
+    round(fqacalc::FQI(x = data_entered_manual(), db = input$FQI_db, native = F), 3)
   })
 
   #metrics table output on FQA page
   output$FQI_DT_metrics_manual <- renderTable({
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
     fqacalc::all_metrics(x = data_entered_manual(), db = input$FQI_db)
   })
 
   #ggplot output
   output$FQI_c_hist_manual <- renderPlot({
+    #requiring second screen
+    req(input$shinyglide_index_fqi == 1)
     c_score_plot(distinct(data_entered_manual()))
   })
 
@@ -664,17 +699,48 @@ server <- function(input, output, session) {
     cover_data_entered_manual(empty_df)
   })
 
-  #metrics table output on FQA page
+##second screen-----------------------------------------------------------------
+
+  #metrics table output on cover page
   output$cover_metrics_manual <- renderTable({
+    #requiring second screen
+    req(input$shinyglide_index_cover == 1)
+
     fqacalc::all_cover_metrics(x = cover_data_entered_manual(),
                                key = "scientific_name",
                                db = input$cover_db,
                                cover_metric = input$cover_method_select)
   })
 
+  #plot summary
+  output$cover_plot_manual <- renderTable({
+    #requiring second screen
+    req(input$shinyglide_index_cover == 1)
+
+    fqacalc::plot_summary(x = cover_data_entered_manual(),
+                          key = "scientific_name",
+                          db = input$cover_db,
+                          cover_metric = input$cover_method_select,
+                          plot_id = "plot_id")
+  })
+
+  #species summary
+  output$cover_species_manual <- renderTable({
+    #requiring second screen
+    req(input$shinyglide_index_cover == 1)
+
+    fqacalc::species_summary(x = cover_data_entered_manual(),
+                             key = "scientific_name",
+                             db = input$cover_db,
+                             cover_metric = input$cover_method_select)
+  })
+
 
   #ggplot output
   output$cover_c_hist_manual <- renderPlot({
+    #requiring second screen
+    req(input$shinyglide_index_cover == 1)
+
     c_score_plot(fqacalc::accepted_entries(x = cover_data_entered_manual(),
                                           key = "scientific_name",
                                           db = input$cover_db,
