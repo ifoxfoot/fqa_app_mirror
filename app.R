@@ -337,22 +337,26 @@ ui <- fluidPage(
 
            ),#tab panel 3 parenthesis
 
+# VIEW DB ------------------------------------------------------------------------
+
    tabPanel("View Regional FQA Lists",
 
-            fluidRow(
+            viewUI("view")
 
-            #input regional data base
-            column(4, selectInput("view_db", label = "Select Regional FQAI Database",
-                        choices = fqacalc::db_names(),
-                        selected = "michigan_2014")),
-
-            column(4, div(style = "margin-top: 31px;",
-                   downloadButton("downloadFQA", label = "Download", class = "downloadButton"))),
-
-            ),#fluid row parenthesis
-
-            #show datatable
-            dataTableOutput("regional_database")
+            # fluidRow(
+            #
+            # #input regional data base
+            # column(4, selectInput("view_db", label = "Select Regional FQAI Database",
+            #             choices = fqacalc::db_names(),
+            #             selected = "michigan_2014")),
+            #
+            # column(4, div(style = "margin-top: 31px;",
+            #        downloadButton("downloadFQA", label = "Download", class = "downloadButton"))),
+            #
+            # ),#fluid row parenthesis
+            #
+            # #show datatable
+            # dataTableOutput("regional_database")
 
             )#tabPanel parenthesis
 
@@ -751,28 +755,7 @@ server <- function(input, output, session) {
 
 # VIEW -------------------------------------------------------------------------
 
-  #download
-  output$downloadFQA <- downloadHandler(
-      filename = function() {
-        paste(input$view_db, "_", Sys.Date(), '.tsv')
-      },
-      content = function(con) {
-        write.tsv(fqacalc::view_db(input$view_db), con)
-      }
-    )
-
-  #fqa datatable output
-  output$regional_database <- renderDataTable({
-    datatable(fqacalc::view_db(input$view_db),
-              #options
-              options = list(scrollX=TRUE,
-                             scrollY= TRUE,
-                             lengthMenu = c(5,10,15),
-                             paging = TRUE, searching = TRUE,
-                             fixedColumns = TRUE, autoWidth = TRUE,
-                             ordering = TRUE))
-
-  })
+  viewServer("view")
 
 }#server brackets
 
