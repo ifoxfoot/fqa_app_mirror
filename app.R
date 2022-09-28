@@ -9,7 +9,7 @@ library(shinyFeedback) #for warning messages near widgets
 library(shinyWidgets) #for dashboard layout
 library(shinydashboard) #for boxes
 library(tmap) #for interactive map
-library(sf) #for spatial data
+#library(sf) #for spatial data
 library(bslib) #interactive theme
 library(thematic) #for theme r graphics
 
