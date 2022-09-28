@@ -302,16 +302,11 @@ ui <- fluidPage(
 
                      fluidRow(
 
-
-
                        column(7,
                               #text saying which list user is using
                               h3(textOutput({"cover_regional_list_manual"})),
-                              downloadButton("download_cover", "Download Report"),
                               #plot output
                               plotOutput("cover_c_hist_manual")),
-
-
 
                      #output table of metrics
                      column(5,tableOutput("cover_metrics_manual")),
@@ -666,7 +661,6 @@ server <- function(input, output, session) {
     shinyjs::reset("cover")
   })
 
-
   #render output table from manually entered species on data entry page
   output$cover_DT_manual <- DT::renderDT({
     datatable(cover_data_entered_manual(),
@@ -752,18 +746,18 @@ server <- function(input, output, session) {
 
   #interactive map output
   output$tmap <- renderTmap({
-    tmap_function("spatial_data/data_not_ready.gpkg")
+    tmap_function("spatial_data/regional_fqa_simple.gpkg")
   })
 
 # VIEW -------------------------------------------------------------------------
 
-  #download button
+  #download
   output$downloadFQA <- downloadHandler(
       filename = function() {
-        paste(input$view_db, "_", Sys.Date(), '.csv')
+        paste(input$view_db, "_", Sys.Date(), '.tsv')
       },
       content = function(con) {
-        write.csv(fqacalc::view_db(input$view_db), con)
+        write.tsv(fqacalc::view_db(input$view_db), con)
       }
     )
 
