@@ -221,46 +221,35 @@ ui <- fluidPage(
 
                screen(
                  fluidRow(
-
                    sidebarPanel(
 
                      #title of side bar
                      titlePanel("Enter Data"),
 
                      #input regional data base
-                     selectInput("cover_db", label = "Select Regional FQAI Database",
-                                 choices = fqacalc::db_names(),
-                                 selected = "michigan_2014"),
+                     selectFQAI("cover"),
 
                      #input data entry method
-                     radioButtons("cover_input_method", label = "Select Data Entry Method",
-                                  choices = c( "Enter Species Manually" = "enter",
-                                               "Upload a File" = "upload")),
+                     radioDataEntry("cover"),
 
                      #select cover method to use
-                     selectInput("cover_method_select", label = "Cover Method",
-                                 choices = c(
-                                   "percent_cover",
-                                   "braun-blanquet",
-                                   "carolina_veg_survey",
-                                   "daubenmire",
-                                   "usfs_ecodata")),
+                     coverMethodUI("cover"),
 
                      #when data entry method is upload, allow user to upload files
                      conditionalPanel(
 
-                       condition = "input.cover_input_method == 'enter'",
+                       condition = "input['cover-input_method'] == 'enter'",
 
                        #input delete species button
-                       actionButton("cover_delete_species", "Delete Species"),
+                       actionAddSpecies("cover"),
 
                        #button to delete all entries
-                       actionButton("cover_delete_manual_entries", "Delete All Entries")),
+                       actionDeleteSpecies("cover")),
 
                     #when data entry method is upload, allow user to upload files
                     conditionalPanel(
 
-                       condition = "input.cover_input_method == 'upload'",
+                       condition = "input['cover-input_method'] == 'upload'",
 
                        "UNDER CONSTRUCTION"
 
@@ -270,18 +259,12 @@ ui <- fluidPage(
 
                    mainPanel(
                      conditionalPanel(
-                       condition = "input.cover_input_method == 'enter'",
+                       condition = "input['cover-input_method'] == 'enter'",
 
                        #buttons for data entry
                        fluidRow(
-                         column(2, textInput("cover_plot_id_manual", "Plot ID")),
-
-                         #input latin name
-                         column(4, uiOutput("cover_name_manual")),
-
-                         column(4, uiOutput("cover_options")),
-
-                         column(2, actionButton("cover_add_species", "Add Species"))),
+                         coverDataEntryUI("cover")
+                         ),
 
                        #datatable of entered data
                        dataTableOutput("cover_DT_manual"),
@@ -330,9 +313,11 @@ ui <- fluidPage(
 # ABOUT ------------------------------------------------------------------------
 
   tabPanel("About FQA",
-           #rmarkdown here
+
+           #rmarkdown output here
            includeHTML("rmarkdowns/about_fqa2.html"),
 
+           #tmap output here
            tmapOutput("tmap")
 
            ),#tab panel 3 parenthesis
@@ -341,22 +326,19 @@ ui <- fluidPage(
 
    tabPanel("View Regional FQA Lists",
 
-            viewUI("view")
+            fluidRow(
 
-            # fluidRow(
-            #
-            # #input regional data base
-            # column(4, selectInput("view_db", label = "Select Regional FQAI Database",
-            #             choices = fqacalc::db_names(),
-            #             selected = "michigan_2014")),
-            #
-            # column(4, div(style = "margin-top: 31px;",
-            #        downloadButton("downloadFQA", label = "Download", class = "downloadButton"))),
-            #
-            # ),#fluid row parenthesis
-            #
-            # #show datatable
-            # dataTableOutput("regional_database")
+            #input regional data base
+            column(4, selectFQAI("view")),
+
+            #download button
+            column(2, div(style = "margin-top: 31px;",
+                          viewDownloadUI("view"))),
+
+            ),#fluid row parenthesis
+
+            #show regional database in table
+            viewTableUI("view")
 
             )#tabPanel parenthesis
 
@@ -365,6 +347,7 @@ ui <- fluidPage(
 )#ui parenthesis
 
 server <- function(input, output, session) {
+
 
   #interactive theme
   #bs_themer()
@@ -604,6 +587,10 @@ server <- function(input, output, session) {
   })
 
 # ENTER MANUALLY COVER----------------------------------------------------------
+
+  selectSpeciesServer("cover")
+
+  coverServer("cover")
 
   #species drop-down list based on region
   output$cover_name_manual <- renderUI({
