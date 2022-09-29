@@ -41,7 +41,7 @@ actionDeleteAll <- function(id) {
 selectSpeciesServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
-    #species drop-down list based on region
+    #species drop-down list based on regional list selected
     output$select_species <- renderUI({
       #create list of latin names based on regional list selected
       latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))

@@ -1,5 +1,5 @@
 #UI-----------------------------------------------------------------------------
-
+#dropdown list to select cover method
 coverMethodUI <- function(id) {
   tagList(selectInput(NS(id, "cover_method"), label = "Cover Method",
                       choices = c(
@@ -12,19 +12,21 @@ coverMethodUI <- function(id) {
 
 coverDataEntryUI <- function(id) {
   tagList(
-    textInput(NS(id, "plot_id"), "Plot ID"),
-
-    uiOutput(NS(id, "select_species")),
-
-    uiOutput(NS(id,"cover_options")),
-
-    actionAddSpecies(id = id)
+    #plot id text input
+    column(2, textInput(NS(id, "plot_id"), "Plot ID")),
+    #select species
+    column(4, uiOutput(NS(id, "select_species"))),
+    #select cover value
+    column(4, uiOutput(NS(id,"cover_value"))),
+    #add species button
+    column(2, actionAddSpecies(id = id))
   )
 }
 
 
 
 #Output-------------------------------------------------------------------------
+
 #datatable of entered data
 dataTableOutput("cover_DT_manual")
 
@@ -45,7 +47,7 @@ coverServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
     #drop-down list based on region
-    output$cover_options <- renderUI({
+    output$cover_value <- renderUI({
       cover_vals <-
         #list of what values appear in dropdown menu depending on cover_method_select
         if(input$cover_method == "braun-blanquet") {
@@ -64,7 +66,7 @@ coverServer <- function(id) {
         c("1":"100")
       }
       #create a dropdown option
-      selectizeInput("cover", "Cover Value", c("", cover_vals),
+      selectizeInput("cover_val", "Cover Value", c("", cover_vals),
                      selected = NULL,
                      multiple = FALSE)
     })

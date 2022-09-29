@@ -241,10 +241,10 @@ ui <- fluidPage(
                        condition = "input['cover-input_method'] == 'enter'",
 
                        #input delete species button
-                       actionAddSpecies("cover"),
+                       actionDeleteSpecies("cover"),
 
                        #button to delete all entries
-                       actionDeleteSpecies("cover")),
+                       actionDeleteAll("cover")),
 
                     #when data entry method is upload, allow user to upload files
                     conditionalPanel(
