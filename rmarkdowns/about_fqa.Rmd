@@ -21,7 +21,7 @@ Common floristic quality metrics include mean C (the mean of C values for all sp
 
 ## FQA Databases
 
-There are 48 regional FQA lists that are currently fully approved or approved with reservations for use by the US Army Core of Engineers. 
+There are 51 regional FQA lists that are currently fully approved or approved with reservations for use by the US Army Corps of Engineers. 
 
 Take a look at what regional lists might be applicable in your area.
 

@@ -19,7 +19,6 @@ data_entered = data.frame()
 #thematic for theme of plots
 thematic::thematic_shiny()
 
-
 #define UI for application (User Interface)
 ui <- fluidPage(
 
@@ -258,16 +257,13 @@ ui <- fluidPage(
                    ),#sidebarPanel parenthesis
 
                    mainPanel(
+
                      conditionalPanel(
+
                        condition = "input['cover-input_method'] == 'enter'",
 
-                       #buttons for data entry
-                       fluidRow(
-                         coverDataEntryUI("cover")
-                         ),
-
-                       #datatable of entered data
-                       dataTableOutput("cover_DT_manual"),
+                       #buttons for cover data entry
+                       coverDataEntryUI("cover")
 
                        )#conditional panel parenthesis
 
@@ -279,28 +275,38 @@ ui <- fluidPage(
 
                screen(
 
-                 #conditional panel when cover input method is manual entry
+                  #conditional panel when cover input method is manual entry
                    conditionalPanel(
-                     condition = "input.cover_input_method == 'enter'",
 
-                     fluidRow(
+                     condition = "input['cover-input_method'] == 'enter'",
 
-                       column(7,
-                              #text saying which list user is using
-                              h3(textOutput({"cover_regional_list_manual"})),
-                              #plot output
-                              plotOutput("cover_c_hist_manual")),
-
-                     #output table of metrics
-                     column(5,tableOutput("cover_metrics_manual")),
-
-                   ),#fluid row parenthesis
-
-                     fluidRow(box(title = "Species Summary", status = "primary",
-                         tableOutput("cover_species_manual"), width = 12)),
-
-                     fluidRow(box(title = "Plot Summary", status = "primary",
-                         tableOutput("cover_plot_manual"), width = 12))
+                     coverOutputUI("cover")
+                 #
+                 #     fluidRow(
+                 #       #text saying which list user is using
+                 #       h3(textOutput({"cover_regional_list_manual"})),
+                 #
+                 #       #text saying which list user is using
+                 #       h3(textOutput({"cover_regional_list_manual"}))
+                 #
+                 #     ),
+                 #
+                 #     fluidRow(
+                 #
+                 #       column(7,
+                 #              #plot output
+                 #              plotOutput("cover_c_hist_manual")),
+                 #
+                 #     #output table of metrics
+                 #     column(5,tableOutput("cover_metrics_manual")),
+                 #
+                 #   ),#fluid row parenthesis
+                 #
+                 #     fluidRow(box(title = "Species Summary", status = "primary",
+                 #         tableOutput("cover_species_manual"), width = 12)),
+                 #
+                 #     fluidRow(box(title = "Plot Summary", status = "primary",
+                 #         tableOutput("cover_plot_manual"), width = 12))
 
                  )#conditional 1 parenthesis
 
@@ -333,7 +339,7 @@ ui <- fluidPage(
 
             #download button
             column(2, div(style = "margin-top: 31px;",
-                          viewDownloadUI("view"))),
+                          downloadButtonUI("view"))),
 
             ),#fluid row parenthesis
 
@@ -588,150 +594,153 @@ server <- function(input, output, session) {
 
 # ENTER MANUALLY COVER----------------------------------------------------------
 
+  shiny_glide <- reactive({input$shinyglide_index_cover})
+
   selectSpeciesServer("cover")
 
-  coverServer("cover")
+  coverServer("cover", shiny_glide)
 
-  #species drop-down list based on region
-  output$cover_name_manual <- renderUI({
-    #create list of latin names based on regional list selected
-    latin_names <- c("", unique(fqacalc::view_db(input$cover_db)$scientific_name))
-    #create a dropdown option
-    selectizeInput("cover_species", "Species", latin_names,
-                   selected = NULL,
-                   multiple = FALSE)
-  })
 
-  #species drop-down list based on region
-  output$cover_options <- renderUI({
-    cover_vals <-
-      #list of what values appear in dropdown menu depending on cover_method_select
-      if(input$cover_method_select == "braun-blanquet") {
-        c("+", "1", "2", "3", "4", "5")
-      }
-    else  if(input$cover_method_select == "daubenmire") {
-      c("1", "2", "3", "4", "5", "6")
-    }
-    else if(input$cover_method_select == "carolina_veg_survey"){
-      c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
-    }
-    else  if(input$cover_method_select == "usfs_ecodata"){
-      c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98")
-    }
-    else{
-      c("1":"100")
-    }
-    #create a dropdown option
-    selectizeInput("cover", "Cover Value", c("", cover_vals),
-                   selected = NULL,
-                   multiple = FALSE)
-  })
-
-  #create an object with no values but correct col names to store inputs
-  cover_data_entered_manual <- reactiveVal({data_entered})
-
-  #make it so add species button can't be clicked until all fields full
-  observe({
-    vals <- c(input$cover, input$cover_species, input$cover_plot_id_manual)
-    toggleState("cover_add_species", !"" %in% vals)
-  })
-
-  #save edits
-  observeEvent(input$cover_add_species, {
-    #combine entries into one-row df
-    new_row <- data.frame(plot_id = input$cover_plot_id_manual,
-                          scientific_name = input$cover_species,
-                          cover = input$cover)
-    #bind new entry to table
-    new_table = rbind(new_row, cover_data_entered_manual())
-    #make it reactive
-    cover_data_entered_manual(new_table)
-
-    #reset drop down menu of latin names
-    shinyjs::reset("cover_species")
-    shinyjs::reset("cover")
-  })
-
-  #render output table from manually entered species on data entry page
-  output$cover_DT_manual <- DT::renderDT({
-    datatable(cover_data_entered_manual(),
-              selection = 'single',
-              options = list(
-                scrollX = TRUE,
-                searching = FALSE,
-                lengthChange = FALSE))
-  })
-
-  #when delete species is clicked, delete row
-  observeEvent(input$cover_delete_species,{
-    #call table
-    t = cover_data_entered_manual()
-    #print table
-    print(nrow(t))
-    #if rows are selected, delete them
-    if (!is.null(input$cover_DT_manual_rows_selected)) {
-      t <- t[-as.numeric(input$cover_DT_manual_rows_selected),]
-    }
-    #else show the regular table
-    cover_data_entered_manual(t)
-  })
-
-  #when delete all is clicked, clear all entries
-  observeEvent(input$cover_delete_manual_entries, {
-    #make an empty df
-    empty_df <- data.frame(row.names = names(fqacalc::crooked_island))
-    #assign it to the reactive value
-    cover_data_entered_manual(empty_df)
-  })
+  # #species drop-down list based on region
+  # output$cover_name_manual <- renderUI({
+  #   #create list of latin names based on regional list selected
+  #   latin_names <- c("", unique(fqacalc::view_db(input$cover_db)$scientific_name))
+  #   #create a dropdown option
+  #   selectizeInput("cover_species", "Species", latin_names,
+  #                  selected = NULL,
+  #                  multiple = FALSE)
+  # })
+  #
+  # #species drop-down list based on region
+  # output$cover_options <- renderUI({
+  #   cover_vals <-
+  #     #list of what values appear in dropdown menu depending on cover_method_select
+  #     if(input$cover_method_select == "braun-blanquet") {
+  #       c("+", "1", "2", "3", "4", "5")
+  #     }
+  #   else  if(input$cover_method_select == "daubenmire") {
+  #     c("1", "2", "3", "4", "5", "6")
+  #   }
+  #   else if(input$cover_method_select == "carolina_veg_survey"){
+  #     c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+  #   }
+  #   else  if(input$cover_method_select == "usfs_ecodata"){
+  #     c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98")
+  #   }
+  #   else{
+  #     c("1":"100")
+  #   }
+  #   #create a dropdown option
+  #   selectizeInput("cover", "Cover Value", c("", cover_vals),
+  #                  selected = NULL,
+  #                  multiple = FALSE)
+  # })
+  #
+  # #create an object with no values but correct col names to store inputs
+  # cover_data_entered_manual <- reactiveVal({data_entered})
+  #
+  # #make it so add species button can't be clicked until all fields full
+  # observe({
+  #   vals <- c(input$cover, input$cover_species, input$cover_plot_id_manual)
+  #   toggleState("cover_add_species", !"" %in% vals)
+  # })
+  #
+  # #save edits
+  # observeEvent(input$cover_add_species, {
+  #   #combine entries into one-row df
+  #   new_row <- data.frame(plot_id = input$cover_plot_id_manual,
+  #                         scientific_name = input$cover_species,
+  #                         cover = input$cover)
+  #   #bind new entry to table
+  #   new_table = rbind(new_row, cover_data_entered_manual())
+  #   #make it reactive
+  #   cover_data_entered_manual(new_table)
+  #
+  #   #reset drop down menu of latin names
+  #   shinyjs::reset("cover_species")
+  #   shinyjs::reset("cover")
+  # })
+  #
+  # #render output table from manually entered species on data entry page
+  # output$cover_DT_manual <- DT::renderDT({
+  #   datatable(cover_data_entered_manual(),
+  #             selection = 'single',
+  #             options = list(
+  #               scrollX = TRUE,
+  #               searching = FALSE,
+  #               lengthChange = FALSE))
+  # })
+  #
+  # #when delete species is clicked, delete row
+  # observeEvent(input$cover_delete_species,{
+  #   #call table
+  #   t = cover_data_entered_manual()
+  #   #print table
+  #   print(nrow(t))
+  #   #if rows are selected, delete them
+  #   if (!is.null(input$cover_DT_manual_rows_selected)) {
+  #     t <- t[-as.numeric(input$cover_DT_manual_rows_selected),]
+  #   }
+  #   #else show the regular table
+  #   cover_data_entered_manual(t)
+  # })
+  #
+  # #when delete all is clicked, clear all entries
+  # observeEvent(input$cover_delete_manual_entries, {
+  #   #make an empty df
+  #   empty_df <- data.frame(row.names = names(fqacalc::crooked_island))
+  #   #assign it to the reactive value
+  #   cover_data_entered_manual(empty_df)
+  # })
 
 ##second screen-----------------------------------------------------------------
-
-  #metrics table output on cover page
-  output$cover_metrics_manual <- renderTable({
-    #requiring second screen
-    req(input$shinyglide_index_cover == 1)
-
-    fqacalc::all_cover_metrics(x = cover_data_entered_manual(),
-                               key = "scientific_name",
-                               db = input$cover_db,
-                               cover_metric = input$cover_method_select)
-  })
-
-  #plot summary
-  output$cover_plot_manual <- renderTable({
-    #requiring second screen
-    req(input$shinyglide_index_cover == 1)
-
-    fqacalc::plot_summary(x = cover_data_entered_manual(),
-                          key = "scientific_name",
-                          db = input$cover_db,
-                          cover_metric = input$cover_method_select,
-                          plot_id = "plot_id")
-  })
-
-  #species summary
-  output$cover_species_manual <- renderTable({
-    #requiring second screen
-    req(input$shinyglide_index_cover == 1)
-
-    fqacalc::species_summary(x = cover_data_entered_manual(),
-                             key = "scientific_name",
-                             db = input$cover_db,
-                             cover_metric = input$cover_method_select)
-  })
-
-
-  #ggplot output
-  output$cover_c_hist_manual <- renderPlot({
-    #requiring second screen
-    req(input$shinyglide_index_cover == 1)
-
-    c_score_plot(fqacalc::accepted_entries(x = cover_data_entered_manual(),
-                                          key = "scientific_name",
-                                          db = input$cover_db,
-                                          native = F,
-                                          cover_metric = input$cover_method_select))
-  })
+#
+#   #metrics table output on cover page
+#   output$cover_metrics_manual <- renderTable({
+#     #requiring second screen
+#     req(input$shinyglide_index_cover == 1)
+#
+#     fqacalc::all_cover_metrics(x = cover_data_entered_manual(),
+#                                key = "scientific_name",
+#                                db = input$cover_db,
+#                                cover_metric = input$cover_method_select)
+#   })
+#
+#   #plot summary
+#   output$cover_plot_manual <- renderTable({
+#     #requiring second screen
+#     req(input$shinyglide_index_cover == 1)
+#
+#     fqacalc::plot_summary(x = cover_data_entered_manual(),
+#                           key = "scientific_name",
+#                           db = input$cover_db,
+#                           cover_metric = input$cover_method_select,
+#                           plot_id = "plot_id")
+#   })
+#
+#   #species summary
+#   output$cover_species_manual <- renderTable({
+#     #requiring second screen
+#     req(input$shinyglide_index_cover == 1)
+#
+#     fqacalc::species_summary(x = cover_data_entered_manual(),
+#                              key = "scientific_name",
+#                              db = input$cover_db,
+#                              cover_metric = input$cover_method_select)
+#   })
+#
+#
+#   #ggplot output
+#   output$cover_c_hist_manual <- renderPlot({
+#     #requiring second screen
+#     req(input$shinyglide_index_cover == 1)
+#
+#     c_score_plot(fqacalc::accepted_entries(x = cover_data_entered_manual(),
+#                                           key = "scientific_name",
+#                                           db = input$cover_db,
+#                                           native = F,
+#                                           cover_metric = input$cover_method_select))
+#   })
 
 # ABOUT ------------------------------------------------------------------------
 

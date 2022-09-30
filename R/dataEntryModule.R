@@ -37,6 +37,11 @@ actionDeleteAll <- function(id) {
     actionButton(NS(id, "delete_all"), "Delete All Entries")
   )}
 
+#download button
+downloadButtonUI <- function(id) {
+  downloadButton(NS(id, "download"), label = "Download", class = "downloadButton")
+}
+
 #server UI output
 selectSpeciesServer <- function(id) {
   moduleServer(id, function(input, output, session) {
@@ -46,7 +51,7 @@ selectSpeciesServer <- function(id) {
       #create list of latin names based on regional list selected
       latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
       #create a dropdown option
-      selectizeInput("species", "Species", latin_names,
+      selectizeInput(session$ns("species"), "Species", latin_names,
                     selected = NULL,
                     multiple = FALSE)
     })
