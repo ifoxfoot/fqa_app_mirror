@@ -324,7 +324,12 @@ ui <- fluidPage(
            includeHTML("rmarkdowns/about_fqa2.html"),
 
            #tmap output here
-           tmapOutput("tmap")
+           tmapOutput("tmap"),
+
+           #some spacing
+           br(),
+           br(),
+           br(),
 
            ),#tab panel 3 parenthesis
 

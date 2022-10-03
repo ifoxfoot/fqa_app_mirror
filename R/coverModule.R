@@ -40,18 +40,27 @@ coverDataEntryUI <- function(id) {
 coverOutputUI <- function(id) {
   tagList(
 
-    downloadButtonUI(id = id),
-   #plot output
-   plotOutput(NS(id, "cover_c_hist_manual")),
+    fluidRow(
+      #title
+      column(9, h3(textOutput(NS(id, "title")))),
 
-   #output table of metrics
-   tableOutput(NS(id, "cover_metrics_manual")),
+      #download button
+      column(3, downloadButtonUI(id = id))),
 
-   #output of species summary
-   tableOutput(NS(id, "cover_species_manual")),
+    fluidRow(
+      #plot output
+      box(plotOutput(NS(id, "cover_c_hist_manual"))),
 
-   #output of plot summary
-   tableOutput(NS(id, "cover_plot_manual")),
+      #output table of metrics
+      box(tableOutput(NS(id, "cover_metrics_manual")))),
+
+    #output of species summary
+    fluidRow(box(title = "Species Summary", status = "primary",
+    tableOutput(NS(id, "cover_species_manual")), width = 12, style = "overflow-x: scroll")),
+
+    #output of plot summary
+    fluidRow(box(title = "Plot Summary", status = "primary",
+    tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll")),
 )}
 
 #Server-------------------------------------------------------------------------
@@ -145,8 +154,11 @@ coverServer <- function(id, shiny_glide) {
 
 ##second screen-----------------------------------------------------------------
 
-      #download cover summary server
-      output$download <- downloadHandler(
+    #render title
+    output$title <- renderText({paste("Calculating metrics based on",
+                                                         input$db)})
+    #download cover summary server
+    output$download <- downloadHandler(
         filename = function() {
           paste0("transect_", input$transect_id, "_excelWorkbook.xlsx")
         },
@@ -159,8 +171,7 @@ coverServer <- function(id, shiny_glide) {
                                  species_summary = output$cover_species_manual)
           for(i in 1:length(listOtherFiles)) {
             write.xlsx(listOtherFiles[i], file,
-                       sheetName = names(listOtherFiles)[i], append = TRUE)
-          }
+                       sheetName = names(listOtherFiles)[i], append = TRUE)}
         }
       )
 

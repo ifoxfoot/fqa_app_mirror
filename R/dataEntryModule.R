@@ -43,7 +43,7 @@ downloadButtonUI <- function(id) {
 }
 
 #server UI output
-selectSpeciesServer <- function(id) {
+selectSpeciesServer <- function(id, shiny_glide) {
   moduleServer(id, function(input, output, session) {
 
     #species drop-down list based on regional list selected
