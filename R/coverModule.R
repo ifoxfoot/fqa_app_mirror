@@ -38,6 +38,7 @@ coverDataEntryUI <- function(id) {
 
 #group of widgets to input cover data
 coverOutputUI <- function(id) {
+
   tagList(
 
     fluidRow(
@@ -68,13 +69,13 @@ coverOutputUI <- function(id) {
 coverServer <- function(id, shiny_glide) {
   moduleServer(id, function(input, output, session) {
 
-    #drop-down list based on region
+    #drop-down list of cover values based on cover metric input
     output$cover_value <- renderUI({
       cover_vals <-
         #list of what values appear in dropdown menu depending on cover_method_select
-        if(input$cover_method == "braun-blanquet") {
-          c("+", "1", "2", "3", "4", "5")
-        }
+      if(input$cover_method == "braun-blanquet") {
+        c("+", "1", "2", "3", "4", "5")
+      }
       else  if(input$cover_method == "daubenmire") {
         c("1", "2", "3", "4", "5", "6")
       }
@@ -154,24 +155,62 @@ coverServer <- function(id, shiny_glide) {
 
 ##second screen-----------------------------------------------------------------
 
+    #initialize reactives
+    entries <- reactiveVal()
+    cover_metrics <- reactiveVal()
+    species_sum <- reactiveVal()
+    plot_sum <- reactiveVal()
+
+    #updating reactive values
+    observe({
+      #requiring second screen to update reactive values
+      req(shiny_glide() == 1)
+
+      #update reactives
+      entries(fqacalc::accepted_entries(x = cover_data(),
+                                        key = "scientific_name",
+                                        db = input$db,
+                                        native = F,
+                                        cover_metric = input$cover_method))
+
+      cover_metrics(fqacalc::all_cover_metrics(x = cover_data(),
+                               key = "scientific_name",
+                               db = input$db,
+                               cover_metric = input$cover_method))
+
+      species_sum(fqacalc::species_summary(x = cover_data(),
+                                           key = "scientific_name",
+                                           db = input$db,
+                                           cover_metric = input$cover_method))
+
+      plot_sum(fqacalc::plot_summary(x = cover_data(),
+                                     key = "scientific_name",
+                                     db = input$db,
+                                     cover_metric = input$cover_method,
+                                     plot_id = "plot_id"))
+
+      })
+
     #render title
     output$title <- renderText({paste("Calculating metrics based on",
-                                                         input$db)})
+                                      input$db)})
+
     #download cover summary server
     output$download <- downloadHandler(
         filename = function() {
-          paste0("transect_", input$transect_id, "_excelWorkbook.xlsx")
+          paste0("transect_", input$transect_id, ".zip")
         },
         content = function(file) {
-          # write workbook and first sheet
-          write.xlsx(ouput$cover_metrics_manual, file, sheetName = "general_cover_metrics", append = FALSE)
+          #write workbook and first sheet
+          write_csv(entries(), file)
 
-          # add other sheets for each dataframe
-          listOtherFiles <- list(plot_summary = output$cover_plo_manual,
-                                 species_summary = output$cover_species_manual)
+          #create list of other dfs to add
+          listOtherFiles <- list(conservation_metrics = cover_metrics(),
+                                 plot_summary = plot_sum(),
+                                 species_summary = species_sum())
+          #add them with loop
           for(i in 1:length(listOtherFiles)) {
-            write.xlsx(listOtherFiles[i], file,
-                       sheetName = names(listOtherFiles)[i], append = TRUE)}
+            write_csv(listOtherFiles[i], file, append = TRUE)}
         }
       )
 
@@ -179,47 +218,32 @@ coverServer <- function(id, shiny_glide) {
     output$cover_metrics_manual <- renderTable({
       #requiring second screen
       req(shiny_glide() == 1)
-
-      fqacalc::all_cover_metrics(x = cover_data(),
-                                 key = "scientific_name",
-                                 db = input$db,
-                                 cover_metric = input$cover_method)
+      #call to reactive cover metrics
+      cover_metrics()
     })
 
     #plot summary
     output$cover_plot_manual <- renderTable({
       #requiring second screen
       req(shiny_glide() == 1)
-
-      fqacalc::plot_summary(x = cover_data(),
-                            key = "scientific_name",
-                            db = input$db,
-                            cover_metric = input$cover_method,
-                            plot_id = "plot_id")
+      #call to reactive plot summary
+      plot_sum()
     })
 
     #species summary
     output$cover_species_manual <- renderTable({
       #requiring second screen
       req(shiny_glide() == 1)
-
-      fqacalc::species_summary(x = cover_data(),
-                               key = "scientific_name",
-                               db = input$db,
-                               cover_metric = input$cover_method)
+      #call to reactive species summary
+      species_sum()
     })
-
 
     #ggplot output
     output$cover_c_hist_manual <- renderPlot({
       #requiring second screen
       req(shiny_glide() == 1)
-
-      c_score_plot(fqacalc::accepted_entries(x = cover_data(),
-                                             key = "scientific_name",
-                                             db = input$db,
-                                             native = F,
-                                             cover_metric = input$cover_method))
+      #ggplot function with call to reactive
+      c_score_plot(entries())
     })
   })
 }
