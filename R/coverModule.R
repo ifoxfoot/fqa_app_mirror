@@ -1,4 +1,4 @@
-#first screen-------------------------------------------------------------------
+#sidebar------------------------------------------------------------------------
 
 #side bar UI function
 coverSideBarUI <- function(id) {
@@ -45,7 +45,9 @@ coverSideBarUI <- function(id) {
 
     ) #conditional parenthesis
 
-)}
+  )}
+
+#main panel----------------------------------------------------------------------
 
 #group of widgets to input cover data
 coverMainPanelUI <- function(id) {
