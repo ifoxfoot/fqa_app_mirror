@@ -1,18 +1,54 @@
 #first screen-------------------------------------------------------------------
 
-#dropdown list to select cover method
-coverMethodUI <- function(id) {
-  tagList(selectInput(NS(id, "cover_method"), label = "Cover Method",
-                      choices = c(
-                        "percent_cover",
-                        "braun-blanquet",
-                        "carolina_veg_survey",
-                        "daubenmire",
-                        "usfs_ecodata"))
+#side bar UI function
+coverSideBarUI <- function(id) {
+  tagList(
+
+    #input regional data base
+    selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
+                choices = fqacalc::db_names(),
+                selected = "michigan_2014"),
+
+    #input data entry method
+    radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+                 choices = c( "Enter Species Manually" = "enter",
+                              "Upload a File" = "upload")),
+
+    #select cover method
+    selectInput(NS(id, "cover_method"), label = "Cover Method",
+                choices = c(
+                  "percent_cover",
+                  "braun-blanquet",
+                  "carolina_veg_survey",
+                  "daubenmire",
+                  "usfs_ecodata")),
+
+    #when data entry method is upload, allow user to upload files
+    conditionalPanel(
+
+      condition = "input['cover-input_method'] == 'enter'",
+
+      #delete species button
+      actionButton(NS(id, "delete_species"), "Delete Species"),
+
+      #button to delete all entries
+      actionButton(NS(id, "delete_all"), "Delete All Entries")
+
+      ), #conditional parenthesis
+
+    #when data entry method is upload, allow user to upload files
+    conditionalPanel(
+
+      condition = "input['cover-input_method'] == 'upload'",
+
+      "UNDER CONSTRUCTION"
+
+    ) #conditional parenthesis
+
 )}
 
 #group of widgets to input cover data
-coverDataEntryUI <- function(id) {
+coverMainPanelUI <- function(id) {
   tagList(
     #input transect ID
     fluidRow(
@@ -26,7 +62,7 @@ coverDataEntryUI <- function(id) {
     #select cover value
     column(4, uiOutput(NS(id,"cover_value"))),
     #add species button
-    column(2, actionAddSpecies(id = id))),
+    column(2, actionButton(NS(id, "add_species"), "Add Species"))),
 
 
    fluidRow(
@@ -46,7 +82,8 @@ coverOutputUI <- function(id) {
       column(9, h3(textOutput(NS(id, "title")))),
 
       #download button
-      column(3, downloadButtonUI(id = id))),
+      column(3, downloadButton(NS(id, "download"),
+                               label = "Download", class = "downloadButton"))),
 
     fluidRow(
       #plot output
@@ -66,7 +103,11 @@ coverOutputUI <- function(id) {
 
 #Server-------------------------------------------------------------------------
 
-coverServer <- function(id, shiny_glide) {
+coverServer <- function(id, cover_glide) {
+  #call server fun for species dropdown
+  selectSpeciesServer(id = id)
+
+  #start module function
   moduleServer(id, function(input, output, session) {
 
     #drop-down list of cover values based on cover metric input
@@ -94,6 +135,9 @@ coverServer <- function(id, shiny_glide) {
                      multiple = FALSE)
     })
 
+    #call server fun for species dropdown
+    selectSpeciesServer(id)
+
     #make it so add species button can't be clicked until all fields full
     observe({
       vals <- c(input$transect_id, input$cover_val, input$species, input$plot_id)
@@ -117,7 +161,7 @@ coverServer <- function(id, shiny_glide) {
       #make it reactive
       cover_data(new_table)
       #reset drop down menu of latin names
-      shinyjs::reset("add_species")
+      shinyjs::reset("species")
       shinyjs::reset("cover_val")
     })
 
@@ -164,7 +208,7 @@ coverServer <- function(id, shiny_glide) {
     #updating reactive values
     observe({
       #requiring second screen to update reactive values
-      req(shiny_glide() == 1)
+      req(cover_glide() == 1)
 
       #update reactives
       entries(fqacalc::accepted_entries(x = cover_data(),
@@ -217,7 +261,7 @@ coverServer <- function(id, shiny_glide) {
     #metrics table output on cover page
     output$cover_metrics_manual <- renderTable({
       #requiring second screen
-      req(shiny_glide() == 1)
+      req(cover_glide() == 1)
       #call to reactive cover metrics
       cover_metrics()
     })
@@ -225,7 +269,7 @@ coverServer <- function(id, shiny_glide) {
     #plot summary
     output$cover_plot_manual <- renderTable({
       #requiring second screen
-      req(shiny_glide() == 1)
+      req(cover_glide() == 1)
       #call to reactive plot summary
       plot_sum()
     })
@@ -233,7 +277,7 @@ coverServer <- function(id, shiny_glide) {
     #species summary
     output$cover_species_manual <- renderTable({
       #requiring second screen
-      req(shiny_glide() == 1)
+      req(cover_glide() == 1)
       #call to reactive species summary
       species_sum()
     })
@@ -241,7 +285,7 @@ coverServer <- function(id, shiny_glide) {
     #ggplot output
     output$cover_c_hist_manual <- renderPlot({
       #requiring second screen
-      req(shiny_glide() == 1)
+      req(cover_glide() == 1)
       #ggplot function with call to reactive
       c_score_plot(entries())
     })
