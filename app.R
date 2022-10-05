@@ -101,6 +101,7 @@ ui <- fluidPage(
             ),#screen 1 parenthesis
 
             screen(
+
               # #banner telling you what regional list you're using
               # h3(textOutput({"FQI_regional_list_manual"})),
               #
