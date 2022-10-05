@@ -2,22 +2,24 @@
 
 viewUI <- function(id) {
   tagList(
-
     fluidRow(
 
       #select database to view/download
-      selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
+      column(4, selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
                   choices = fqacalc::db_names(),
-                  selected = "michigan_2014"),
+                  selected = "michigan_2014")),
 
       #download button
-      column(2, downloadButton(NS(id, "download"),
-                               label = "Download", class = "downloadButton"))
+      downloadButton(NS(id, "download"),
+                     label = "Download",
+                     class = "downloadButton",
+                     style = "margin-top: 30px; height: 40px;"
+                     )
       ),
 
     #table of db
     dataTableOutput(NS(id, "regional_database_table"))
-    )}
+  )}
 
 #Server-------------------------------------------------------------------------
 

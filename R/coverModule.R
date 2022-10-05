@@ -62,9 +62,10 @@ coverMainPanelUI <- function(id) {
     #select species
     column(4, uiOutput(NS(id, "select_species"))),
     #select cover value
-    column(4, uiOutput(NS(id,"cover_value"))),
+    column(3, uiOutput(NS(id,"cover_value"))),
     #add species button
-    column(2, actionButton(NS(id, "add_species"), "Add Species"))),
+    column(3, actionButton(NS(id, "add_species"), "Add Species",
+                           style = "margin-top: 30px; height: 40px;"))),
 
 
    fluidRow(
@@ -81,11 +82,12 @@ coverOutputUI <- function(id) {
 
     fluidRow(
       #title
-      column(9, h3(textOutput(NS(id, "title")))),
+      column(5, h3(textOutput(NS(id, "title")))),
 
       #download button
-      column(3, downloadButton(NS(id, "download"),
-                               label = "Download", class = "downloadButton"))),
+      column(2, downloadButton(NS(id, "download"),
+                               label = "Download", class = "downloadButton",
+                               style = "margin-top: 25px; height: 40px;"))),
 
     fluidRow(
       #plot output

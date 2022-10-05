@@ -77,8 +77,14 @@ fqiOutputUI <- function(id) {
 
   tagList(
 
-    #banner telling you what regional list you're using
-    h3(textOutput(NS(id, "title"))),
+    fluidRow(
+      #title
+      column(7, h3(textOutput(NS(id, "title")))),
+
+      #download button
+      column(2, downloadButton(NS(id, "download"),
+                               label = "Download", class = "downloadButton",
+                               style = "margin-top: 20px; height: 40px;"))),
 
     #boxes with key values
     fluidRow(
@@ -125,8 +131,7 @@ fqiServer <- function(id, fqi_glide) {
     file_upload <- reactiveVal()
     data_entered <- reactiveVal({data_entered})
 
-
-    #file upload server-------------------------------------------------------------
+#file upload server-------------------------------------------------------------
 
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {
@@ -190,11 +195,13 @@ fqiServer <- function(id, fqi_glide) {
       empty_df <- NULL
       #replace reactive file upload with empty file
       file_upload(empty_df)
+      accepted(empty_df)
       #reset upload button
       shinyjs::reset("upload")
+      shinyjs::reset("FQI_column")
     })
 
-    #manually enter data------------------------------------------------------------
+#manually enter data------------------------------------------------------------
 
     #species drop-down list based on region
     output$latin_name <- renderUI({
@@ -273,7 +280,7 @@ fqiServer <- function(id, fqi_glide) {
       )
     })
 
-    #second screen ----------------------------------------------------------------
+#second screen ----------------------------------------------------------------
 
     #initializing reactives for outputs
     accepted <- reactiveVal()
@@ -288,7 +295,7 @@ fqiServer <- function(id, fqi_glide) {
 
     #if input method is enter, accepted is from file upload
     observe({
-      req(input_method() == "upload", input$upload, !input$FQI_column %in% c(NULL, ""))
+      req(input_method() == "upload", !is.null(file_upload()), input$FQI_column)
       accepted(fqacalc::accepted_entries(x = file_upload() %>%
                                            rename("scientific_name" = input$FQI_column),
                                          key = "scientific_name",

@@ -8,8 +8,8 @@ library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
 library(shinyWidgets) #for dashboard layout
 library(shinydashboard) #for boxes
+library(sf) #for spatial data
 library(tmap) #for interactive map
-#library(sf) #for spatial data
 library(bslib) #interactive theme
 library(thematic) #for theme r graphics
 
@@ -41,7 +41,8 @@ ui <- fluidPage(
 
   #changing color of download button
   tags$head(tags$style(
-    ".downloadButton{background:#007bff;} .downloadButton{color: #fff;}")),
+    ".downloadButton{background:#007bff;}
+    .downloadButton{color: #fff;}")),
 
   #set background color
   #setBackgroundColor(color = "ghostwhite"),
@@ -61,7 +62,7 @@ ui <- fluidPage(
              #setting bootstrap to version 4
              theme = bslib::bs_theme(version = 4),
 
-             #FQI TAB------------------------------------------------------------------------
+#FQI TAB------------------------------------------------------------------------
 
              #tab panel 1
              tabPanel("Calculate FQA Metrics",
@@ -110,7 +111,7 @@ ui <- fluidPage(
 
              ),#tab panel 1 parenthesis
 
-             # COVER TAB---------------------------------------------------------------------
+# COVER TAB---------------------------------------------------------------------
 
              #tab panel 2
              tabPanel("Caclulate Cover-Weighted FQA Metrics",
@@ -172,7 +173,7 @@ ui <- fluidPage(
 
              ),#tab panel 2 parenthesis
 
-             # ABOUT TAB---------------------------------------------------------------------
+# ABOUT TAB---------------------------------------------------------------------
 
              tabPanel("About FQA",
 
@@ -189,7 +190,7 @@ ui <- fluidPage(
 
              ),#tab panel 3 parenthesis
 
-             # VIEW TAB----------------------------------------------------------------------
+# VIEW TAB----------------------------------------------------------------------
 
              tabPanel("View Regional FQA Lists",
 
@@ -212,7 +213,7 @@ server <- function(input, output, session) {
   #interactive theme
   #bs_themer()
 
-  # FQI SERVER -------------------------------------------------------------------
+# FQI SERVER -------------------------------------------------------------------
 
   #creating a reactive value for glide page, used as input to server fun
   fqi_glide <- reactive({input$shinyglide_index_fqi})
@@ -220,7 +221,7 @@ server <- function(input, output, session) {
   #call to fqi module server
   fqiServer("fqi", fqi_glide)
 
-  # COVER SERVER------------------------------------------------------------------
+# COVER SERVER------------------------------------------------------------------
 
   #creating a reactive value for glide page, used as input to server fun
   cover_glide <- reactive({input$shinyglide_index_cover})
@@ -228,14 +229,14 @@ server <- function(input, output, session) {
   #call to coverModule server function
   coverServer("cover", cover_glide)
 
-  # ABOUT SERVER------------------------------------------------------------------
+# ABOUT SERVER------------------------------------------------------------------
 
   #interactive map output
   output$tmap <- renderTmap({
     tmap_function("spatial_data/regional_fqa_simple.gpkg")
   })
 
-  # VIEW SERVER-------------------------------------------------------------------
+# VIEW SERVER-------------------------------------------------------------------
 
   #call to viewModule server function
   viewServer("view")
