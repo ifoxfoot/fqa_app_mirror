@@ -61,186 +61,147 @@ ui <- fluidPage(
              #setting bootstrap to version 4
              theme = bslib::bs_theme(version = 4),
 
-#FQI TAB------------------------------------------------------------------------
+             #FQI TAB------------------------------------------------------------------------
 
-    #tab panel 1
-    tabPanel("Calculate FQA Metrics",
+             #tab panel 1
+             tabPanel("Calculate FQA Metrics",
 
 
-             #allow glide to be used in this tab
-             glide(
-               id = "fqi",
-               #labels for glide buttons
-               next_label = "Calculate FQA Metrics",
-               previous_label = "Go Back to Data Entry",
-               #customizing where they appear
-               custom_controls = div(class = "glide-controls", glideControls()),
-               controls_position = "top",
-               height = "100%",
+                      #allow glide to be used in this tab
+                      glide(
+                        id = "fqi",
+                        #labels for glide buttons
+                        next_label = "Calculate FQA Metrics",
+                        previous_label = "Go Back to Data Entry",
+                        #customizing where they appear
+                        custom_controls = div(class = "glide-controls", glideControls()),
+                        controls_position = "top",
+                        height = "100%",
 
-               screen(
+                        screen(
 
-                 fluidRow(
+                          fluidRow(
 
-               sidebarPanel(
+                            sidebarPanel(
 
-                 titlePanel("Enter Data"),
+                              titlePanel("Enter Data"),
 
-                 fqiSideBarUI("fqi")
+                              fqiSideBarUI("fqi")
 
-               ), #side bar panel
+                            ), #side bar panel
 
-              mainPanel(
+                            mainPanel(
 
-                fqiMainPanelUI("fqi")
+                              fqiMainPanelUI("fqi")
 
-              )#main panel parenthesis
+                            )#main panel parenthesis
 
-                 )#fluidRow parenthesis
+                          )#fluidRow parenthesis
 
-            ),#screen 1 parenthesis
+                        ),#screen 1 parenthesis
 
-            screen(
+                        screen(
 
-              # #banner telling you what regional list you're using
-              # h3(textOutput({"FQI_regional_list_manual"})),
-              #
-              #   conditionalPanel(
-              #     condition = "input[fqi-input_method] == 'upload'",
-              #     #output table of metrics
-              #     fluidRow(
-              #     column(4, tableOutput("FQI_DT_metrics_upload")),
-              #     #output
-              #     column(8, plotOutput("FQI_c_hist_upload"))
-              #     )#fuildrow parenthesis
-              #     ),#conditional 1 parenthesis
-              #
-              #   conditionalPanel(
-              #     condition = "input[fqi-input_method] == 'enter'",
-              #     #output table of metrics
-              #     fluidRow(
-              #       valueBox(
-              #         htmlOutput("fqi_species_richness_manual"),
-              #         "Species Richness",
-              #         icon = icon("tree"), color = "green"
-              #       ),
-              #       valueBox(
-              #         htmlOutput("fqi_mean_c_manual"),
-              #         "Mean C",
-              #         icon = icon("seedling"), color = "green"
-              #       ),
-              #       valueBox(
-              #         htmlOutput("fqi_fqi_manual"),
-              #         "Total FQI",
-              #         icon = icon("pagelines"), color = "green"
-              #       )
-              #
-              #     ),#fluidRow partenthesis
-              #     fluidRow(
-              #     column(4, tableOutput("FQI_DT_metrics_manual")),
-              #     #output
-              #     column(8, plotOutput("FQI_c_hist_manual"))
-              #     )#fluidrow parenthesis
-              #  )#conditional 2 parenthesis
+                          fqiOutputUI("fqi")
 
-              )#screen 2 parenthesis
+                        )#screen 2 parenthesis
 
-            )#glide parenthesis
+                      )#glide parenthesis
 
-          ),#tab panel 1 parenthesis
+             ),#tab panel 1 parenthesis
 
-# COVER TAB --------------------------------------------------------------------
+             # COVER TAB---------------------------------------------------------------------
 
-    #tab panel 2
-    tabPanel("Caclulate Cover-Weighted FQA Metrics",
+             #tab panel 2
+             tabPanel("Caclulate Cover-Weighted FQA Metrics",
 
-             #allow glide to be used in this tab
-             glide(
-               id = "cover",
-               #labels for glide buttons
-               next_label = "Calculate FQA Metrics",
-               previous_label = "Go Back to Data Entry",
-               #customizing where they appear
-               custom_controls = div(class = "glide-controls", glideControls()),
-               controls_position = "top",
-               height = "100%",
+                      #allow glide to be used in this tab
+                      glide(
+                        id = "cover",
+                        #labels for glide buttons
+                        next_label = "Calculate FQA Metrics",
+                        previous_label = "Go Back to Data Entry",
+                        #customizing where they appear
+                        custom_controls = div(class = "glide-controls", glideControls()),
+                        controls_position = "top",
+                        height = "100%",
 
-               screen(
-                 fluidRow(
-                   sidebarPanel(
+                        screen(
+                          fluidRow(
+                            sidebarPanel(
 
-                     #title of side bar
-                     titlePanel("Enter Data"),
+                              #title of side bar
+                              titlePanel("Enter Data"),
 
-                     #call to cover module
-                     coverSideBarUI("cover")
+                              #call to cover module
+                              coverSideBarUI("cover")
 
-                   ),#sidebarPanel parenthesis
+                            ),#sidebarPanel parenthesis
 
-                   mainPanel(
+                            mainPanel(
 
-                     conditionalPanel(
+                              conditionalPanel(
 
-                       condition = "input['cover-input_method'] == 'enter'",
+                                condition = "input['cover-input_method'] == 'enter'",
 
-                       #buttons for cover data entry
-                       coverMainPanelUI("cover")
+                                #buttons for cover data entry
+                                coverMainPanelUI("cover")
 
-                       )#conditional panel parenthesis
+                              )#conditional panel parenthesis
 
-                     )#main panel parenthesis
+                            )#main panel parenthesis
 
-                   )#fluid row parenthesis
+                          )#fluid row parenthesis
 
-                 ),#screen 1 parenthesis
+                        ),#screen 1 parenthesis
 
-               screen(
+                        screen(
 
-                  #conditional panel when cover input method is manual entry
-                   conditionalPanel(
+                          #conditional panel when cover input method is manual entry
+                          conditionalPanel(
 
-                     condition = "input['cover-input_method'] == 'enter'",
+                            condition = "input['cover-input_method'] == 'enter'",
 
-                     coverOutputUI("cover")
+                            coverOutputUI("cover")
 
-                 )#conditional 1 parenthesis
+                          )#conditional 1 parenthesis
 
-               )#screen two parenthesis
+                        )#screen two parenthesis
 
-             )#glide parenthesis
+                      )#glide parenthesis
 
-    ),#tab panel 2 parenthesis
+             ),#tab panel 2 parenthesis
 
-# ABOUT ------------------------------------------------------------------------
+             # ABOUT TAB---------------------------------------------------------------------
 
-  tabPanel("About FQA",
+             tabPanel("About FQA",
 
-           #rmarkdown output here
-           includeHTML("rmarkdowns/about_fqa2.html"),
+                      #rmarkdown output here
+                      includeHTML("rmarkdowns/about_fqa2.html"),
 
-           #tmap output here
-           tmapOutput("tmap"),
+                      #tmap output here
+                      tmapOutput("tmap"),
 
-           #some spacing at the bottom of the page
-           br(),
-           br(),
-           br(),
+                      #some spacing at the bottom of the page
+                      br(),
+                      br(),
+                      br(),
 
-           ),#tab panel 3 parenthesis
+             ),#tab panel 3 parenthesis
 
-# VIEW DB ------------------------------------------------------------------------
+             # VIEW TAB----------------------------------------------------------------------
 
-   tabPanel("View Regional FQA Lists",
+             tabPanel("View Regional FQA Lists",
 
-            #vall to view UI module
-            viewUI("view"),
+                      #vall to view UI module
+                      viewUI("view"),
 
-            #some spacing at the bottom of the page
-            br(),
-            br(),
-            br(),
+                      #some spacing at the bottom of the page
+                      br(),
+                      br(),
+                      br(),
 
-            )#tabPanel parenthesis
+             )#tabPanel parenthesis
 
   )#navbar parenthesis
 
@@ -248,19 +209,18 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-
   #interactive theme
   #bs_themer()
 
-# UPLOAD FILE FQI --------------------------------------------------------------
+  # FQI SERVER -------------------------------------------------------------------
 
   #creating a reactive value for glide page, used as input to server fun
-  fqi_glide <- reactive({input$shinyglide_index_cover})
+  fqi_glide <- reactive({input$shinyglide_index_fqi})
 
   #call to fqi module server
   fqiServer("fqi", fqi_glide)
 
-# COVER----------------------------------------------------------
+  # COVER SERVER------------------------------------------------------------------
 
   #creating a reactive value for glide page, used as input to server fun
   cover_glide <- reactive({input$shinyglide_index_cover})
@@ -268,15 +228,14 @@ server <- function(input, output, session) {
   #call to coverModule server function
   coverServer("cover", cover_glide)
 
-
-# ABOUT ------------------------------------------------------------------------
+  # ABOUT SERVER------------------------------------------------------------------
 
   #interactive map output
   output$tmap <- renderTmap({
     tmap_function("spatial_data/regional_fqa_simple.gpkg")
   })
 
-# VIEW -------------------------------------------------------------------------
+  # VIEW SERVER-------------------------------------------------------------------
 
   #call to viewModule server function
   viewServer("view")

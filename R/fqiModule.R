@@ -71,9 +71,40 @@ fqiMainPanelUI <- function(id) {
 
   )}
 
+#Outputs------------------------------------------------------------------------
+
 fqiOutputUI <- function(id) {
 
   tagList(
+
+    #banner telling you what regional list you're using
+    h3(textOutput(NS(id, "title"))),
+
+    #boxes with key values
+    fluidRow(
+      valueBox(
+        htmlOutput(NS(id,"species_richness")),
+        "Species Richness",
+        icon = icon("tree"), color = "green"
+      ),
+
+      valueBox(
+        htmlOutput(NS(id,"mean_c")),
+        "Mean C",
+        icon = icon("seedling"), color = "green"
+      ),
+      valueBox(
+        htmlOutput(NS(id,"fqi")),
+        "Total FQI",
+        icon = icon("pagelines"), color = "green"
+      )
+    ),#fluidRow parenthesis
+
+    #all mets and graph
+    fluidRow(
+      column(4, tableOutput(NS(id,"all_metrics"))),
+      column(8, plotOutput(NS(id,"c_hist")))
+    )#fluidrow parenthesis
 
   )}
 
@@ -85,15 +116,17 @@ fqiServer <- function(id, fqi_glide) {
   moduleServer(id, function(input, output, session) {
 
     #define table for data entered manually
-    data_entered = data.frame()
+    data_entered <- data.frame()
 
-    #initialize reactives
+    #making input method reactive
+    input_method <- reactive({input$input_method})
+
+    #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
     data_entered <- reactiveVal({data_entered})
-    accepted <- reactiveVal()
-    #all_metrics <- reactiveVal()
 
-#file upload server-------------------------------------------------------------
+
+    #file upload server-------------------------------------------------------------
 
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {
@@ -115,7 +148,6 @@ fqiServer <- function(id, fqi_glide) {
 
     #column name drop-down list based on the file uploaded
     output$FQI_colname <- renderUI({
-      req(input$upload)
       #create list cols
       colnames <- c("", colnames(file_upload()))
       #create a dropdown option
@@ -141,19 +173,6 @@ fqiServer <- function(id, fqi_glide) {
       lapply(warning_list, showNotification, type = "error", duration = NULL)
     })
 
-    #when data is entered find accepted values and store them reactivly
-    observeEvent(input$FQI_column,{
-      req(input$FQI_column)
-      #calculate accepted entries
-      accepted <- fqacalc::accepted_entries(x = file_upload() %>%
-                                              rename("scientific_name" = input$FQI_column),
-                                            key = "scientific_name",
-                                            db = input$db,
-                                            native = F)
-      #store it
-      accepted(accepted)
-    })
-
     #render output table from uploaded file
     output$upload_table <- DT::renderDT({
       datatable(file_upload(),
@@ -172,10 +191,10 @@ fqiServer <- function(id, fqi_glide) {
       #replace reactive file upload with empty file
       file_upload(empty_df)
       #reset upload button
-      shinyjs::reset("FQI_uploaded_file")
+      shinyjs::reset("upload")
     })
 
-#manually enter data------------------------------------------------------------
+    #manually enter data------------------------------------------------------------
 
     #species drop-down list based on region
     output$latin_name <- renderUI({
@@ -254,70 +273,64 @@ fqiServer <- function(id, fqi_glide) {
       )
     })
 
-#second screen ----------------------------------------------------------------
+    #second screen ----------------------------------------------------------------
+
+    #initializing reactives for outputs
+    accepted <- reactiveVal()
+    all_metrics <- reactiveVal()
+
+
+    #if input method is enter, accepted is from data_entered
+    observe({
+      req(input_method() == "enter")
+      accepted(distinct(data_entered()))
+    })
+
+    #if input method is enter, accepted is from file upload
+    observe({
+      req(input_method() == "upload", input$upload, !input$FQI_column %in% c(NULL, ""))
+      accepted(fqacalc::accepted_entries(x = file_upload() %>%
+                                           rename("scientific_name" = input$FQI_column),
+                                         key = "scientific_name",
+                                         db = input$db,
+                                         native = F))
+    })
 
     #render title
-    output$FQI_regional_list_manual <-
+    output$title <-
       renderText({paste("Calculating metrics based on ", input$db)})
 
-    render_metrics <- function (input) {
+    #species richness
+    output$species_richness <- renderUI({
+      req(fqi_glide() == 1)
+      round(
+        fqacalc::species_richness(x = accepted(), db = input$db, native = F),
+        3)
+    })
 
-    }
+    #mean C
+    output$mean_c <- renderUI({
+      req(fqi_glide() == 1)
+      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 3)
+    })
 
-    # #metrics table output on FQA page
-    # output$FQI_DT_metrics_upload <- renderTable({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #
-    #   fqacalc::all_metrics(x = FQI_file_upload()
-    #                        %>% rename("scientific_name" = input$FQI_column),
-    #                        key = "scientific_name",
-    #                        db = input$FQI_db)
-    #
-    #
-    # })
-    #
-    # #ggplot output
-    # output$FQI_c_hist_upload <- renderPlot({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #
-    #   c_score_plot(FQI_accepted_upload())
-    # })
+    #total fqi
+    output$fqi <- renderUI({
+      req(fqi_glide() == 1)
+      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 3)
+    })
 
-    # output$fqi_species_richness_manual <- renderUI({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #   round(
-    #     fqacalc::species_richness(x = data_entered_manual(), db = input$FQI_db, native = F),
-    #     3)
-    # })
-    #
-    # output$fqi_mean_c_manual <- renderUI({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #   round(fqacalc::mean_c(x = data_entered_manual(), db = input$FQI_db, native = F), 3)
-    # })
-    #
-    # output$fqi_fqi_manual <- renderUI({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #   round(fqacalc::FQI(x = data_entered_manual(), db = input$FQI_db, native = F), 3)
-    # })
-    #
-    # #metrics table output on FQA page
-    # output$FQI_DT_metrics_manual <- renderTable({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #   fqacalc::all_metrics(x = data_entered_manual(), db = input$FQI_db)
-    # })
-    #
-    # #ggplot output
-    # output$FQI_c_hist_manual <- renderPlot({
-    #   #requiring second screen
-    #   req(fqi_glidei == 1)
-    #   c_score_plot(distinct(data_entered_manual()))
-    # })
+    #metrics table output
+    output$all_metrics <- renderTable({
+      req(fqi_glide() == 1)
+      fqacalc::all_metrics(x = accepted(), db = input$db)
+    })
+
+    #ggplot output
+    output$c_hist <- renderPlot({
+      req(fqi_glide() == 1)
+      c_score_plot(accepted())
+    })
 
   })
 
