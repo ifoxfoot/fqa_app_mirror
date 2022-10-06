@@ -284,7 +284,34 @@ fqiServer <- function(id, fqi_glide) {
 
     #initializing reactives for outputs
     accepted <- reactiveVal()
-    all_metrics <- reactiveVal()
+    metrics <- reactiveVal()
+
+    #download cover summary server
+    output$download <- downloadHandler(
+      #name of file based off of transect
+      filename = function() {
+        paste0(input$db, "_FQA_assessment_", Sys.Date(), ".zip")
+      },
+      #content of file
+      content = function(fname) {
+        #set wd to temp directory
+        tmpdir <- tempdir()
+        setwd(tempdir())
+
+        #list names of files to zip
+        fs <- c("data_entered.csv", "all_metrics.csv")
+
+        #write csvs
+        write.csv(accepted(), file = "data_entered.csv")
+        write.csv(metrics(), file = "all_metrics.csv")
+
+        #zip files, name them
+        zip(zipfile=fname, files=fs)
+        if(file.exists(paste0(fname, ".zip")))
+        {file.rename(paste0(fname, ".zip"), fname)}
+      },
+      contentType = "application/zip"
+    )
 
 
     #if input method is enter, accepted is from data_entered
@@ -301,6 +328,12 @@ fqiServer <- function(id, fqi_glide) {
                                          key = "scientific_name",
                                          db = input$db,
                                          native = F))
+    })
+
+    #get all metrics
+    observe({
+      req(nrow(accepted()) > 0)
+      metrics(fqacalc::all_metrics(x = accepted(), db = input$db))
     })
 
     #render title
@@ -330,7 +363,7 @@ fqiServer <- function(id, fqi_glide) {
     #metrics table output
     output$all_metrics <- renderTable({
       req(fqi_glide() == 1)
-      fqacalc::all_metrics(x = accepted(), db = input$db)
+      metrics()
     })
 
     #ggplot output

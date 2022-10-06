@@ -34,7 +34,7 @@ coverSideBarUI <- function(id) {
       #button to delete all entries
       actionButton(NS(id, "delete_all"), "Delete All Entries")
 
-      ), #conditional parenthesis
+      ),#conditional parenthesis
 
     #when data entry method is upload, allow user to upload files
     conditionalPanel(
@@ -245,22 +245,33 @@ coverServer <- function(id, cover_glide) {
 
     #download cover summary server
     output$download <- downloadHandler(
-        filename = function() {
-          paste0("transect_", input$transect_id, ".zip")
-        },
-        content = function(file) {
-          #write workbook and first sheet
-          write_csv(entries(), file)
+      #name of file based off of transect
+      filename = function() {
+        paste0("transect_", input$transect_id, ".zip")
+      },
+      #content of file
+      content = function(fname) {
+        #set wd to temp directory
+        tmpdir <- tempdir()
+        setwd(tempdir())
 
-          #create list of other dfs to add
-          listOtherFiles <- list(conservation_metrics = cover_metrics(),
-                                 plot_summary = plot_sum(),
-                                 species_summary = species_sum())
-          #add them with loop
-          for(i in 1:length(listOtherFiles)) {
-            write_csv(listOtherFiles[i], file, append = TRUE)}
-        }
-      )
+        #list names of files to zip
+        fs <- c("data_entered.csv", "all_metrics.csv",
+                "plot_summary.csv", "species_summary.csv")
+
+        #write csvs
+        write.csv(entries(), file = "data_entered.csv")
+        write.csv(cover_metrics(), file = "all_metrics.csv")
+        write.csv(plot_sum(), file = "plot_summary.csv")
+        write.csv(species_sum(), file = "species_summary.csv")
+
+        #zip files, name them
+        zip(zipfile=fname, files=fs)
+        if(file.exists(paste0(fname, ".zip")))
+        {file.rename(paste0(fname, ".zip"), fname)}
+      },
+      contentType = "application/zip"
+    )
 
     #metrics table output on cover page
     output$cover_metrics_manual <- renderTable({

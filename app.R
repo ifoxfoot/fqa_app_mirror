@@ -26,18 +26,13 @@ ui <- fluidPage(
   theme = bslib::bs_theme(version = 4),
 
   #controls where notifications are displayed
-  tags$head(
-    tags$style(
+  tags$head(tags$style(
       HTML("#shiny-notification-panel {
              position:fixed;
              top: calc(40%);
              left: calc(50%);
              opacity: 1;
-             }
-             "
-      )
-    )
-  ),
+             }"))),
 
   #changing color of download button
   tags$head(tags$style(
@@ -202,7 +197,8 @@ ui <- fluidPage(
                       br(),
                       br(),
 
-             )#tabPanel parenthesis
+             ),#tabPanel parenthesis
+     #footer = img(src = "ERDC.png", style = "hight: 80px; width: 160px")
 
   )#navbar parenthesis
 
