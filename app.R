@@ -2,6 +2,7 @@
 library(shiny) #for app
 library(fqacalc) #for fqai metrics
 library(tidyverse) #for data wrangling/displaying
+library(rlang)
 library(shinyglide) #for glide panels
 library(DT) #for displaying tables
 library(shinyjs) #for reset buttons

@@ -108,9 +108,18 @@ fqiOutputUI <- function(id) {
 
     #all mets and graph
     fluidRow(
-      column(4, tableOutput(NS(id,"all_metrics"))),
-      column(8, plotOutput(NS(id,"c_hist")))
-    )#fluidrow parenthesis
+      box(plotOutput(NS(id,"compare_plot")),
+          title = "Compare Frequency of C Scores to Regional FQAI"),
+      box(plotOutput(NS(id,"c_hist")),
+          title = "Histogram of C Scores")
+    ),
+
+    fluidRow(
+        box(tableOutput(NS(id,"all_metrics")), title = "FQI Metrics"),
+        box("Wetness"),
+        box("Species Richness"),
+        box("Proportion")
+      )
 
   )}
 
@@ -370,6 +379,14 @@ fqiServer <- function(id, fqi_glide) {
     output$c_hist <- renderPlot({
       req(fqi_glide() == 1)
       c_score_plot(accepted())
+    })
+
+    #ggplot output
+    output$compare_plot <- renderPlot({
+      req(fqi_glide() == 1)
+      compare_plot(input_data = accepted(),
+                   db_name = as.character(input$db),
+                   db = fqacalc::view_db(input$db))
     })
 
   })

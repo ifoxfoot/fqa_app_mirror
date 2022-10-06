@@ -130,13 +130,15 @@ coverServer <- function(id, cover_glide) {
       else  if(input$cover_method == "usfs_ecodata"){
         c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98")
       }
-      else{
-        c("1":"100")
-      }
+
+      if (input$cover_method != "percent_cover") {
       #create a dropdown option
       selectizeInput(session$ns("cover_val"), "Cover Value", c("", cover_vals),
                      selected = NULL,
-                     multiple = FALSE)
+                     multiple = FALSE) }
+      #else allow numeric input
+      else { numericInput(session$ns("cover_val"), "Cover Value",
+                          value = 0, min = 0, max = 100)}
     })
 
     #call server fun for species dropdown
