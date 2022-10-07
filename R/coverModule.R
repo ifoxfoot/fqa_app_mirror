@@ -6,7 +6,7 @@ coverSideBarUI <- function(id) {
 
     #input regional data base
     selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
-                choices = fqacalc::db_names(),
+                choices = fqacalc::db_names()$name,
                 selected = "michigan_2014"),
 
     #input data entry method
@@ -81,13 +81,13 @@ coverOutputUI <- function(id) {
   tagList(
 
     fluidRow(
-      #title
-      column(5, h3(textOutput(NS(id, "title")))),
+             #title
+             column(8, h3(textOutput(NS(id, "title")))),
 
-      #download button
-      column(2, downloadButton(NS(id, "download"),
-                               label = "Download", class = "downloadButton",
-                               style = "margin-top: 25px; height: 40px;"))),
+             #download button
+             downloadButton(NS(id, "download"),
+                            label = "Download", class = "downloadButton",
+                            style = "margin-top: 25px; height: 40px; margin-left: 10px;")),
 
     fluidRow(
       #plot output

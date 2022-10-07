@@ -5,15 +5,15 @@ viewUI <- function(id) {
     fluidRow(
 
       #select database to view/download
-      column(4, selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
-                  choices = fqacalc::db_names(),
-                  selected = "michigan_2014")),
+      selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
+                  choices = fqacalc::db_names()$name,
+                  selected = "michigan_2014"),
 
       #download button
       downloadButton(NS(id, "download"),
                      label = "Download",
                      class = "downloadButton",
-                     style = "margin-top: 30px; height: 40px;"
+                     style = "margin-top: 30px; height: 40px; margin-left: 10px;"
                      )
       ),
 

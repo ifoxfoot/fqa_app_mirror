@@ -7,7 +7,7 @@ fqiSideBarUI <- function(id) {
 
     #input regional data base
     selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
-                choices = fqacalc::db_names(),
+                choices = fqacalc::db_names()$name,
                 selected = "michigan_2014"),
 
     #input data entry method
@@ -91,18 +91,18 @@ fqiOutputUI <- function(id) {
       valueBox(
         htmlOutput(NS(id,"species_richness")),
         "Species Richness",
-        icon = icon("tree"), color = "green"
+        icon = icon("tree"), color = "orange"
       ),
 
       valueBox(
         htmlOutput(NS(id,"mean_c")),
         "Mean C",
-        icon = icon("seedling"), color = "green"
+        icon = icon("seedling"), color = "orange"
       ),
       valueBox(
         htmlOutput(NS(id,"fqi")),
         "Total FQI",
-        icon = icon("pagelines"), color = "green"
+        icon = icon("pagelines"), color = "orange"
       )
     ),#fluidRow parenthesis
 
@@ -115,10 +115,14 @@ fqiOutputUI <- function(id) {
     ),
 
     fluidRow(
-        box(tableOutput(NS(id,"all_metrics")), title = "FQI Metrics"),
-        box("Wetness"),
-        box("Species Richness"),
-        box("Proportion")
+      column(3,
+        box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
+      column(3,
+        box(tableOutput(NS(id,"wetness")), title = "Wetness", width = NULL)),
+      column(3,
+        box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL)),
+      column(3,
+        box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL))
       )
 
   )}
@@ -370,9 +374,37 @@ fqiServer <- function(id, fqi_glide) {
     })
 
     #metrics table output
-    output$all_metrics <- renderTable({
+    output$c_metrics <- renderTable({
       req(fqi_glide() == 1)
-      metrics()
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Mean C", "Native Mean C", "Total FQI",
+                                     "Native FQI", "Adjusted FQI"))
+    })
+
+    #metrics table output
+    output$wetness <- renderTable({
+      req(fqi_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Mean Wetness", "Native Mean Wetness"))
+    })
+
+    #metrics table output
+    output$species_mets <- renderTable({
+      req(fqi_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Total Species Richness",
+                                     "Native Species Richness",
+                                     "Exotic Species Richness"))
+    })
+
+    #metrics table output
+    output$proportion <- renderTable({
+      req(fqi_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Proportion of Species with < 1 C score",
+                                     "Proportion of Species with 1-3.9 C score",
+                                     "Proportion of Species with 4-6.9 C score",
+                                     "Proportion of Species with 7-10 C score"))
     })
 
     #ggplot output
@@ -388,6 +420,12 @@ fqiServer <- function(id, fqi_glide) {
                    db_name = as.character(input$db),
                    db = fqacalc::view_db(input$db))
     })
+
+
+    # #ggplot output
+    # output$family_pie <- renderPlot({
+    #   req(fqi_glide() == 1)
+    # })
 
   })
 

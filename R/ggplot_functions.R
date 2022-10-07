@@ -30,7 +30,7 @@ compare_plot <- function(input_data, db_name, db) {
                                  ),
                   size = 2,
                   binwidth = 1) +
-    scale_colour_manual(values = c("green", "yellow")) +
+    scale_colour_manual(values = c("#00A36C", "#FFA500"), name = "") +
     scale_x_continuous(breaks = seq(0, 10, by=1), limits = c(0, 10)) +
     labs(x = "Conservation Coefficient Score")
 
@@ -39,4 +39,8 @@ compare_plot <- function(input_data, db_name, db) {
 
 }
 
+family_pie <- function(input_data) {
+  pie <- bla
 
+  return(pie)
+}

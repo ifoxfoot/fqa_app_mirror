@@ -35,10 +35,10 @@ ui <- fluidPage(
              opacity: 1;
              }"))),
 
-  #changing color of download button
-  tags$head(tags$style(
-    ".downloadButton{background:#007bff;}
-    .downloadButton{color: #fff;}")),
+  # #changing color of download button
+  # tags$head(tags$style(
+  #   ".downloadButton{background:#007bff;}
+  #   .downloadButton{color: #fff;}")),
 
   #set background color
   #setBackgroundColor(color = "ghostwhite"),
