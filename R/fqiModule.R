@@ -115,20 +115,20 @@ fqiOutputUI <- function(id) {
     ),
 
     fluidRow(
-      column(3,
+      column(4,
         box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
-      column(3,
+      column(4,
         box(tableOutput(NS(id,"wetness")), title = "Wetness", width = NULL)),
-      column(3,
-        box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL)),
-      column(3,
-        box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL))
+      column(4,
+        box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL))
       ),
 
     fluidRow(
-      column(6,
+      column(4,
+             box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL)),
+      column(4,
              box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Table", width = NULL)),
-      column(6,
+      column(4,
              box(tableOutput(NS(id,"duration_table")), title = "Duration Table", width = NULL))
     )
 
@@ -321,11 +321,13 @@ fqiServer <- function(id, fqi_glide) {
         setwd(tempdir())
 
         #list names of files to zip
-        fs <- c("data_entered.csv", "all_metrics.csv")
+        fs <- c("data_entered.csv", "all_metrics.csv", "physiognomy_table.csv", "duration_table.csv")
 
         #write csvs
         write.csv(accepted(), file = "data_entered.csv")
         write.csv(metrics(), file = "all_metrics.csv")
+        write.csv(physiog_table(), file = "physiognomy_table.csv")
+        write.csv(duration_table(), file = "duration_table.csv")
 
         #zip files, name them
         zip(zipfile=fname, files=fs)

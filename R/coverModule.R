@@ -81,20 +81,61 @@ coverOutputUI <- function(id) {
   tagList(
 
     fluidRow(
-             #title
-             column(8, h3(textOutput(NS(id, "title")))),
+      #title
+      column(7, h3(textOutput(NS(id, "title")))),
 
-             #download button
-             downloadButton(NS(id, "download"),
-                            label = "Download", class = "downloadButton",
-                            style = "margin-top: 25px; height: 40px; margin-left: 10px;")),
+      #download button
+      column(2, downloadButton(NS(id, "download"),
+                               label = "Download", class = "downloadButton",
+                               style = "margin-top: 20px; height: 40px;"))),
+
+    #boxes with key values
+    fluidRow(
+      valueBox(
+        htmlOutput(NS(id,"species_richness")),
+        "Species Richness",
+        icon = icon("tree"), color = "orange"
+      ),
+
+      valueBox(
+        htmlOutput(NS(id,"mean_c")),
+        "Mean C",
+        icon = icon("seedling"), color = "orange"
+      ),
+      valueBox(
+        htmlOutput(NS(id,"fqi")),
+        "Total FQI",
+        icon = icon("pagelines"), color = "orange"
+      )
+    ),#fluidRow parenthesis
+
+    #all mets and graph
+    fluidRow(
+      box(plotOutput(NS(id,"compare_plot")),
+          title = "Compare Frequency of C Scores to Regional FQAI"),
+      box(plotOutput(NS(id,"c_hist")),
+          title = "Histogram of C Scores")
+    ),
 
     fluidRow(
-      #plot output
-      box(plotOutput(NS(id, "cover_c_hist_manual"))),
+      column(3,
+             box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
+      column(3,
+             box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL)),
+      column(3,
+             box(tableOutput(NS(id,"wetness")), title = "Wetness", width = NULL)),
+      column(3,
+             box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL))
+    ),
 
-      #output table of metrics
-      box(tableOutput(NS(id, "cover_metrics_manual")))),
+    fluidRow(
+      column(4,
+             box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL)),
+      column(4,
+             box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Table", width = NULL)),
+      column(4,
+             box(tableOutput(NS(id,"duration_table")), title = "Duration Table", width = NULL))
+    ),
 
     #output of species summary
     fluidRow(box(title = "Species Summary", status = "primary",
@@ -102,7 +143,8 @@ coverOutputUI <- function(id) {
 
     #output of plot summary
     fluidRow(box(title = "Plot Summary", status = "primary",
-    tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll")),
+    tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll"))
+
 )}
 
 #Server-------------------------------------------------------------------------
@@ -205,9 +247,11 @@ coverServer <- function(id, cover_glide) {
 
 ##second screen-----------------------------------------------------------------
 
-    #initialize reactives
-    entries <- reactiveVal()
-    cover_metrics <- reactiveVal()
+    #initializing reactives for outputs
+    accepted <- reactiveVal()
+    metrics <- reactiveVal()
+    physiog_table <- reactiveVal()
+    duration_table <- reactiveVal()
     species_sum <- reactiveVal()
     plot_sum <- reactiveVal()
 
@@ -217,13 +261,13 @@ coverServer <- function(id, cover_glide) {
       req(cover_glide() == 1)
 
       #update reactives
-      entries(fqacalc::accepted_entries(x = cover_data(),
+      accepted(fqacalc::accepted_entries(x = cover_data(),
                                         key = "scientific_name",
                                         db = input$db,
                                         native = F,
                                         cover_metric = input$cover_method))
 
-      cover_metrics(fqacalc::all_cover_metrics(x = cover_data(),
+      metrics(fqacalc::all_cover_metrics(x = cover_data(),
                                key = "scientific_name",
                                db = input$db,
                                cover_metric = input$cover_method))
@@ -240,6 +284,39 @@ coverServer <- function(id, cover_glide) {
                                      plot_id = "plot_id"))
 
       })
+
+
+    #get pysiog and duration table
+    observe({
+      req(nrow(accepted()) > 0 & cover_glide() == 1)
+
+      #write df with all cats to include
+      physiog_cats <- data.frame(physiognomy = c("tree", "shrub", "vine", "forb", "grass",
+                                                 "sedge", "rush", "fern", "bryophyte"),
+                                 count = rep.int(0, 9),
+                                 percent = rep.int(0,9))
+
+      duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
+                                  count = rep.int(0, 3),
+                                  percent = rep.int(0,3))
+
+      #count observations in accepted data
+      phys <- accepted() %>%
+        group_by(physiognomy) %>%
+        summarise(count = n()) %>%
+        mutate(percent = round((count/sum(count))*100, 2)) %>%
+        rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy))
+
+      dur <- accepted() %>%
+        group_by(duration) %>%
+        summarise(count = n()) %>%
+        mutate(percent = round((count/sum(count))*100, 2)) %>%
+        rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
+
+      #store in reactive
+      physiog_table(phys)
+      duration_table(dur)
+    })
 
     #render title
     output$title <- renderText({paste("Calculating metrics based on",
@@ -259,13 +336,16 @@ coverServer <- function(id, cover_glide) {
 
         #list names of files to zip
         fs <- c("data_entered.csv", "all_metrics.csv",
-                "plot_summary.csv", "species_summary.csv")
+                "plot_summary.csv", "species_summary.csv",
+                "physiognomy_table.csv", "duration_table.csv")
 
         #write csvs
         write.csv(entries(), file = "data_entered.csv")
         write.csv(cover_metrics(), file = "all_metrics.csv")
         write.csv(plot_sum(), file = "plot_summary.csv")
         write.csv(species_sum(), file = "species_summary.csv")
+        write.csv(physiog_table(), file = "physiognomy_table.csv")
+        write.csv(duration_table(), file = "duration_table.csv")
 
         #zip files, name them
         zip(zipfile=fname, files=fs)
@@ -275,12 +355,92 @@ coverServer <- function(id, cover_glide) {
       contentType = "application/zip"
     )
 
-    #metrics table output on cover page
-    output$cover_metrics_manual <- renderTable({
-      #requiring second screen
+    #species richness
+    output$species_richness <- renderUI({
       req(cover_glide() == 1)
-      #call to reactive cover metrics
-      cover_metrics()
+      round(
+        fqacalc::species_richness(x = accepted(), db = input$db, native = F),
+        3)
+    })
+
+    #mean C
+    output$mean_c <- renderUI({
+      req(cover_glide() == 1)
+      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 3)
+    })
+
+    #total fqi
+    output$fqi <- renderUI({
+      req(cover_glide() == 1)
+      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 3)
+    })
+
+    #metrics table output
+    output$c_metrics <- renderTable({
+      req(cover_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Mean C", "Native Mean C", "Total FQI",
+                                     "Native FQI", "Adjusted FQI"))
+    })
+
+    #metrics table output
+    output$cover_metrics <- renderTable({
+      req(cover_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Cover-Weighted Mean C", "Cover-Weighted Native Mean C",
+                                     "Cover-Weighted FQI", "Cover-Weighted Native FQI"))
+    })
+
+    #wetness table output
+    output$wetness <- renderTable({
+      req(cover_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Mean Wetness", "Native Mean Wetness"))
+    })
+
+    #nativity table output
+    output$species_mets <- renderTable({
+      req(cover_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Total Species Richness",
+                                     "Native Species Richness",
+                                     "Exotic Species Richness"))
+    })
+
+    #proportion table output
+    output$proportion <- renderTable({
+      req(cover_glide() == 1)
+      metrics() %>%
+        dplyr::filter(metrics %in% c("Proportion of Species with < 1 C score",
+                                     "Proportion of Species with 1-3.9 C score",
+                                     "Proportion of Species with 4-6.9 C score",
+                                     "Proportion of Species with 7-10 C score"))
+    })
+
+    #ggplot output
+    output$c_hist <- renderPlot({
+      req(cover_glide() == 1)
+      c_score_plot(accepted())
+    })
+
+    #ggplot output
+    output$compare_plot <- renderPlot({
+      req(cover_glide() == 1)
+      compare_plot(input_data = accepted(),
+                   db_name = as.character(input$db),
+                   db = fqacalc::view_db(input$db))
+    })
+
+    #physiog table output
+    output$pysiog_table <- renderTable({
+      req(cover_glide() == 1)
+      physiog_table()
+    })
+
+    #physiog table output
+    output$duration_table <- renderTable({
+      req(cover_glide() == 1)
+      duration_table()
     })
 
     #plot summary
@@ -299,12 +459,5 @@ coverServer <- function(id, cover_glide) {
       species_sum()
     })
 
-    #ggplot output
-    output$cover_c_hist_manual <- renderPlot({
-      #requiring second screen
-      req(cover_glide() == 1)
-      #ggplot function with call to reactive
-      c_score_plot(entries())
-    })
   })
 }
