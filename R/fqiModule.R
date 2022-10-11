@@ -123,7 +123,14 @@ fqiOutputUI <- function(id) {
         box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL)),
       column(3,
         box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL))
-      )
+      ),
+
+    fluidRow(
+      column(6,
+             box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Table", width = NULL)),
+      column(6,
+             box(tableOutput(NS(id,"duration_table")), title = "Duration Table", width = NULL))
+    )
 
   )}
 
@@ -134,11 +141,11 @@ fqiServer <- function(id, fqi_glide) {
   #start module function
   moduleServer(id, function(input, output, session) {
 
-    #define table for data entered manually
-    data_entered <- data.frame()
-
     #making input method reactive
     input_method <- reactive({input$input_method})
+
+    #define table for data entered manually
+    data_entered <- data.frame()
 
     #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
@@ -298,6 +305,8 @@ fqiServer <- function(id, fqi_glide) {
     #initializing reactives for outputs
     accepted <- reactiveVal()
     metrics <- reactiveVal()
+    physiog_table <- reactiveVal()
+    duration_table <- reactiveVal()
 
     #download cover summary server
     output$download <- downloadHandler(
@@ -349,6 +358,38 @@ fqiServer <- function(id, fqi_glide) {
       metrics(fqacalc::all_metrics(x = accepted(), db = input$db))
     })
 
+    #get pysiog and duration table
+    observe({
+      req(nrow(accepted()) > 0 & fqi_glide() == 1)
+
+      #write df with all cats to include
+       physiog_cats <- data.frame(physiognomy = c("tree", "shrub", "vine", "forb", "grass",
+                                                 "sedge", "rush", "fern", "bryophyte"),
+                                 count = rep.int(0, 9),
+                                 percent = rep.int(0,9))
+
+       duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
+                                   count = rep.int(0, 3),
+                                   percent = rep.int(0,3))
+
+       #count observations in accepted data
+       phys <- accepted() %>%
+                       group_by(physiognomy) %>%
+                       summarise(count = n()) %>%
+                       mutate(percent = round((count/sum(count))*100, 2)) %>%
+                       rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy))
+
+     dur <- accepted() %>%
+                        group_by(duration) %>%
+                        summarise(count = n()) %>%
+                        mutate(percent = round((count/sum(count))*100, 2)) %>%
+                        rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
+
+     #store in reactive
+       physiog_table(phys)
+       duration_table(dur)
+    })
+
     #render title
     output$title <-
       renderText({paste("Calculating metrics based on ", input$db)})
@@ -381,14 +422,14 @@ fqiServer <- function(id, fqi_glide) {
                                      "Native FQI", "Adjusted FQI"))
     })
 
-    #metrics table output
+    #wetness table output
     output$wetness <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
         dplyr::filter(metrics %in% c("Mean Wetness", "Native Mean Wetness"))
     })
 
-    #metrics table output
+    #nativity table output
     output$species_mets <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
@@ -397,7 +438,7 @@ fqiServer <- function(id, fqi_glide) {
                                      "Exotic Species Richness"))
     })
 
-    #metrics table output
+    #proportion table output
     output$proportion <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
@@ -421,11 +462,17 @@ fqiServer <- function(id, fqi_glide) {
                    db = fqacalc::view_db(input$db))
     })
 
+    #physiog table output
+    output$pysiog_table <- renderTable({
+      req(fqi_glide() == 1)
+      physiog_table()
+    })
 
-    # #ggplot output
-    # output$family_pie <- renderPlot({
-    #   req(fqi_glide() == 1)
-    # })
+    #physiog table output
+    output$duration_table <- renderTable({
+      req(fqi_glide() == 1)
+      duration_table()
+    })
 
   })
 
