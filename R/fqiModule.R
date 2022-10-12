@@ -284,9 +284,10 @@ fqiServer <- function(id, fqi_glide) {
     #when delete all is clicked, clear all entries
     observeEvent(input$manual_delete_all, {
       #make an empty df
-      empty_df <- data.frame(row.names = names(fqacalc::crooked_island))
+      empty_df <- data.frame()
       #assign it to the reactive value
       data_entered(empty_df)
+      accepted(empty_df)
     })
 
     #render output table from manually entered species on data entry page
@@ -356,7 +357,7 @@ fqiServer <- function(id, fqi_glide) {
 
     #get all metrics
     observe({
-      req(nrow(accepted()) > 0)
+      req(nrow(accepted()) > 0 & fqi_glide() == 1)
       metrics(fqacalc::all_metrics(x = accepted(), db = input$db))
     })
 
@@ -381,13 +382,13 @@ fqiServer <- function(id, fqi_glide) {
                        mutate(percent = round((count/sum(count))*100, 2)) %>%
                        rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy))
 
-     dur <- accepted() %>%
+       dur <- accepted() %>%
                         group_by(duration) %>%
                         summarise(count = n()) %>%
                         mutate(percent = round((count/sum(count))*100, 2)) %>%
                         rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
 
-     #store in reactive
+       #store in reactive
        physiog_table(phys)
        duration_table(dur)
     })

@@ -1,5 +1,6 @@
 
 library(tidyverse)
+library(sf)
 
 tmap_function <- function(file_path){
 

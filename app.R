@@ -115,6 +115,7 @@ ui <- fluidPage(
                       #allow glide to be used in this tab
                       glide(
                         id = "cover",
+                        #next_condition = "",
                         #labels for glide buttons
                         next_label = "Calculate FQA Metrics",
                         previous_label = "Go Back to Data Entry",

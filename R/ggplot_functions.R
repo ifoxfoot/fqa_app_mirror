@@ -1,7 +1,6 @@
 #this file contains functions to produce ggplots
 c_score_plot <- function(input_data) {
 
-  #ggplot
   c_plot <- ggplot(data = input_data,
                   aes(x = c,
                       fill = native)) +
@@ -15,7 +14,6 @@ c_score_plot <- function(input_data) {
 }
 
 compare_plot <- function(input_data, db_name, db) {
-
 
   c_plot <- ggplot() +
     geom_freqpoly(data = input_data, aes(x = c,
@@ -37,10 +35,4 @@ compare_plot <- function(input_data, db_name, db) {
 
   return(c_plot)
 
-}
-
-family_pie <- function(input_data) {
-  pie <- bla
-
-  return(pie)
 }

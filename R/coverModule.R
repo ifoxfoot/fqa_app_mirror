@@ -189,7 +189,7 @@ coverServer <- function(id, cover_glide) {
     #make it so add species button can't be clicked until all fields full
     observe({
       vals <- c(input$transect_id, input$cover_val, input$species, input$plot_id)
-      toggleState("add_species", !"" %in% vals)
+      toggleState("add_species", !"" %in% vals & !0 %in% vals)
     })
 
     #define table for data entered manually
