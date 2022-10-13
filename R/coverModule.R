@@ -139,7 +139,13 @@ coverOutputUI <- function(id) {
 
     #output of species summary
     fluidRow(box(title = "Species Summary", status = "primary",
-    tableOutput(NS(id, "cover_species_manual")), width = 12, style = "overflow-x: scroll")),
+    tableOutput(NS(id, "cover_species_manual")), width = 12,
+    style = "overflow-x: scroll")),
+
+    #output of physiog summary
+    fluidRow(box(title = "Physiognomy Summary", status = "primary",
+                 tableOutput(NS(id, "cover_physiog_manual")), width = 12,
+                 style = "overflow-x: scroll")),
 
     #output of plot summary
     fluidRow(box(title = "Plot Summary", status = "primary",
@@ -254,6 +260,7 @@ coverServer <- function(id, cover_glide) {
     duration_table <- reactiveVal()
     species_sum <- reactiveVal()
     plot_sum <- reactiveVal()
+    physiog_sum <- reactiveVal()
 
     #updating reactive values
     observe({
@@ -273,6 +280,11 @@ coverServer <- function(id, cover_glide) {
                                cover_metric = input$cover_method))
 
       species_sum(fqacalc::species_summary(x = cover_data(),
+                                           key = "scientific_name",
+                                           db = input$db,
+                                           cover_metric = input$cover_method))
+
+      physiog_sum(fqacalc::physiog_summary(x = cover_data(),
                                            key = "scientific_name",
                                            db = input$db,
                                            cover_metric = input$cover_method))
@@ -337,13 +349,15 @@ coverServer <- function(id, cover_glide) {
         #list names of files to zip
         fs <- c("data_entered.csv", "all_metrics.csv",
                 "plot_summary.csv", "species_summary.csv",
-                "physiognomy_table.csv", "duration_table.csv")
+                "physiognomy_summary.csv", "physiognomy_table.csv",
+                "duration_table.csv")
 
         #write csvs
         write.csv(entries(), file = "data_entered.csv")
         write.csv(cover_metrics(), file = "all_metrics.csv")
         write.csv(plot_sum(), file = "plot_summary.csv")
         write.csv(species_sum(), file = "species_summary.csv")
+        write.csv(physiog_sum(), file = "physiognomy_summary.csv")
         write.csv(physiog_table(), file = "physiognomy_table.csv")
         write.csv(duration_table(), file = "duration_table.csv")
 
@@ -362,6 +376,7 @@ coverServer <- function(id, cover_glide) {
         fqacalc::species_richness(x = accepted(), db = input$db, native = F),
         3)
     })
+
 
     #mean C
     output$mean_c <- renderUI({
@@ -457,6 +472,14 @@ coverServer <- function(id, cover_glide) {
       req(cover_glide() == 1)
       #call to reactive species summary
       species_sum()
+    })
+
+    #species summary
+    output$cover_physiog_manual <- renderTable({
+      #requiring second screen
+      req(cover_glide() == 1)
+      #call to reactive species summary
+      physiog_sum()
     })
 
   })

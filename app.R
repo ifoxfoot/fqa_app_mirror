@@ -2,7 +2,7 @@
 library(shiny) #for app
 library(fqacalc) #for fqai metrics
 library(tidyverse) #for data wrangling/displaying
-library(rlang)
+library(rlang) #for .data and := functions
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
