@@ -9,6 +9,7 @@ library(DT) #for displaying tables
 library(shinyjs) #for reset buttons
 library(shinyFeedback) #for warning messages near widgets
 library(shinyWidgets) #for dashboard layout
+library(shinyalert) #for popup warnigns
 library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map

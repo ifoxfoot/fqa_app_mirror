@@ -196,7 +196,8 @@ fqiServer <- function(id, fqi_glide) {
         #add to list
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
-      lapply(warning_list, showNotification, type = "error", duration = NULL)
+      for(i in warning_list) {
+        shinyalert(text = strong(i), type = "warning", html = T)}
     })
 
     #render output table from uploaded file
@@ -265,7 +266,8 @@ fqiServer <- function(id, fqi_glide) {
         #add to list
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
-      lapply(warning_list, showNotification, type = "error", duration = NULL)
+      for(i in warning_list) {
+        shinyalert(text = strong(i), type = "warning", html = T) }
     })
 
     #when delete species is clicked, delete row
@@ -309,6 +311,13 @@ fqiServer <- function(id, fqi_glide) {
     metrics <- reactiveVal()
     physiog_table <- reactiveVal()
     duration_table <- reactiveVal()
+    confirm_db <- reactiveVal("empty")
+    previous_dbs <- reactiveValues(prev = "michigan_2014")
+
+    #store current and previous db value in reactive element
+    observeEvent(input$db, {
+      previous_dbs$prev <- c(tail(previous_dbs$prev, 1), input$db)
+    })
 
     #download cover summary server
     output$download <- downloadHandler(
@@ -339,14 +348,13 @@ fqiServer <- function(id, fqi_glide) {
       contentType = "application/zip"
     )
 
-
     #if input method is enter, accepted is from data_entered
     observe({
       req(input_method() == "enter")
       accepted(distinct(data_entered()))
     })
 
-    #if input method is enter, accepted is from file upload
+    #if input method is upload, accepted is from file upload
     observe({
       req(input_method() == "upload", !is.null(file_upload()), input$FQI_column)
       accepted(fqacalc::accepted_entries(x = file_upload() %>%
@@ -355,6 +363,45 @@ fqiServer <- function(id, fqi_glide) {
                                          db = input$db,
                                          native = F))
     })
+
+    #if db is changed and there is already data entered, show popup
+    observeEvent(input$db, {
+      req(nrow(accepted()) > 0)
+      #code for popup
+      if(confirm_db() != "empty") {
+        confirm_db("empty") }
+      else{
+        shinyalert(text = strong(
+        "Changing the regional database will delete your current data entries.
+        Are you sure you want to proceed?"),
+        showCancelButton = T, showConfirmButton = T,
+        type = "warning", html = T, inputId = "confirm_db_change")}
+    })
+
+    observeEvent(input$confirm_db_change, {
+      #store confirmation in reactive value
+      confirm_db(input$confirm_db_change)
+      #create an empty df
+      empty_df <- data.frame()
+      #if confirm db is true and method is enter, reset entered data
+      if(confirm_db() == TRUE & input$input_method == "enter") {
+        data_entered(empty_df)
+        accepted(empty_df)
+        confirm_db("empty")}
+      #if confirm db is true and method is upload, reset uploaded data
+      if(confirm_db() == TRUE & input$input_method == "upload") {
+        file_upload(empty_df)
+        accepted(empty_df)
+        shinyjs::reset("upload")
+        shinyjs::reset("FQI_column")
+        confirm_db("empty")}
+      #if confirm db is false, reset db to previous value
+      if (confirm_db() == FALSE) {
+        updateSelectInput(session, inputId = "db",
+                          selected = previous_dbs$prev[1])}
+    })
+
+
 
     #get all metrics
     observe({
@@ -472,7 +519,7 @@ fqiServer <- function(id, fqi_glide) {
       physiog_table()
     })
 
-    #physiog table output
+    #duration table output
     output$duration_table <- renderTable({
       req(fqi_glide() == 1)
       duration_table()
