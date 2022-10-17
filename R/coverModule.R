@@ -118,34 +118,32 @@ coverOutputUI <- function(id) {
     ),
 
     fluidRow(
-      column(3,
+      column(4,
              box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
-      column(3,
+      column(4,
              box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL)),
-      column(3,
-             box(tableOutput(NS(id,"wetness")), title = "Wetness", width = NULL)),
-      column(3,
-             box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL))
+      column(4,
+             box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
     ),
 
     fluidRow(
       column(4,
-             box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL)),
+             box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
       column(4,
-             box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Table", width = NULL)),
+             box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
       column(4,
-             box(tableOutput(NS(id,"duration_table")), title = "Duration Table", width = NULL))
+             box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
     ),
-
-    #output of species summary
-    fluidRow(box(title = "Species Summary", status = "primary",
-    tableOutput(NS(id, "cover_species_manual")), width = 12,
-    style = "overflow-x: scroll")),
 
     #output of physiog summary
     fluidRow(box(title = "Physiognomy Summary", status = "primary",
                  tableOutput(NS(id, "cover_physiog_manual")), width = 12,
                  style = "overflow-x: scroll")),
+
+    #output of species summary
+    fluidRow(box(title = "Species Summary", status = "primary",
+    tableOutput(NS(id, "cover_species_manual")), width = 12,
+    style = "overflow-x: scroll")),
 
     #output of plot summary
     fluidRow(box(title = "Plot Summary", status = "primary",
@@ -298,26 +296,13 @@ coverServer <- function(id, cover_glide) {
       })
 
 
-    #get pysiog and duration table
+    #get duration table
     observe({
       req(nrow(accepted()) > 0 & cover_glide() == 1)
-
-      #write df with all cats to include
-      physiog_cats <- data.frame(physiognomy = c("tree", "shrub", "vine", "forb", "grass",
-                                                 "sedge", "rush", "fern", "bryophyte"),
-                                 count = rep.int(0, 9),
-                                 percent = rep.int(0,9))
 
       duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
                                   count = rep.int(0, 3),
                                   percent = rep.int(0,3))
-
-      #count observations in accepted data
-      phys <- accepted() %>%
-        group_by(physiognomy) %>%
-        summarise(count = n()) %>%
-        mutate(percent = round((count/sum(count))*100, 2)) %>%
-        rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy))
 
       dur <- accepted() %>%
         group_by(duration) %>%
@@ -326,7 +311,6 @@ coverServer <- function(id, cover_glide) {
         rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
 
       #store in reactive
-      physiog_table(phys)
       duration_table(dur)
     })
 
@@ -338,7 +322,7 @@ coverServer <- function(id, cover_glide) {
     output$download <- downloadHandler(
       #name of file based off of transect
       filename = function() {
-        paste0("transect_", input$transect_id, ".csv")
+        paste0("FQA_assessment_transect_", input$transect_id, ".csv")
       },
       #content of file
       content = function(fname) {
@@ -346,63 +330,56 @@ coverServer <- function(id, cover_glide) {
         tmpdir <- tempdir()
         setwd(tempdir())
 
-          # Start a sink file with a CSV extension
-          sink(fname)
-          cat('\n')
-          cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI."))
-          cat('\n')
-          cat('\n')
+        # Start a sink file with a CSV extension
+        sink(fname)
+        cat('\n')
+        cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI."))
+        cat('\n')
+        cat('\n')
 
-          # Write metrics dataframe to the same sink
-          cat('Cover-Weighted FQI Metrics')
-          cat('\n')
-          write.csv(metrics(), row.names = F)
-          cat('\n')
-          cat('\n')
+        # Write metrics dataframe to the same sink
+        cat('Cover-Weighted FQI Metrics')
+        cat('\n')
+        write.csv(metrics(), row.names = F)
+        cat('\n')
+        cat('\n')
 
-          # Write metrics dataframe to the same sink
-          cat('Plot Summary Metrics')
-          cat('\n')
-          write.csv(plot_sum(), row.names = F)
-          cat('\n')
-          cat('\n')
+        # Write metrics dataframe to the same sink
+        cat("Duration Frequency")
+        cat('\n')
+        write.csv(duration_table(), row.names = F)
+        cat('\n')
+        cat('\n')
 
-          # Write metrics dataframe to the same sink
-          cat('Species Summary Metrics')
-          cat('\n')
-          write.csv(species_sum(), row.names = F)
-          cat('\n')
-          cat('\n')
+        # Write metrics dataframe to the same sink
+        cat('Plot Summary Metrics')
+        cat('\n')
+        write.csv(plot_sum(), row.names = F)
+        cat('\n')
+        cat('\n')
 
-          # Write metrics dataframe to the same sink
-          cat('Physiognomy Summary Metrics')
-          cat('\n')
-          write.csv(physiog_sum(), row.names = F)
-          cat('\n')
-          cat('\n')
+        # Write metrics dataframe to the same sink
+        cat('Species Summary Metrics')
+        cat('\n')
+        write.csv(species_sum(), row.names = F)
+        cat('\n')
+        cat('\n')
 
-          # Write metrics dataframe to the same sink
-          cat("Physiognomy Metrics")
-          cat('\n')
-          write.csv(physiog_table(), row.names = F)
-          cat('\n')
-          cat('\n')
+        # Write metrics dataframe to the same sink
+        cat('Physiognomy Summary Metrics')
+        cat('\n')
+        write.csv(physiog_sum(), row.names = F)
+        cat('\n')
+        cat('\n')
 
-          # Write metrics dataframe to the same sink
-          cat("Duration Metrics")
-          cat('\n')
-          write.csv(duration_table(), row.names = F)
-          cat('\n')
-          cat('\n')
+        # Write data entered
+        cat('Data Entered')
+        cat('\n')
+        write.csv(accepted(), row.names = F)
 
-          # Write data entered
-          cat('Data Entered')
-          cat('\n')
-          write.csv(accepted(), row.names = F)
-
-          # Close the sink
-          sink()
-        })
+        # Close the sink
+        sink()
+      })
 
     #species richness
     output$species_richness <- renderUI({
@@ -481,13 +458,8 @@ coverServer <- function(id, cover_glide) {
                    db = fqacalc::view_db(input$db))
     })
 
-    #physiog table output
-    output$pysiog_table <- renderTable({
-      req(cover_glide() == 1)
-      physiog_table()
-    })
 
-    #physiog table output
+    #duration table output
     output$duration_table <- renderTable({
       req(cover_glide() == 1)
       duration_table()

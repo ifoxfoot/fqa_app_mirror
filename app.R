@@ -78,7 +78,7 @@ ui <- fluidPage(
                         height = "100%",
 
                         screen(
-
+                          #next_condition = "output['fqi-add_species'] > 0",
                           fluidRow(
 
                             sidebarPanel(
@@ -211,7 +211,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   #interactive theme
-  bs_themer()
+  #bs_themer()
 
 # FQI SERVER -------------------------------------------------------------------
 

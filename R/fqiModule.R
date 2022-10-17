@@ -118,18 +118,18 @@ fqiOutputUI <- function(id) {
       column(4,
         box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
       column(4,
-        box(tableOutput(NS(id,"wetness")), title = "Wetness", width = NULL)),
+        box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
       column(4,
-        box(tableOutput(NS(id,"species_mets")), title = "Species Richness", width = NULL))
+        box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
       ),
 
     fluidRow(
       column(4,
-             box(tableOutput(NS(id,"proportion")), title = "Proportion", width = NULL)),
+             box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
       column(4,
-             box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Table", width = NULL)),
+             box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Breakdown", width = NULL)),
       column(4,
-             box(tableOutput(NS(id,"duration_table")), title = "Duration Table", width = NULL))
+             box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
     )
 
   )}
@@ -323,7 +323,7 @@ fqiServer <- function(id, fqi_glide) {
     output$download <- downloadHandler(
       #name of file based off of transect
       filename = function() {
-        paste0(input$db, "_FQA_assessment_", Sys.Date(), ".csv")
+        paste0("FQA_assessment_", Sys.Date(), ".csv")
       },
       #content of file
       content = function(fname) {
@@ -426,7 +426,7 @@ fqiServer <- function(id, fqi_glide) {
 
     #get all metrics
     observe({
-      req(nrow(accepted()) > 0 & fqi_glide() == 1)
+      req(fqi_glide() == 1)
       metrics(fqacalc::all_metrics(x = accepted(), db = input$db))
     })
 
