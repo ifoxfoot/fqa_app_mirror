@@ -338,7 +338,7 @@ coverServer <- function(id, cover_glide) {
     output$download <- downloadHandler(
       #name of file based off of transect
       filename = function() {
-        paste0("transect_", input$transect_id, ".zip")
+        paste0("transect_", input$transect_id, ".csv")
       },
       #content of file
       content = function(fname) {
@@ -346,28 +346,63 @@ coverServer <- function(id, cover_glide) {
         tmpdir <- tempdir()
         setwd(tempdir())
 
-        #list names of files to zip
-        fs <- c("data_entered.csv", "all_metrics.csv",
-                "plot_summary.csv", "species_summary.csv",
-                "physiognomy_summary.csv", "physiognomy_table.csv",
-                "duration_table.csv")
+          # Start a sink file with a CSV extension
+          sink(fname)
+          cat('\n')
+          cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI."))
+          cat('\n')
+          cat('\n')
 
-        #write csvs
-        write.csv(entries(), file = "data_entered.csv")
-        write.csv(cover_metrics(), file = "all_metrics.csv")
-        write.csv(plot_sum(), file = "plot_summary.csv")
-        write.csv(species_sum(), file = "species_summary.csv")
-        write.csv(physiog_sum(), file = "physiognomy_summary.csv")
-        write.csv(physiog_table(), file = "physiognomy_table.csv")
-        write.csv(duration_table(), file = "duration_table.csv")
+          # Write metrics dataframe to the same sink
+          cat('Cover-Weighted FQI Metrics')
+          cat('\n')
+          write.csv(metrics(), row.names = F)
+          cat('\n')
+          cat('\n')
 
-        #zip files, name them
-        zip(zipfile=fname, files=fs)
-        if(file.exists(paste0(fname, ".zip")))
-        {file.rename(paste0(fname, ".zip"), fname)}
-      },
-      contentType = "application/zip"
-    )
+          # Write metrics dataframe to the same sink
+          cat('Plot Summary Metrics')
+          cat('\n')
+          write.csv(plot_sum(), row.names = F)
+          cat('\n')
+          cat('\n')
+
+          # Write metrics dataframe to the same sink
+          cat('Species Summary Metrics')
+          cat('\n')
+          write.csv(species_sum(), row.names = F)
+          cat('\n')
+          cat('\n')
+
+          # Write metrics dataframe to the same sink
+          cat('Physiognomy Summary Metrics')
+          cat('\n')
+          write.csv(physiog_sum(), row.names = F)
+          cat('\n')
+          cat('\n')
+
+          # Write metrics dataframe to the same sink
+          cat("Physiognomy Metrics")
+          cat('\n')
+          write.csv(physiog_table(), row.names = F)
+          cat('\n')
+          cat('\n')
+
+          # Write metrics dataframe to the same sink
+          cat("Duration Metrics")
+          cat('\n')
+          write.csv(duration_table(), row.names = F)
+          cat('\n')
+          cat('\n')
+
+          # Write data entered
+          cat('Data Entered')
+          cat('\n')
+          write.csv(accepted(), row.names = F)
+
+          # Close the sink
+          sink()
+        })
 
     #species richness
     output$species_richness <- renderUI({

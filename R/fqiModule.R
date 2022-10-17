@@ -264,7 +264,7 @@ fqiServer <- function(id, fqi_glide) {
                                   db = input$db,
                                   native = FALSE),
         #add to list
-        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+        message = function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
         shinyalert(text = strong(i), type = "warning", html = T) }
@@ -323,7 +323,7 @@ fqiServer <- function(id, fqi_glide) {
     output$download <- downloadHandler(
       #name of file based off of transect
       filename = function() {
-        paste0(input$db, "_FQA_assessment_", Sys.Date(), ".zip")
+        paste0(input$db, "_FQA_assessment_", Sys.Date(), ".csv")
       },
       #content of file
       content = function(fname) {
@@ -331,22 +331,43 @@ fqiServer <- function(id, fqi_glide) {
         tmpdir <- tempdir()
         setwd(tempdir())
 
-        #list names of files to zip
-        fs <- c("data_entered.csv", "all_metrics.csv", "physiognomy_table.csv", "duration_table.csv")
+        # Start a sink file with a CSV extension
+        sink(fname)
+        cat('\n')
+        cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI."))
+        cat('\n')
+        cat('\n')
 
-        #write csvs
-        write.csv(accepted(), file = "data_entered.csv")
-        write.csv(metrics(), file = "all_metrics.csv")
-        write.csv(physiog_table(), file = "physiognomy_table.csv")
-        write.csv(duration_table(), file = "duration_table.csv")
+         # Write metrics dataframe to the same sink
+        cat('FQI Metrics')
+        cat('\n')
+        write.csv(metrics(), row.names = F)
+        cat('\n')
+        cat('\n')
 
-        #zip files, name them
-        zip(zipfile=fname, files=fs)
-        if(file.exists(paste0(fname, ".zip")))
-        {file.rename(paste0(fname, ".zip"), fname)}
-      },
-      contentType = "application/zip"
-    )
+        # Write metrics dataframe to the same sink
+        cat("Physiognomy Metrics")
+        cat('\n')
+        write.csv(physiog_table(), row.names = F)
+        cat('\n')
+        cat('\n')
+
+        # Write metrics dataframe to the same sink
+        cat("Duration Metrics")
+        cat('\n')
+        write.csv(duration_table(), row.names = F)
+        cat('\n')
+        cat('\n')
+
+        # Write data entered
+        cat('Data Entered')
+        cat('\n')
+        write.csv(accepted(), row.names = F)
+
+        # Close the sink
+        sink()
+      })
+
 
     #if input method is enter, accepted is from data_entered
     observe({
@@ -374,8 +395,10 @@ fqiServer <- function(id, fqi_glide) {
         shinyalert(text = strong(
         "Changing the regional database will delete your current data entries.
         Are you sure you want to proceed?"),
-        showCancelButton = T, showConfirmButton = T,
-        type = "warning", html = T, inputId = "confirm_db_change")}
+        showCancelButton = T,
+        showConfirmButton = T, confirmButtonText = "Proceed",
+        confirmButtonCol = "red", type = "warning",
+        html = T, inputId = "confirm_db_change")}
     })
 
     observeEvent(input$confirm_db_change, {
@@ -400,8 +423,6 @@ fqiServer <- function(id, fqi_glide) {
         updateSelectInput(session, inputId = "db",
                           selected = previous_dbs$prev[1])}
     })
-
-
 
     #get all metrics
     observe({

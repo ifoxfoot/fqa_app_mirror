@@ -211,7 +211,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   #interactive theme
-  #bs_themer()
+  bs_themer()
 
 # FQI SERVER -------------------------------------------------------------------
 
