@@ -478,17 +478,16 @@ fqiServer <- function(id) {
 
     #if input method is upload, accepted is from file upload
     observe({
+      req(input_method() == "upload")
+      accepted(data.frame())
+
+
       req(input_method() == "upload", !is.null(file_upload()), input$FQI_column)
       accepted(fqacalc::accepted_entries(x = file_upload() %>%
                                            rename("scientific_name" = input$FQI_column),
                                          key = "scientific_name",
                                          db = input$db,
                                          native = F))
-    })
-
-    observeEvent(input$input_method, {
-      empty_df <- data.frame()
-      accepted(empty_df)
     })
 
     #if db is changed and there is already data entered, show popup
