@@ -28,15 +28,6 @@ ui <- fluidPage(
   #testing theme
   theme = bslib::bs_theme(version = 4),
 
-  #controls where notifications are displayed
-  tags$head(tags$style(
-      HTML("#shiny-notification-panel {
-             position:fixed;
-             top: calc(40%);
-             left: calc(50%);
-             opacity: 1;
-             }"))),
-
   # #changing color of download button
   # tags$head(tags$style(
   #   ".downloadButton{background:#007bff;}
@@ -65,47 +56,48 @@ ui <- fluidPage(
              #tab panel 1
              tabPanel("Calculate FQA Metrics",
 
+                      fqiUI("fqi")
 
-                      #allow glide to be used in this tab
-                      glide(
-                        id = "fqi",
-                        #labels for glide buttons
-                        next_label = "Calculate FQA Metrics",
-                        previous_label = "Go Back to Data Entry",
-                        #customizing where they appear
-                        custom_controls = div(class = "glide-controls", glideControls()),
-                        controls_position = "top",
-                        height = "100%",
-
-                        screen(
-                          #next_condition = "output['fqi-add_species'] > 0",
-                          fluidRow(
-
-                            sidebarPanel(
-
-                              titlePanel("Enter Data"),
-
-                              fqiSideBarUI("fqi")
-
-                            ), #side bar panel
-
-                            mainPanel(
-
-                              fqiMainPanelUI("fqi")
-
-                            )#main panel parenthesis
-
-                          )#fluidRow parenthesis
-
-                        ),#screen 1 parenthesis
-
-                        screen(
-
-                          fqiOutputUI("fqi")
-
-                        )#screen 2 parenthesis
-
-                      )#glide parenthesis
+                      # #allow glide to be used in this tab
+                      # glide(
+                      #   id = "fqi",
+                      #   #labels for glide buttons
+                      #   next_label = "Calculate FQA Metrics",
+                      #   previous_label = "Go Back to Data Entry",
+                      #   #customizing where they appear
+                      #   custom_controls = div(class = "glide-controls", glideControls()),
+                      #   controls_position = "top",
+                      #   height = "100%",
+                      #
+                      #   screen(
+                      #     #next_condition = "output['fqi-add_species'] > 0",
+                      #     fluidRow(
+                      #
+                      #       sidebarPanel(
+                      #
+                      #         titlePanel("Enter Data"),
+                      #
+                      #         fqiSideBarUI("fqi")
+                      #
+                      #       ), #side bar panel
+                      #
+                      #       mainPanel(
+                      #
+                      #         fqiMainPanelUI("fqi")
+                      #
+                      #       )#main panel parenthesis
+                      #
+                      #     )#fluidRow parenthesis
+                      #
+                      #   ),#screen 1 parenthesis
+                      #
+                      #   screen(
+                      #
+                      #     fqiOutputUI("fqi")
+                      #
+                      #   )#screen 2 parenthesis
+                      #
+                      # )#glide parenthesis
 
              ),#tab panel 1 parenthesis
 
@@ -215,11 +207,8 @@ server <- function(input, output, session) {
 
 # FQI SERVER -------------------------------------------------------------------
 
-  #creating a reactive value for glide page, used as input to server fun
-  fqi_glide <- reactive({input$shinyglide_index_fqi})
-
   #call to fqi module server
-  fqiServer("fqi", fqi_glide)
+  fqiServer("fqi")
 
 # COVER SERVER------------------------------------------------------------------
 

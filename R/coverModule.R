@@ -63,14 +63,16 @@ coverMainPanelUI <- function(id) {
     column(4, uiOutput(NS(id, "select_species"))),
     #select cover value
     column(3, uiOutput(NS(id,"cover_value"))),
-    #add species button
-    column(3, actionButton(NS(id, "add_species"), "Add Species",
-                           style = "margin-top: 30px; height: 40px;"))),
+    #add species button, but initialize as disabled
+    column(3, disabled(actionButton(NS(id, "add_species"), "Add Species",
+                           style = "margin-top: 30px; height: 40px;")))),
 
 
-   fluidRow(
-   #datatable of entered data
-   dataTableOutput(NS(id, "cover_DT_manual")))
+    fluidRow(
+      column(12,
+             #datatable of entered data
+             dataTableOutput(NS(id, "cover_DT_manual")))
+    )
 )}
 
 #second screen-------------------------------------------------------------------------
@@ -163,7 +165,7 @@ coverServer <- function(id, cover_glide) {
     #drop-down list of cover values based on cover metric input
     output$cover_value <- renderUI({
       cover_vals <-
-        #list of what values appear in dropdown menu depending on cover_method_select
+      #list of what values appear in dropdown menu depending on cover_method_select
       if(input$cover_method == "braun-blanquet") {
         c("+", "1", "2", "3", "4", "5")
       }
@@ -176,7 +178,6 @@ coverServer <- function(id, cover_glide) {
       else  if(input$cover_method == "usfs_ecodata"){
         c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98")
       }
-
       if (input$cover_method != "percent_cover") {
       #create a dropdown option
       selectizeInput(session$ns("cover_val"), "Cover Value", c("", cover_vals),
@@ -193,7 +194,9 @@ coverServer <- function(id, cover_glide) {
     #make it so add species button can't be clicked until all fields full
     observe({
       vals <- c(input$transect_id, input$cover_val, input$species, input$plot_id)
-      toggleState("add_species", !"" %in% vals & !0 %in% vals)
+      if (input$cover_method != "percent_cover") {
+        toggleState("add_species", !"" %in% vals) }
+      else { toggleState("add_species", input$cover_val > 0 & input$cover_val <= 100)}
     })
 
     #define table for data entered manually
@@ -295,7 +298,6 @@ coverServer <- function(id, cover_glide) {
 
       })
 
-
     #get duration table
     observe({
       req(nrow(accepted()) > 0 & cover_glide() == 1)
@@ -389,7 +391,6 @@ coverServer <- function(id, cover_glide) {
         3)
     })
 
-
     #mean C
     output$mean_c <- renderUI({
       req(cover_glide() == 1)
@@ -402,7 +403,7 @@ coverServer <- function(id, cover_glide) {
       round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 3)
     })
 
-    #metrics table output
+    #C metrics table output
     output$c_metrics <- renderTable({
       req(cover_glide() == 1)
       metrics() %>%
@@ -410,7 +411,7 @@ coverServer <- function(id, cover_glide) {
                                      "Native FQI", "Adjusted FQI"))
     })
 
-    #metrics table output
+    #cover metrics table output
     output$cover_metrics <- renderTable({
       req(cover_glide() == 1)
       metrics() %>%
@@ -458,7 +459,6 @@ coverServer <- function(id, cover_glide) {
                    db = fqacalc::view_db(input$db))
     })
 
-
     #duration table output
     output$duration_table <- renderTable({
       req(cover_glide() == 1)
@@ -481,7 +481,7 @@ coverServer <- function(id, cover_glide) {
       species_sum()
     })
 
-    #species summary
+    #physiog summary
     output$cover_physiog_manual <- renderTable({
       #requiring second screen
       req(cover_glide() == 1)
