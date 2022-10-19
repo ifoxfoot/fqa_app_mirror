@@ -30,6 +30,7 @@ ui <- fluidPage(
   #   ".downloadButton{background:#007bff;}
   #   .downloadButton{color: #fff;}")),
 
+  #css to center shinyalert popups
   tags$head(
     tags$style(
       HTML(".alert {
@@ -40,6 +41,14 @@ ui <- fluidPage(
       )
     )
   ),
+
+  # #css to place shinyglide buttons
+  # tags$style(
+  #   ".next {
+  #   position: absolute;
+  #   top: 0px; right: 15px;
+  #   }"
+  # ),
 
   #set background color
   #setBackgroundColor(color = "ghostwhite"),

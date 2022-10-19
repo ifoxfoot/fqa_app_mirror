@@ -7,12 +7,13 @@ coverUI <- function(id) {
     #allow glide to be used in this tab
     glide(
       id = NS(id, "glide"),
-      #next_condition = "",
       #labels for glide buttons
-      next_label = "Calculate FQA Metrics",
-      previous_label = "Go Back to Data Entry",
+      next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
+      previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
       #customizing where they appear
-      custom_controls = div(class = "glide-controls", glideControls()),
+      # custom_controls = div(class = "glide-controls",
+      #                       glideControls(prevButton(class = "prev"),
+      #                                     nextButton(class = "next"))),
       controls_position = "top",
       height = "100%",
 

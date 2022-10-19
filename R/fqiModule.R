@@ -6,8 +6,8 @@ fqiUI <- function(id) {
   glide(
     id = NS(id, "glide"),
     #labels for glide buttons
-    next_label = "Calculate FQA Metrics",
-    previous_label = "Go Back to Data Entry",
+    next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
+    previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
     #customizing where they appear
     custom_controls = div(class = "glide-controls", glideControls()),
     controls_position = "top",

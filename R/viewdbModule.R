@@ -13,7 +13,7 @@ viewUI <- function(id) {
       downloadButton(NS(id, "download"),
                      label = "Download",
                      class = "downloadButton",
-                     style = "margin-top: 30px; height: 40px; margin-left: 10px;"
+                     style = "margin-top: 32px; height: 38px; margin-left: 10px;"
                      )
       ),
 
