@@ -301,11 +301,18 @@ coverServer <- function(id) {
     #initialize reactives
     accepted <- reactiveVal()
     confirm_db <- reactiveVal("empty")
+    confirm_cover <- reactiveVal("empty")
     previous_dbs <- reactiveValues(prev = "michigan_2014")
+    previous_covers <- reactiveValues(prev = "percent_cover")
 
     #store current and previous db value in reactive element
     observeEvent(input$db, {
       previous_dbs$prev <- c(tail(previous_dbs$prev, 1), input$db)
+    })
+
+    #store current and previous cover method value in reactive element
+    observeEvent(input$cover_method, {
+      previous_covers$prev <- c(tail(previous_covers$prev, 1), input$cover_method)
     })
 
     #update reactive
@@ -358,6 +365,48 @@ coverServer <- function(id) {
       if (confirm_db() == FALSE) {
         updateSelectInput(session, inputId = "db",
                           selected = previous_dbs$prev[1])}
+    })
+
+    #if cover method is changed and there is already data entered, show popup
+    observeEvent(input$cover_method, {
+      req(nrow(accepted()) > 0)
+      #code for popup
+      if(confirm_cover() != "empty") {
+        confirm_cover("empty") }
+      else{
+        shinyalert(text = strong(
+          "Changing the cover method will delete your current data entries.
+        Are you sure you want to proceed?"),
+        showCancelButton = T,
+        showConfirmButton = T, confirmButtonText = "Proceed",
+        confirmButtonCol = "red", type = "warning",
+        html = T, inputId = "confirm_cover_change", className = "alert")}
+    })
+
+    observeEvent(input$confirm_cover_change, {
+      #store confirmation in reactive value
+      confirm_cover(input$confirm_cover_change)
+      #create an empty df
+      empty_df <- data.frame()
+      #if confirm db is true and method is enter, reset entered data
+      if(confirm_cover() == TRUE ) {
+        cover_data(empty_df)
+        accepted(empty_df)
+        confirm_cover("empty")}
+      #if confirm db is false, reset db to previous value
+      if (confirm_cover() == FALSE) {
+        updateSelectInput(session, inputId = "cover_method",
+                          selected = previous_covers$prev[1])}
+    })
+
+    #if there are duplicates, show warning
+    observeEvent(input$add_species, {
+      req(nrow(cover_data()) > 1)
+      if( any(duplicated(cover_data() %>% select(plot_id, scientific_name))) ){
+        shinyalert(text = strong(
+          "Duplicate species are detected in the same plot.
+          Duplicates will only be counted once, and their cover values will be added together."),
+          type = "warning",  html = T, className = "alert")}
     })
 
 ##second screen-----------------------------------------------------------------

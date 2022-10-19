@@ -224,7 +224,7 @@ fqiServer <- function(id) {
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert(text = strong(i), type = "warning", html = T)}
+        shinyalert(text = strong(i), type = "warning", html = T, className = "alert")}
     })
 
     #render output table from uploaded file
@@ -294,7 +294,7 @@ fqiServer <- function(id) {
         message = function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert(text = strong(i), type = "warning", html = T) }
+        shinyalert(text = strong(i), type = "warning", html = T, className = "alert") }
     })
 
     #when delete species is clicked, delete row
@@ -369,7 +369,7 @@ fqiServer <- function(id) {
         showCancelButton = T,
         showConfirmButton = T, confirmButtonText = "Proceed",
         confirmButtonCol = "red", type = "warning",
-        html = T, inputId = "confirm_db_change")}
+        html = T, inputId = "confirm_db_change", className = "alert")}
     })
 
     observeEvent(input$confirm_db_change, {

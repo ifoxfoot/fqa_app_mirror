@@ -30,6 +30,17 @@ ui <- fluidPage(
   #   ".downloadButton{background:#007bff;}
   #   .downloadButton{color: #fff;}")),
 
+  tags$head(
+    tags$style(
+      HTML(".alert {
+             position:fixed;
+             top: calc(50%);
+             left: calc(50%);
+             }"
+      )
+    )
+  ),
+
   #set background color
   #setBackgroundColor(color = "ghostwhite"),
 
