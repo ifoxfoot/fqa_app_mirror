@@ -58,109 +58,14 @@ ui <- fluidPage(
 
                       fqiUI("fqi")
 
-                      # #allow glide to be used in this tab
-                      # glide(
-                      #   id = "fqi",
-                      #   #labels for glide buttons
-                      #   next_label = "Calculate FQA Metrics",
-                      #   previous_label = "Go Back to Data Entry",
-                      #   #customizing where they appear
-                      #   custom_controls = div(class = "glide-controls", glideControls()),
-                      #   controls_position = "top",
-                      #   height = "100%",
-                      #
-                      #   screen(
-                      #     #next_condition = "output['fqi-add_species'] > 0",
-                      #     fluidRow(
-                      #
-                      #       sidebarPanel(
-                      #
-                      #         titlePanel("Enter Data"),
-                      #
-                      #         fqiSideBarUI("fqi")
-                      #
-                      #       ), #side bar panel
-                      #
-                      #       mainPanel(
-                      #
-                      #         fqiMainPanelUI("fqi")
-                      #
-                      #       )#main panel parenthesis
-                      #
-                      #     )#fluidRow parenthesis
-                      #
-                      #   ),#screen 1 parenthesis
-                      #
-                      #   screen(
-                      #
-                      #     fqiOutputUI("fqi")
-                      #
-                      #   )#screen 2 parenthesis
-                      #
-                      # )#glide parenthesis
-
-             ),#tab panel 1 parenthesis
+                      ),#tab panel 1 parenthesis
 
 # COVER TAB---------------------------------------------------------------------
 
              #tab panel 2
              tabPanel("Caclulate Cover-Weighted FQA Metrics",
 
-                      #allow glide to be used in this tab
-                      glide(
-                        id = "cover",
-                        #next_condition = "",
-                        #labels for glide buttons
-                        next_label = "Calculate FQA Metrics",
-                        previous_label = "Go Back to Data Entry",
-                        #customizing where they appear
-                        custom_controls = div(class = "glide-controls", glideControls()),
-                        controls_position = "top",
-                        height = "100%",
-
-                        screen(
-                          fluidRow(
-                            sidebarPanel(
-
-                              #title of side bar
-                              titlePanel("Enter Data"),
-
-                              #call to cover module
-                              coverSideBarUI("cover")
-
-                            ),#sidebarPanel parenthesis
-
-                            mainPanel(
-
-                              conditionalPanel(
-
-                                condition = "input['cover-input_method'] == 'enter'",
-
-                                #buttons for cover data entry
-                                coverMainPanelUI("cover")
-
-                              )#conditional panel parenthesis
-
-                            )#main panel parenthesis
-
-                          )#fluid row parenthesis
-
-                        ),#screen 1 parenthesis
-
-                        screen(
-
-                          #conditional panel when cover input method is manual entry
-                          conditionalPanel(
-
-                            condition = "input['cover-input_method'] == 'enter'",
-
-                            coverOutputUI("cover")
-
-                          )#conditional 1 parenthesis
-
-                        )#screen two parenthesis
-
-                      )#glide parenthesis
+                      coverUI("cover")
 
              ),#tab panel 2 parenthesis
 
@@ -194,7 +99,8 @@ ui <- fluidPage(
                       br(),
 
              ),#tabPanel parenthesis
-     #footer = img(src = "ERDC.png", style = "hight: 80px; width: 160px")
+
+#footer = img(src = "ERDC.png", style = "hight: 80px; width: 160px")
 
   )#navbar parenthesis
 
@@ -212,11 +118,8 @@ server <- function(input, output, session) {
 
 # COVER SERVER------------------------------------------------------------------
 
-  #creating a reactive value for glide page, used as input to server fun
-  cover_glide <- reactive({input$shinyglide_index_cover})
-
   #call to coverModule server function
-  coverServer("cover", cover_glide)
+  coverServer("cover")
 
 # ABOUT SERVER------------------------------------------------------------------
 

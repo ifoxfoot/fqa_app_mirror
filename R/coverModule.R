@@ -1,166 +1,206 @@
-#sidebar------------------------------------------------------------------------
-
+#UI------------------------------------------------------------------------
 #side bar UI function
-coverSideBarUI <- function(id) {
-  tagList(
-
-    #input regional data base
-    selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
-                choices = fqacalc::db_names()$name,
-                selected = "michigan_2014"),
-
-    #input data entry method
-    radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                 choices = c( "Enter Species Manually" = "enter",
-                              "Upload a File" = "upload")),
-
-    #select cover method
-    selectInput(NS(id, "cover_method"), label = "Cover Method",
-                choices = c(
-                  "percent_cover",
-                  "braun-blanquet",
-                  "carolina_veg_survey",
-                  "daubenmire",
-                  "usfs_ecodata")),
-
-    #when data entry method is upload, allow user to upload files
-    conditionalPanel(
-
-      condition = "input['cover-input_method'] == 'enter'",
-
-      #delete species button
-      actionButton(NS(id, "delete_species"), "Delete Species"),
-
-      #button to delete all entries
-      actionButton(NS(id, "delete_all"), "Delete All Entries")
-
-      ),#conditional parenthesis
-
-    #when data entry method is upload, allow user to upload files
-    conditionalPanel(
-
-      condition = "input['cover-input_method'] == 'upload'",
-
-      "UNDER CONSTRUCTION"
-
-    ) #conditional parenthesis
-
-  )}
-
-#main panel----------------------------------------------------------------------
-
-#group of widgets to input cover data
-coverMainPanelUI <- function(id) {
-  tagList(
-    #input transect ID
-    fluidRow(
-      column(4, textInput(NS(id, "transect_id"), "Transect ID"))),
-
-    fluidRow(
-    #plot id text input
-    column(2, textInput(NS(id, "plot_id"), "Plot ID")),
-    #select species
-    column(4, uiOutput(NS(id, "select_species"))),
-    #select cover value
-    column(3, uiOutput(NS(id,"cover_value"))),
-    #add species button, but initialize as disabled
-    column(3, disabled(actionButton(NS(id, "add_species"), "Add Species",
-                           style = "margin-top: 30px; height: 40px;")))),
-
-
-    fluidRow(
-      column(12,
-             #datatable of entered data
-             dataTableOutput(NS(id, "cover_DT_manual")))
-    )
-)}
-
-#second screen-------------------------------------------------------------------------
-
-#group of widgets to input cover data
-coverOutputUI <- function(id) {
+coverUI <- function(id) {
 
   tagList(
 
-    fluidRow(
-      #title
-      column(7, h3(textOutput(NS(id, "title")))),
+    #allow glide to be used in this tab
+    glide(
+      id = NS(id, "glide"),
+      #next_condition = "",
+      #labels for glide buttons
+      next_label = "Calculate FQA Metrics",
+      previous_label = "Go Back to Data Entry",
+      #customizing where they appear
+      custom_controls = div(class = "glide-controls", glideControls()),
+      controls_position = "top",
+      height = "100%",
 
-      #download button
-      column(2, downloadButton(NS(id, "download"),
-                               label = "Download", class = "downloadButton",
-                               style = "margin-top: 20px; height: 40px;"))),
+      screen(
+        fluidRow(
+          sidebarPanel(
 
-    #boxes with key values
-    fluidRow(
-      valueBox(
-        htmlOutput(NS(id,"species_richness")),
-        "Species Richness",
-        icon = icon("tree"), color = "orange"
-      ),
+            #title of side bar
+            titlePanel("Enter Data"),
 
-      valueBox(
-        htmlOutput(NS(id,"mean_c")),
-        "Mean C",
-        icon = icon("seedling"), color = "orange"
-      ),
-      valueBox(
-        htmlOutput(NS(id,"fqi")),
-        "Total FQI",
-        icon = icon("pagelines"), color = "orange"
-      )
-    ),#fluidRow parenthesis
+            #input regional data base
+            selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
+                        choices = fqacalc::db_names()$name,
+                        selected = "michigan_2014"),
 
-    #all mets and graph
-    fluidRow(
-      box(plotOutput(NS(id,"compare_plot")),
-          title = "Compare Frequency of C Scores to Regional FQAI"),
-      box(plotOutput(NS(id,"c_hist")),
-          title = "Histogram of C Scores")
-    ),
+            #input data entry method
+            radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+                         choices = c( "Enter Species Manually" = "enter",
+                                      "Upload a File" = "upload")),
 
-    fluidRow(
-      column(4,
-             box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
-      column(4,
-             box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL)),
-      column(4,
-             box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
-    ),
+            #select cover method
+            selectInput(NS(id, "cover_method"), label = "Cover Method",
+                        choices = c(
+                          "percent_cover",
+                          "braun-blanquet",
+                          "carolina_veg_survey",
+                          "daubenmire",
+                          "usfs_ecodata")),
 
-    fluidRow(
-      column(4,
-             box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
-      column(4,
-             box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
-      column(4,
-             box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
-    ),
+            #when data entry method is upload, allow user to upload files
+            conditionalPanel(
 
-    #output of physiog summary
-    fluidRow(box(title = "Physiognomy Summary", status = "primary",
-                 tableOutput(NS(id, "cover_physiog_manual")), width = 12,
-                 style = "overflow-x: scroll")),
+              condition = "input['cover-input_method'] == 'enter'",
 
-    #output of species summary
-    fluidRow(box(title = "Species Summary", status = "primary",
-    tableOutput(NS(id, "cover_species_manual")), width = 12,
-    style = "overflow-x: scroll")),
+              #delete species button
+              actionButton(NS(id, "delete_species"), "Delete Species"),
 
-    #output of plot summary
-    fluidRow(box(title = "Plot Summary", status = "primary",
-    tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll"))
+              #button to delete all entries
+              actionButton(NS(id, "delete_all"), "Delete All Entries")
 
-)}
+            ),#conditional parenthesis
+
+            #when data entry method is upload, allow user to upload files
+            conditionalPanel(
+
+              condition = "input['cover-input_method'] == 'upload'",
+
+              "UNDER CONSTRUCTION"
+
+            ) #conditional parenthesis
+
+          ),#sidebarPanel parenthesis
+
+          mainPanel(
+
+            conditionalPanel(
+
+              condition = "input['cover-input_method'] == 'enter'",
+
+              #input transect ID
+              fluidRow(
+                column(4, textInput(NS(id, "transect_id"), "Transect ID"))),
+
+              fluidRow(
+                #plot id text input
+                column(2, textInput(NS(id, "plot_id"), "Plot ID")),
+                #select species
+                column(4, uiOutput(NS(id, "select_species"))),
+                #select cover value
+                column(3, uiOutput(NS(id,"cover_value"))),
+                #add species button, but initialize as disabled
+                column(3, disabled(actionButton(NS(id, "add_species"), "Add Species",
+                                                style = "margin-top: 30px; height: 40px;")))),
+
+
+              fluidRow(
+                column(12,
+                       #datatable of entered data
+                       dataTableOutput(NS(id, "cover_DT_manual")))
+              )
+
+            )#conditional panel parenthesis
+
+          )#main panel parenthesis
+
+        )#fluid row parenthesis
+
+      ),#screen 1 parenthesis
+
+      screen(
+
+        #conditional panel when cover input method is manual entry
+        conditionalPanel(
+
+          condition = "input['cover-input_method'] == 'enter'",
+
+          fluidRow(
+            #title
+            column(7, h3(textOutput(NS(id, "title")))),
+
+            #download button
+            column(2, downloadButton(NS(id, "download"),
+                                     label = "Download", class = "downloadButton",
+                                     style = "margin-top: 20px; height: 40px;"))),
+
+          #boxes with key values
+          fluidRow(
+            valueBox(
+              htmlOutput(NS(id,"species_richness")),
+              "Species Richness",
+              icon = icon("tree"), color = "orange"
+            ),
+
+            valueBox(
+              htmlOutput(NS(id,"mean_c")),
+              "Mean C",
+              icon = icon("seedling"), color = "orange"
+            ),
+            valueBox(
+              htmlOutput(NS(id,"fqi")),
+              "Total FQI",
+              icon = icon("pagelines"), color = "orange"
+            )
+          ),#fluidRow parenthesis
+
+          #all mets and graph
+          fluidRow(
+            box(plotOutput(NS(id,"compare_plot")),
+                title = "Compare Frequency of C Scores to Regional FQAI"),
+            box(plotOutput(NS(id,"c_hist")),
+                title = "Histogram of C Scores")
+          ),
+
+          fluidRow(
+            column(4,
+                   box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
+            column(4,
+                   box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL)),
+            column(4,
+                   box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
+          ),
+
+          fluidRow(
+            column(4,
+                   box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
+            column(4,
+                   box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
+            column(4,
+                   box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
+          ),
+
+          #output of physiog summary
+          fluidRow(box(title = "Physiognomy Summary", status = "primary",
+                       tableOutput(NS(id, "cover_physiog_manual")), width = 12,
+                       style = "overflow-x: scroll")),
+
+          #output of species summary
+          fluidRow(box(title = "Species Summary", status = "primary",
+                       tableOutput(NS(id, "cover_species_manual")), width = 12,
+                       style = "overflow-x: scroll")),
+
+          #output of plot summary
+          fluidRow(box(title = "Plot Summary", status = "primary",
+                       tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll"))
+
+        )#conditional 1 parenthesis
+
+      )#screen two parenthesis
+
+    )#glide parenthesis
+
+  )#taglist parenthesis
+
+  }
+
 
 #Server-------------------------------------------------------------------------
 
-coverServer <- function(id, cover_glide) {
+coverServer <- function(id) {
+
   #call server fun for species dropdown
   selectSpeciesServer(id = id)
 
   #start module function
   moduleServer(id, function(input, output, session) {
+
+    #creating a reactive value for glide page, used as input to server fun
+    cover_glide <- reactive({input$shinyglide_index_glide})
 
     #drop-down list of cover values based on cover metric input
     output$cover_value <- renderUI({

@@ -1,4 +1,4 @@
-#side bar UI function
+#UI module
 fqiUI <- function(id) {
 
   tagList(
@@ -156,142 +156,6 @@ fqiUI <- function(id) {
 
 }
 
-#sidebar ------------------------------------------------------------------------
-
-# #side bar UI function
-# fqiSideBarUI <- function(id) {
-#
-#   tagList(
-#
-#     #input regional data base
-#     selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
-#                 choices = fqacalc::db_names()$name,
-#                 selected = "michigan_2014"),
-#
-#     #input data entry method
-#     radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-#                  choices = c( "Enter Species Manually" = "enter",
-#                               "Upload a File" = "upload")),
-#
-#
-#     #when data entry method is upload, allow user to upload files
-#     conditionalPanel(
-#
-#       condition = "input['fqi-input_method'] == 'upload'",
-#
-#       #input file upload widget
-#       fileInput(NS(id, "upload"), NULL, buttonLabel = "Upload...", multiple = F),
-#
-#       #input what column to use to bind to FQA database
-#       uiOutput(NS(id, "FQI_colname")),
-#
-#       #input button to delete uploaded file
-#       actionButton(NS(id, "upload_delete_all"), "Delete Uploaded File")
-#
-#     ), #conditional 1 parenthesis
-#
-#     #when data entry method is enter, allow user to enter data manually
-#     conditionalPanel(
-#
-#       condition = "input['fqi-input_method'] == 'enter'",
-#
-#       #input latin name
-#       uiOutput(NS(id, "latin_name")),
-#
-#       #input add species button
-#       actionButton(NS(id, "add_species"), "Add Species"),
-#
-#       #input delete speces button
-#       actionButton(NS(id, "delete_species"), "Delete Species"),
-#
-#       #button to delete all entries
-#       actionButton(NS(id, "manual_delete_all"), "Delete All Entries")
-#
-#     ) #conditional 2 parenthesis
-#   )}
-
-#Main panel ---------------------------------------------------------------------
-
-# fqiMainPanelUI <- function(id) {
-#
-#   tagList(
-#
-#     #when user uploads file, show uploaded table
-#     conditionalPanel("input['fqi-input_method'] == 'upload' && input.FQI_uploaded_file != 0",
-#
-#                      dataTableOutput(NS(id, "upload_table"))),
-#
-#
-#     #when user enters species manually, show what they enter
-#     conditionalPanel("input['fqi-input_method'] == 'enter'",
-#
-#                      dataTableOutput(NS(id, "manual_table"))),
-#
-#   )}
-
-#Outputs------------------------------------------------------------------------
-
-# fqiOutputUI <- function(id) {
-#
-#   tagList(
-#
-#     fluidRow(
-#       #title
-#       column(7, h3(textOutput(NS(id, "title")))),
-#
-#       #download button
-#       column(2, downloadButton(NS(id, "download"),
-#                                label = "Download", class = "downloadButton",
-#                                style = "margin-top: 20px; height: 40px;"))),
-#
-#     #boxes with key values
-#     fluidRow(
-#       valueBox(
-#         htmlOutput(NS(id,"species_richness")),
-#         "Species Richness",
-#         icon = icon("tree"), color = "orange"
-#       ),
-#
-#       valueBox(
-#         htmlOutput(NS(id,"mean_c")),
-#         "Mean C",
-#         icon = icon("seedling"), color = "orange"
-#       ),
-#       valueBox(
-#         htmlOutput(NS(id,"fqi")),
-#         "Total FQI",
-#         icon = icon("pagelines"), color = "orange"
-#       )
-#     ),#fluidRow parenthesis
-#
-#     #all mets and graph
-#     fluidRow(
-#       box(plotOutput(NS(id,"compare_plot")),
-#           title = "Compare Frequency of C Scores to Regional FQAI"),
-#       box(plotOutput(NS(id,"c_hist")),
-#           title = "Histogram of C Scores")
-#     ),
-#
-#     fluidRow(
-#       column(4,
-#         box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
-#       column(4,
-#         box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
-#       column(4,
-#         box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
-#       ),
-#
-#     fluidRow(
-#       column(4,
-#              box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
-#       column(4,
-#              box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Breakdown", width = NULL)),
-#       column(4,
-#              box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
-#     )
-#
-#   )}
-
 #server-------------------------------------------------------------------------
 
 fqiServer <- function(id) {
@@ -302,8 +166,6 @@ fqiServer <- function(id) {
     #storing glide index
     fqi_glide <- reactive({input$shinyglide_index_glide})
 
-    observe({print(fqi_glide())})
-
     #making input method reactive
     input_method <- reactive({input$input_method})
 
@@ -313,7 +175,7 @@ fqiServer <- function(id) {
     #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
     data_entered <- reactiveVal({data_entered})
-    accepted <- reactiveVal()
+
 
 #file upload server-------------------------------------------------------------
 
@@ -470,6 +332,9 @@ fqiServer <- function(id) {
 
 #creating accepted df ----------------------------------------------------------
 
+    #initialize accepted reactive
+    accepted <- reactiveVal()
+
     #if input method is enter, accepted is from data_entered
     observe({
       req(input_method() == "enter")
@@ -529,9 +394,14 @@ fqiServer <- function(id) {
                           selected = previous_dbs$prev[1])}
     })
 
+    #create boolean that shows if data is entered or not for next condition
     output$next_condition <- renderText(
       nrow(accepted()) > 0
           )
+
+    #hide next condition output
+    observe({shinyjs::hide("next_condition",)})
+    outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
 
 #second screen -----------------------------------------------------------------
 
