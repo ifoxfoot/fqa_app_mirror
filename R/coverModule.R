@@ -298,8 +298,15 @@ coverServer <- function(id) {
     })
 
 ##accepted df ------------------------------------------------------------------
-    #initialize reactive
+    #initialize reactives
     accepted <- reactiveVal()
+    confirm_db <- reactiveVal("empty")
+    previous_dbs <- reactiveValues(prev = "michigan_2014")
+
+    #store current and previous db value in reactive element
+    observeEvent(input$db, {
+      previous_dbs$prev <- c(tail(previous_dbs$prev, 1), input$db)
+    })
 
     #update reactive
     observe({
@@ -320,6 +327,38 @@ coverServer <- function(id) {
     #hide next condition output
     observe({shinyjs::hide("next_condition",)})
     outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
+
+    #if db is changed and there is already data entered, show popup
+    observeEvent(input$db, {
+      req(nrow(accepted()) > 0)
+      #code for popup
+      if(confirm_db() != "empty") {
+        confirm_db("empty") }
+      else{
+        shinyalert(text = strong(
+          "Changing the regional database will delete your current data entries.
+        Are you sure you want to proceed?"),
+        showCancelButton = T,
+        showConfirmButton = T, confirmButtonText = "Proceed",
+        confirmButtonCol = "red", type = "warning",
+        html = T, inputId = "confirm_db_change")}
+    })
+
+    observeEvent(input$confirm_db_change, {
+      #store confirmation in reactive value
+      confirm_db(input$confirm_db_change)
+      #create an empty df
+      empty_df <- data.frame()
+      #if confirm db is true and method is enter, reset entered data
+      if(confirm_db() == TRUE ) {
+        cover_data(empty_df)
+        accepted(empty_df)
+        confirm_db("empty")}
+      #if confirm db is false, reset db to previous value
+      if (confirm_db() == FALSE) {
+        updateSelectInput(session, inputId = "db",
+                          selected = previous_dbs$prev[1])}
+    })
 
 ##second screen-----------------------------------------------------------------
 

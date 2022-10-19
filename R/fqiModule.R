@@ -14,6 +14,7 @@ fqiUI <- function(id) {
     height = "100%",
 
     screen(
+
       next_condition = "output['fqi-next_condition'] == 'TRUE'",
 
       fluidRow(

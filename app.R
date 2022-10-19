@@ -6,7 +6,8 @@ library(rlang) #for .data and := functions
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
-library(shinyjs) #for reset buttons, popups, hiding elements
+library(shinyjs) #for reset buttons, hiding elements,
+library(shinyalert) #for popups
 library(shinyFeedback) #for warning messages near widgets
 library(shinyWidgets) #for dashboard layout
 library(shinydashboard) #for boxes
