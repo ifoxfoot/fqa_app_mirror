@@ -17,6 +17,9 @@ coverUI <- function(id) {
       height = "100%",
 
       screen(
+
+        next_condition = "output['cover-next_condition'] == 'TRUE'",
+
         fluidRow(
           sidebarPanel(
 
@@ -68,9 +71,12 @@ coverUI <- function(id) {
 
           mainPanel(
 
+
             conditionalPanel(
 
               condition = "input['cover-input_method'] == 'enter'",
+
+              textOutput(NS(id, "next_condition")),
 
               #input transect ID
               fluidRow(
@@ -286,16 +292,38 @@ coverServer <- function(id) {
 
     #when delete all is clicked, clear all entries
     observeEvent(input$delete_all, {
-      #make an empty df
-      empty_df <- data.frame(row.names = names(fqacalc::crooked_island))
       #assign it to the reactive value
-      cover_data(empty_df)
+      cover_data(data_entered)
+      accepted(data_entered)
     })
+
+##accepted df ------------------------------------------------------------------
+    #initialize reactive
+    accepted <- reactiveVal()
+
+    #update reactive
+    observe({
+      accepted(data_entered)
+      req(nrow(cover_data()) > 0)
+      accepted(fqacalc::accepted_entries(x = cover_data(),
+                                         key = "scientific_name",
+                                         db = input$db,
+                                         native = F,
+                                         cover_metric = input$cover_method))
+    })
+
+    #create boolean that shows if data is entered or not for next condition
+    output$next_condition <- renderText(
+      nrow(accepted()) > 0
+    )
+
+    #hide next condition output
+    observe({shinyjs::hide("next_condition",)})
+    outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
 
 ##second screen-----------------------------------------------------------------
 
     #initializing reactives for outputs
-    accepted <- reactiveVal()
     metrics <- reactiveVal()
     physiog_table <- reactiveVal()
     duration_table <- reactiveVal()
@@ -307,13 +335,6 @@ coverServer <- function(id) {
     observe({
       #requiring second screen to update reactive values
       req(cover_glide() == 1)
-
-      #update reactives
-      accepted(fqacalc::accepted_entries(x = cover_data(),
-                                        key = "scientific_name",
-                                        db = input$db,
-                                        native = F,
-                                        cover_metric = input$cover_method))
 
       metrics(fqacalc::all_cover_metrics(x = cover_data(),
                                key = "scientific_name",

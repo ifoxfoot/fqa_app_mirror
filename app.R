@@ -6,18 +6,14 @@ library(rlang) #for .data and := functions
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
-library(shinyjs) #for reset buttons
+library(shinyjs) #for reset buttons, popups, hiding elements
 library(shinyFeedback) #for warning messages near widgets
 library(shinyWidgets) #for dashboard layout
-library(shinyalert) #for popup warnigns
 library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map
 library(bslib) #interactive theme
 library(thematic) #for theme r graphics
-
-#define table for data entered manually
-data_entered = data.frame()
 
 #thematic for theme of plots
 thematic::thematic_shiny()
