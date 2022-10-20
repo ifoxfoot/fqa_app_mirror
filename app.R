@@ -34,9 +34,10 @@ ui <- fluidPage(
   tags$head(
     tags$style(
       HTML(".alert {
-             position:fixed;
+             position: fixed;
              top: calc(50%);
              left: calc(50%);
+             height: calc(40%);
              }"
       )
     )

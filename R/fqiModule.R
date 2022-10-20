@@ -58,14 +58,18 @@ fqiUI <- function(id) {
               #input latin name
               uiOutput(NS(id, "latin_name")),
 
-              #input add species button
-              actionButton(NS(id, "add_species"), "Add Species"),
+              fluidRow(
+                #input add species button
+                actionButton(NS(id, "add_species"), "Add Species",
+                             style = "margin-left: 15px;"),
+                #input delete speces button
+                actionButton(NS(id, "delete_species"), "Delete Species",
+                             style = "margin-left: 10px;")),
 
-              #input delete speces button
-              actionButton(NS(id, "delete_species"), "Delete Species"),
+              br(),
 
               #button to delete all entries
-              actionButton(NS(id, "manual_delete_all"), "Delete All Entries")
+              actionButton(NS(id, "manual_delete_all"), "Delete All Entries", class = "btn-danger")
 
             ) #conditional 2 parenthesis
 
@@ -133,20 +137,14 @@ fqiUI <- function(id) {
 
       fluidRow(
         column(4,
-               box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
+               box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
+               box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL)),
         column(4,
-               box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
-        column(4,
-               box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
-      ),
-
-      fluidRow(
-        column(4,
-               box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
-        column(4,
+               box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL),
                box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Breakdown", width = NULL)),
         column(4,
-               box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
+               box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
+               box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL))
       )
 
     )#screen 2 parenthesis
