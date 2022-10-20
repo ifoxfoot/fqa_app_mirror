@@ -12,9 +12,9 @@ coverUI <- function(id) {
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
       #customizing where they appear
       # custom_controls = div(class = "glide-controls",
-      #                       glideControls(prevButton(class = "prev"),
-      #                                     nextButton(class = "next"))),
-      controls_position = "top",
+      #                       glideControls(prevButton(class = c("prev", "btn-default")),
+      #                                     nextButton(class = "next1"))),
+      controls_position = "bottom",
       height = "100%",
 
       screen(
@@ -55,7 +55,7 @@ coverUI <- function(id) {
               actionButton(NS(id, "delete_species"), "Delete Species"),
 
               #button to delete all entries
-              actionButton(NS(id, "delete_all"), "Delete All Entries")
+              actionButton(NS(id, "delete_all"), "Delete All Entries", class = "btn-danger")
 
             ),#conditional parenthesis
 
@@ -116,14 +116,15 @@ coverUI <- function(id) {
 
           condition = "input['cover-input_method'] == 'enter'",
 
-          fluidRow(
-            #title
-            column(7, h3(textOutput(NS(id, "title")))),
-
             #download button
-            column(2, downloadButton(NS(id, "download"),
-                                     label = "Download", class = "downloadButton",
-                                     style = "margin-top: 20px; height: 40px;"))),
+            downloadButton(NS(id, "download"),
+                           label = "Download", class = "downloadButton",
+                           style = "position: absolute; top: 0px; right: 10px;"),
+            br(),
+            #title
+            column(12, align = "center",
+                   h3(textOutput(NS(id, "title")))),
+
 
           #boxes with key values
           fluidRow(

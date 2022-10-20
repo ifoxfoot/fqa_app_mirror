@@ -10,7 +10,7 @@ fqiUI <- function(id) {
     previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
     #customizing where they appear
     custom_controls = div(class = "glide-controls", glideControls()),
-    controls_position = "top",
+    controls_position = "bottom",
     height = "100%",
 
     screen(
@@ -77,6 +77,9 @@ fqiUI <- function(id) {
 
         mainPanel(
 
+          br(),
+          br(),
+
           textOutput(NS(id, "next_condition")),
 
           #when user uploads file, show uploaded table
@@ -98,32 +101,34 @@ fqiUI <- function(id) {
 
     screen(
 
-      fluidRow(
-        #title
-        column(7, h3(textOutput(NS(id, "title")))),
+      #download button
+      downloadButton(NS(id, "download"),
+                     label = "Download", class = "downloadButton",
+                     style = "position: absolute; top: 0px; right: 10px;"),
+      br(),
+      #title
+      column(12, align = "center",
+                h3(textOutput(NS(id, "title")))),
 
-        #download button
-        column(2, downloadButton(NS(id, "download"),
-                                 label = "Download", class = "downloadButton",
-                                 style = "margin-top: 20px; height: 40px;"))),
+
 
       #boxes with key values
       fluidRow(
         valueBox(
           htmlOutput(NS(id,"species_richness")),
           "Species Richness",
-          icon = icon("tree"), color = "orange"
+          icon = icon("tree"), color = "navy"
         ),
 
         valueBox(
           htmlOutput(NS(id,"mean_c")),
           "Mean C",
-          icon = icon("seedling"), color = "orange"
+          icon = icon("seedling"), color = "olive"
         ),
         valueBox(
           htmlOutput(NS(id,"fqi")),
           "Total FQI",
-          icon = icon("pagelines"), color = "orange"
+          icon = icon("pagelines"), color = "green"
         )
       ),#fluidRow parenthesis
 

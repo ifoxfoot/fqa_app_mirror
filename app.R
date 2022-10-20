@@ -25,10 +25,10 @@ ui <- fluidPage(
   #testing theme
   theme = bslib::bs_theme(version = 4),
 
-  # #changing color of download button
-  # tags$head(tags$style(
-  #   ".downloadButton{background:#007bff;}
-  #   .downloadButton{color: #fff;}")),
+  #changing color of download button
+  tags$head(tags$style(
+    ".downloadButton{background:#3c8dbc;}
+    .downloadButton{color: #fff;}")),
 
   #css to center shinyalert popups
   tags$head(
@@ -43,13 +43,20 @@ ui <- fluidPage(
     )
   ),
 
-  # #css to place shinyglide buttons
-  # tags$style(
-  #   ".next {
-  #   position: absolute;
-  #   top: 0px; right: 15px;
-  #   }"
-  # ),
+  #css to place shinyglide buttons
+  tags$style(
+    ".next-screen {
+    position: absolute;
+    top: 0px; right: 10px;
+    }"
+  ),
+
+  tags$style(
+    ".prev-screen {
+    position: absolute;
+    top: 0px; left: 10px;
+    }"
+  ),
 
   #set background color
   #setBackgroundColor(color = "ghostwhite"),
