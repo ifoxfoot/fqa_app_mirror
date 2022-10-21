@@ -119,7 +119,7 @@ coverUI <- function(id) {
             #download button
             downloadButton(NS(id, "download"),
                            label = "Download", class = "downloadButton",
-                           style = "position: absolute; top: 0px; right: 10px;"),
+                           style = "position: absolute; top: 0px; right: 0px;"),
             br(),
             #title
             column(12, align = "center",
@@ -340,7 +340,7 @@ coverServer <- function(id) {
 
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
-      req(nrow(accepted()) > 0)
+      req(nrow(cover_data()) > 0)
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -372,7 +372,7 @@ coverServer <- function(id) {
 
     #if cover method is changed and there is already data entered, show popup
     observeEvent(input$cover_method, {
-      req(nrow(accepted()) > 0)
+      req(nrow(cover_data()) > 0)
       #code for popup
       if(confirm_cover() != "empty") {
         confirm_cover("empty") }

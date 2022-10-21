@@ -104,7 +104,7 @@ fqiUI <- function(id) {
       #download button
       downloadButton(NS(id, "download"),
                      label = "Download", class = "downloadButton",
-                     style = "position: absolute; top: 0px; right: 10px;"),
+                     style = "position: absolute; top: 0px; right: 0px;"),
       br(),
       #title
       column(12, align = "center",

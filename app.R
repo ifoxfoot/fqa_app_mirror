@@ -44,31 +44,34 @@ ui <- fluidPage(
   #sets min width of sidebar panel
   tags$head(tags$style(".well { min-width: 280px; }")),
 
-  #css to center shinyalert popups
-  tags$head(
-    tags$style(
-      HTML(".alert {
-             position: fixed;
-             top: calc(50%);
-             left: calc(50%);
-             height: calc(40%);
-             }"
-      )
-    )
-  ),
+  #force shiny alerts to load
+  useShinyalert(force=TRUE),
+
+  # #css to center shinyalert popups
+  # tags$head(
+  #   tags$style(
+  #     HTML(".alert {
+  #            position: fixed;
+  #            top: calc(10%);
+  #            left: calc(50%);
+  #            height: calc(40%);
+  #            }"
+  #     )
+  #   )
+  # ),
 
   #css to place shinyglide buttons
   tags$style(
     ".next-screen {
     position: absolute;
-    top: 0px; right: 10px;
+    top: 0px; right: 0px;
     }"
   ),
 
   tags$style(
     ".prev-screen {
     position: absolute;
-    top: 0px; left: 10px;
+    top: 0px; left: 0px;
     }"
   ),
 
