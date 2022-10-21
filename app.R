@@ -23,12 +23,26 @@ thematic::thematic_shiny()
 ui <- fluidPage(
 
   #testing theme
-  theme = bslib::bs_theme(version = 4),
+  theme = bslib::bs_theme(
+    version = 4,
+    # bootswatch = "yeti",
+    # primary = "#5988B2", secondary = "#5988B2",
+    # font_scale = 1.2
+  ),
 
   #changing color of download button
   tags$head(tags$style(
     ".downloadButton{background:#3c8dbc;}
     .downloadButton{color: #fff;}")),
+
+  #changing width of navbar
+  tags$head(tags$style(".container-fluid {padding-right:0px; padding-left: 0px}")),
+
+  #changing width of tab contents
+  tags$head(tags$style(".tab-content {padding-right:15px;padding-left:15px;}")),
+
+  #sets min width of sidebar panel
+  tags$head(tags$style(".well { min-width: 280px; }")),
 
   #css to center shinyalert popups
   tags$head(
@@ -59,7 +73,7 @@ ui <- fluidPage(
   ),
 
   #set background color
-  #setBackgroundColor(color = "ghostwhite"),
+  setBackgroundColor(color = "#F2F4F4"),
 
   #call this pacakge for boxes
   useShinydashboard(),

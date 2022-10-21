@@ -131,18 +131,18 @@ coverUI <- function(id) {
             valueBox(
               htmlOutput(NS(id,"species_richness")),
               "Species Richness",
-              icon = icon("tree"), color = "orange"
+              icon = icon("tree"), color = "navy"
             ),
 
             valueBox(
               htmlOutput(NS(id,"mean_c")),
               "Mean C",
-              icon = icon("seedling"), color = "orange"
+              icon = icon("seedling"), color = "olive"
             ),
             valueBox(
               htmlOutput(NS(id,"fqi")),
               "Total FQI",
-              icon = icon("pagelines"), color = "orange"
+              icon = icon("pagelines"), color = "green"
             )
           ),#fluidRow parenthesis
 
