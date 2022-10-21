@@ -321,6 +321,7 @@ coverServer <- function(id) {
     observe({
       accepted(data_entered)
       req(nrow(cover_data()) > 0)
+
       accepted(fqacalc::accepted_entries(x = cover_data(),
                                          key = "scientific_name",
                                          db = input$db,
@@ -401,14 +402,17 @@ coverServer <- function(id) {
                           selected = previous_covers$prev[1])}
     })
 
-    #if there are duplicates, show warning
+    #if there are duplicate species in same plot, show warning, delete dups
     observeEvent(input$add_species, {
       req(nrow(cover_data()) > 1)
       if( any(duplicated(cover_data() %>% select(plot_id, scientific_name))) ){
         shinyalert(text = strong(
           "Duplicate species are detected in the same plot.
-          Duplicates will only be counted once, and their cover values will be added together."),
-          type = "warning",  html = T, className = "alert")}
+          Duplicates will only be counted once."),
+          type = "warning",  html = T, className = "alert")
+
+        cover_data(cover_data()[!duplicated(cover_data()[c(1,2)]),])
+        }
     })
 
 ##second screen-----------------------------------------------------------------
@@ -420,6 +424,7 @@ coverServer <- function(id) {
     species_sum <- reactiveVal()
     plot_sum <- reactiveVal()
     physiog_sum <- reactiveVal()
+    data_download <- reactiveVal()
 
     #updating reactive values
     observe({
@@ -447,6 +452,12 @@ coverServer <- function(id) {
                                      cover_metric = input$cover_method,
                                      plot_id = "plot_id"))
 
+      data_download(merge(fqacalc::accepted_entries(cover_data(),
+                                                    db = input$db,
+                                                    native = FALSE,
+                                                    cover_weighted = TRUE,
+                                                    allow_duplicates = TRUE),
+                          cover_data()))
       })
 
     #get duration table
@@ -528,7 +539,7 @@ coverServer <- function(id) {
         # Write data entered
         cat('Data Entered')
         cat('\n')
-        write.csv(accepted(), row.names = F)
+        write.csv(data_download(), row.names = F)
 
         # Close the sink
         sink()
