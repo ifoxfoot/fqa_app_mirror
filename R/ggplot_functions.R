@@ -7,7 +7,8 @@ c_score_plot <- function(input_data) {
     geom_histogram(col = "black") +
     scale_x_continuous(breaks = seq(0,10, by=1), limits = c(-1,11)) +
     labs(x = "Conservation Coefficient Score",
-         fill = "Native or Exotic")
+         fill = "Native or Exotic") +
+    theme(text = element_text(size = 15))
 
   return(c_plot)
 
@@ -30,7 +31,8 @@ compare_plot <- function(input_data, db_name, db) {
                   binwidth = 1) +
     scale_colour_manual(values = c("#00A36C", "#FFA500"), name = "") +
     scale_x_continuous(breaks = seq(0, 10, by=1), limits = c(0, 10)) +
-    labs(x = "Conservation Coefficient Score")
+    labs(x = "Conservation Coefficient Score") +
+    theme(text = element_text(size = 15))
 
 
   return(c_plot)

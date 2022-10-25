@@ -39,7 +39,7 @@ ui <- fluidPage(
   tags$head(tags$style(".container-fluid {padding-right:0px; padding-left: 0px}")),
 
   #changing width of tab contents
-  tags$head(tags$style(".tab-content {padding-right:15px;padding-left:15px;}")),
+  tags$head(tags$style(".tab-content {padding-right:30px;padding-left:30px;}")),
 
   #sets min width of sidebar panel
   tags$head(tags$style(".well { min-width: 280px; }")),
@@ -78,38 +78,20 @@ ui <- fluidPage(
   #set background color
   setBackgroundColor(color = "#F2F4F4"),
 
-  #call this pacakge for boxes
+  #call this package for boxes
   useShinydashboard(),
 
   #call this package for reset function
   useShinyjs(),
 
   #call this package for warning/validation messages
-  shinyFeedback::useShinyFeedback(),
+  #shinyFeedback::useShinyFeedback(),
 
   #initiate navbar
   navbarPage("FQA",
 
              #setting bootstrap to version 4
              theme = bslib::bs_theme(version = 4),
-
-#FQI TAB------------------------------------------------------------------------
-
-             #tab panel 1
-             tabPanel("Calculate FQA Metrics",
-
-                      fqiUI("fqi")
-
-                      ),#tab panel 1 parenthesis
-
-# COVER TAB---------------------------------------------------------------------
-
-             #tab panel 2
-             tabPanel("Caclulate Cover-Weighted FQA Metrics",
-
-                      coverUI("cover")
-
-             ),#tab panel 2 parenthesis
 
 # ABOUT TAB---------------------------------------------------------------------
 
@@ -126,7 +108,7 @@ ui <- fluidPage(
                       br(),
                       br(),
 
-             ),#tab panel 3 parenthesis
+             ),#tab panel  parenthesis
 
 # VIEW TAB----------------------------------------------------------------------
 
@@ -142,7 +124,36 @@ ui <- fluidPage(
 
              ),#tabPanel parenthesis
 
-#footer = img(src = "ERDC.png", style = "hight: 80px; width: 160px")
+#FQI TAB------------------------------------------------------------------------
+
+             tabPanel("Calculate FQA Metrics",
+
+                      fqiUI("fqi")
+
+             ),#tab panel parenthesis
+
+# COVER TAB---------------------------------------------------------------------
+
+             tabPanel("Caclulate Cover-Weighted FQA Metrics",
+
+                      coverUI("cover")
+
+             ),#tab panel parenthesis
+
+             #footer = img(src = "ERDC.png", style = "hight: 80px; width: 160px")
+
+# Help TAB---------------------------------------------------------------------
+
+navbarMenu("More",
+           tabPanel("About this app"),
+           tabPanel("FQA Assessments"),
+           tabPanel("Cover-Weighted FQA Assessments"),
+           tabPanel("Formulas"),
+           tabPanel("Cover Methods"),
+           tabPanel("Additional Resources"),
+           tabPanel("Citations")
+
+),#tab panel parenthesis
 
   )#navbar parenthesis
 

@@ -456,8 +456,10 @@ coverServer <- function(id) {
                                                     db = input$db,
                                                     native = FALSE,
                                                     cover_weighted = TRUE,
+                                                    cover_metric = input$cover_method,
                                                     allow_duplicates = TRUE),
-                          cover_data()))
+                          cover_data()) %>%
+                      dplyr::select(plot_id, everything()))
       })
 
     #get duration table
