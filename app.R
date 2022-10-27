@@ -149,7 +149,7 @@ navbarMenu("More",
            tabPanel("FQA Assessments"),
            tabPanel("Cover-Weighted FQA Assessments"),
            tabPanel("Formulas",
-                    includeHTML("rmarkdowns/equations.html")),
+                    includeHTML(knitr::knit2html("rmarkdowns/equations.Rmd", fragment.only = TRUE))),
            tabPanel("Cover Methods"),
            tabPanel("Additional Resources"),
            tabPanel("Citations")
