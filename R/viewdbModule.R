@@ -2,6 +2,8 @@
 
 viewUI <- function(id) {
   tagList(
+    column(12,
+
     fluidRow(
 
       #select database to view/download
@@ -17,8 +19,11 @@ viewUI <- function(id) {
                      )
       ),
 
+    fluidRow(
     #table of db
-    dataTableOutput(NS(id, "regional_database_table"))
+    dataTableOutput(NS(id, "regional_database_table")))
+
+    )
   )}
 
 #Server-------------------------------------------------------------------------

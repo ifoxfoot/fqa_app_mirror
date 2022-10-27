@@ -156,20 +156,14 @@ coverUI <- function(id) {
 
           fluidRow(
             column(4,
-                   box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL)),
-            column(4,
-                   box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL)),
-            column(4,
-                   box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL))
-          ),
-
-          fluidRow(
-            column(4,
+                   box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
                    box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
             column(4,
-                   box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL)),
+                   box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL),
+                   box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL)),
             column(4,
-                   box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL))
+                   box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
+                   box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL))
           ),
 
           #output of physiog summary
@@ -431,7 +425,7 @@ coverServer <- function(id) {
       #requiring second screen to update reactive values
       req(cover_glide() == 1)
 
-      metrics(fqacalc::all_cover_metrics(x = cover_data(),
+      metrics(fqacalc::transect_summary(x = cover_data(),
                                key = "scientific_name",
                                db = input$db,
                                cover_metric = input$cover_method))
