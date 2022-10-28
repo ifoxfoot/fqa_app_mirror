@@ -47,18 +47,25 @@ ui <- fluidPage(
   #force shiny alerts to load
   useShinyalert(force=TRUE),
 
-  # #css to center shinyalert popups
-  # tags$head(
-  #   tags$style(
-  #     HTML(".alert {
-  #            position: fixed;
-  #            top: calc(10%);
-  #            left: calc(50%);
-  #            height: calc(40%);
-  #            }"
-  #     )
-  #   )
-  # ),
+  #css to change shinyalert text
+  tags$head(
+    tags$style(
+      HTML(".sweet-alert p {
+          color: #000000;
+          font-size: 16px;
+          font-weight: 300;}"
+      )
+    )
+  ),
+
+  #css to change shinyalert text
+  tags$head(
+    tags$style(
+      HTML(".help.sweet-alert p {
+          text-align: left;}"
+      )
+    )
+  ),
 
   #css to place shinyglide buttons
   tags$style(
@@ -98,7 +105,7 @@ ui <- fluidPage(
              tabPanel("About FQA",
 
                       #rmarkdown output here
-                      includeHTML("rmarkdowns/about_fqa2.html"),
+                      includeMarkdown("rmarkdowns/about_fqa.Rmd"),
 
                       #tmap output here
                       tmapOutput("tmap"),
@@ -146,10 +153,9 @@ ui <- fluidPage(
 
 navbarMenu("More",
            tabPanel("About this app"),
-           tabPanel("FQA Assessments"),
-           tabPanel("Cover-Weighted FQA Assessments"),
            tabPanel("Formulas",
-                    includeHTML(knitr::knit2html("rmarkdowns/equations.Rmd", fragment.only = TRUE))),
+                    shiny::withMathJax(),
+                    includeMarkdown("rmarkdowns/equations.Rmd")),
            tabPanel("Cover Methods"),
            tabPanel("Additional Resources"),
            tabPanel("Citations")

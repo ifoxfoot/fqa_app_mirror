@@ -1,15 +1,6 @@
 ---
-title: "About FQA"
 output: html_document
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
-library(tidyverse)
-library(here)
-library(sf)
-library(tmap)
-```
 
 ## Floristic Quality Assessments
 
@@ -21,22 +12,6 @@ Common floristic quality metrics include mean C (the mean of C values for all sp
 
 ## FQA Databases
 
-There are 51 regional FQA lists that are currently fully approved or approved with reservations for use by the US Army Corps of Engineers. 
+There are 51 regional FQA lists that are currently fully approved or approved with reservations for use by the US Army Corps of Engineers.
 
 Take a look at what regional lists might be applicable in your area.
-
-```{r, fig.align = "center"}
-# #read in data
-# regional_fqa_map <- read_sf(here("spatial_data","regional_fqa_simple.gpkg")) %>%
-#   st_make_valid() %>%
-#   st_simplify(preserveTopology = TRUE, dTolerance = 1000)
-# 
-# #Map
-# tmap_mode("view")
-# 
-# tm_shape(regional_fqa_map) +
-#   tm_polygons("FQA_database", legend.show = F) +
-#   tmap_options(max.categories = 41) +
-#   tm_layout(title = "This Map Is Not Done!! :)")
-```
-

@@ -23,6 +23,12 @@ fqiUI <- function(id) {
 
           titlePanel("Enter Data"),
 
+          #help button
+          circleButton(NS(id, "help"), icon = icon("question"),
+                       style = "position:absolute;
+                                                     top:5px; right:5px;",
+                       status = "primary"),
+
             #input regional data base
             selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
                         choices = fqacalc::db_names()$name,
@@ -182,6 +188,11 @@ fqiServer <- function(id) {
 
 
 #file upload server-------------------------------------------------------------
+
+    #help popup
+    observeEvent(input$help, {
+      fqi_help()
+    })
 
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {

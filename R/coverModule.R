@@ -27,6 +27,12 @@ coverUI <- function(id) {
             #title of side bar
             titlePanel("Enter Data"),
 
+            #help button
+            circleButton(NS(id, "help"), icon = icon("question"),
+                                                     style = "position:absolute;
+                                                     top:5px; right:5px;",
+                         status = "primary"),
+
             #input regional data base
             selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
                         choices = fqacalc::db_names()$name,
@@ -203,6 +209,11 @@ coverServer <- function(id) {
 
     #creating a reactive value for glide page, used as input to server fun
     cover_glide <- reactive({input$shinyglide_index_glide})
+
+    #help popup
+    observeEvent(input$help, {
+      cover_help()
+    })
 
     #drop-down list of cover values based on cover metric input
     output$cover_value <- renderUI({
