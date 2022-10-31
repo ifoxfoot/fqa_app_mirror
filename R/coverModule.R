@@ -55,7 +55,8 @@ coverUI <- function(id) {
 
               #delete species button
               actionButton(NS(id, "delete_species"), "Delete Species"),
-
+              br(),
+              br(),
               #button to delete all entries
               actionButton(NS(id, "delete_all"), "Delete All Entries", class = "btn-danger")
 
@@ -163,7 +164,7 @@ coverUI <- function(id) {
                    box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
             column(4,
                    box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL),
-                   box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL)),
+                   box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
             column(4,
                    box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
                    box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL))
@@ -255,11 +256,10 @@ coverServer <- function(id) {
       else { toggleState("add_species", input$cover_val > 0 & input$cover_val <= 100)}
     })
 
-    # #make it so transect cant be changed after the fact
-    # observe({
-    #     toggleState("transect_id",
-    #                 is.null(input$transect_id))
-    # })
+    #make it so transect cant be changed after the fact
+    observe({
+        toggleState("transect_id", nrow(cover_data()) == 0)
+    })
 
     #save edits
     observeEvent(input$add_species, {
@@ -420,8 +420,22 @@ coverServer <- function(id) {
           type = "warning",  html = T, className = "alert")
 
         cover_data(cover_data()[!duplicated(cover_data()[c(1,2)]),])
-        }
+      }
     })
+
+    #if there are duplicate species in same plot, show warning, delete dups
+    observeEvent(input$add_species, {
+      plants_no_c <- unassigned_plants(cover_data(), db = input$db)
+
+      if( nrow(plants_no_c) > 0 ){
+        for(i in c(plants_no_c$scientific_name)) {
+          shinyalert(text = strong(paste("Species", i, "is recognized but has not been assigned a C score.")),
+          type = "warning",  html = T, className = "alert")
+        }
+      }
+
+      cover_data(cover_data() %>% filter(!scientific_name %in% plants_no_c$scientific_name))
+      })
 
 ##second screen-----------------------------------------------------------------
 

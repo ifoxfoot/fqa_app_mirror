@@ -148,10 +148,10 @@ fqiUI <- function(id) {
       fluidRow(
         column(4,
                box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
-               box(tableOutput(NS(id,"duration_table")), title = "Duration Breakdown", width = NULL)),
+               box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
         column(4,
                box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL),
-               box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Breakdown", width = NULL)),
+               box(tableOutput(NS(id,"pysiog_table")), title = "Pysiognomy Metrics", width = NULL)),
         column(4,
                box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
                box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL))
@@ -204,7 +204,7 @@ fqiServer <- function(id) {
                          csv = vroom::vroom(input$upload$datapath, delim = ","),
                          tsv = vroom::vroom(input$upload$datapath, delim = "\t"),
                          xlsx = readxl::read_excel(input$upload$datapath),
-                         validate("Invalid file; Please upload a .csv, .tsv, or xlsx file")) %>%
+                         validate("Invalid file; Please upload a .csv, .tsv, or .xlsx file")) %>%
         #drop empty data
         filter(., rowSums(is.na(.)) != ncol(.)) %>%
         as.data.frame(.)
