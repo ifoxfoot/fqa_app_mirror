@@ -14,7 +14,7 @@ tmap_function <- function(file_path){
   tmap <- tm_shape(regional_fqa_map) +
             tm_polygons("FQA_database", legend.show = F, popup.vars = "Notes") +
             tmap_options(max.categories = 51) +
-            tm_layout(title = "This Map Is Not Done!!")
+            tm_layout(title = "Regional FQA Lists")
 
   #return tmap
   return(tmap)

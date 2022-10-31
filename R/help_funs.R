@@ -48,7 +48,7 @@ cover_help <- function(){
                             the row and click ‘Delete Species’. To delete all entries
                             click ‘Delete All Entries’.",
                             br(), br(),
-                            "Note-changing the regional database or the cover method will
+                            "Note--changing the regional database or the cover method will
                             automatically clear your entries.",
                             br(),
                             br(),
@@ -69,7 +69,7 @@ return(alert)
 fqi_help <- function(){
   alert <- shinyalert(title = "Instructions", html = T, className = "help",
                       text = tagList(strong("Step 1."),
-                                     "Select your regional FQAI Database.If you are unsure
+                                     "Select your regional FQAI Database. If you are unsure
                                      about which database to use, consult the map on the
                                      ‘About FQA’ tab.",
                                      br(),
@@ -80,30 +80,29 @@ fqi_help <- function(){
                                      br(),
                                      br(),
                                      strong("Step 3."),
-                                     "To upload a file, select a file. The file must
-                                     be a csv, tsv, or xlsx file. The file must
+                                     "To upload a file, select a file from your device. The file must
+                                     be a .csv, .tsv, or .xlsx file. The file must
                                      contain a column containing scientific names
                                      of species. The file must reach to the
-                                     top of the file-i.e. There cannot be a title or
-                                     blank row above the columns. Select the name of
+                                     top of the file--i.e. there cannot be a title or
+                                     blank row above the columns containing species. Select the name of
                                      the column that contains scientific names. You may
                                      delete the file by clicking ‘Delete Uploaded File’.",
                                      br(),
                                      br(),
                                      strong("Step 4."),
-                                     "To Enter data manually, select species. At this
-                                     time, only latin names are provided. If you are not
-                                     sure what latin name to use, consult the regional
+                                     "To enter data manually, select species. At this
+                                     time, you may only select species based on latin names.
+                                     If you are notvsure what latin name to use, consult the regional
                                      database in the ‘View Regional FQA Lists’ tab. Note
                                      that lists are not comprehensive and may not contain
-                                     every species in the region. Some lists also only
-                                     contain native plants. Then click add species.
+                                     every species in the region. Then click 'Add Species'.
                                      You may add more species again. To delete a species,
                                      select the row and click ‘Delete Species’. To
                                      delete all entries click ‘Delete all Entries’",
                                      br(),
                                      br(),
-                                     "Note-changing the regional database will automatically
+                                     "Note--changing the regional database will automatically
                                      clear your entries.",
                                      br(),
                                      br(),

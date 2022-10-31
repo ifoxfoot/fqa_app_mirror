@@ -6,12 +6,12 @@ output: html_document
 
 Floristic Quality Assessment (FQA) provides a standardized way to rapidly assess the integrity of an area based on the botanic species that are present. FQA works by assigning each plant a score from 0 to 10. This score is called a Conservation Coefficient, or C Score. Scores of 0 indicate plants that are invasive or prefer highly disturbed habitat, while higher scores represent higher fidelity to undisturbed habitat. Because plants may exhibit different levels of fidelity to intact habitat in different regions, expert botanists have convened to produce regional FQA lists.
 
-By referencing regional FQA lists, local land managers can quickly assess areas by tallying species that are present in their area of interest and then calculating floristic quality metrics based on their assigned C scores.
+By referencing regional FQA lists, local land managers can calculating floristic quality metrics.
 
-Common floristic quality metrics include mean C (the mean of C values for all species present) and FQI (the mean c multiplied by the square root of the total number of species.
+Common floristic quality metrics include mean C (the mean of C values for all species present) and FQI (the mean C multiplied by the square root of the total number of species).
 
 ## FQA Databases
 
 There are 51 regional FQA lists that are currently fully approved or approved with reservations for use by the US Army Corps of Engineers.
 
-Take a look at what regional lists might be applicable in your area.
+Take a look at what regional lists might be applicable in your area:

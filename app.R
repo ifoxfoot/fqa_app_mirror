@@ -152,13 +152,14 @@ ui <- fluidPage(
 # Help TAB---------------------------------------------------------------------
 
 navbarMenu("More",
-           tabPanel("About this app"),
+           tabPanel("About This App",
+                    includeMarkdown("rmarkdowns/about_app.Rmd")),
            tabPanel("Equations",
                     shiny::withMathJax(),
                     includeMarkdown("rmarkdowns/equations.Rmd")),
-           tabPanel("Cover Methods"),
-           tabPanel("Additional Resources"),
-           tabPanel("Citations")
+           tabPanel("Cover Methods",
+                    includeMarkdown("rmarkdowns/cover_mets.Rmd"),),
+           tabPanel("Additional Resources")
 
 ),#tab panel parenthesis
 
