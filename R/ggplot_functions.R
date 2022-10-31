@@ -25,11 +25,13 @@ compare_plot <- function(input_data, db_name, db) {
                   binwidth = 1) +
     geom_freqpoly(data = db, aes(x = c,
                                  after_stat(density),
-                                 color = {{db_name}}
+                                 color = "db_name"
                                  ),
                   size = 2,
                   binwidth = 1) +
-    scale_colour_manual(values = c("#00A36C", "#FFA500"), name = "") +
+    scale_colour_manual(values = c("#00A36C", "#FFA500"), name = "",
+                        labels = c("Data Entered",
+                                   str_wrap(str_replace_all({{db_name}}, "_", " "), width = 20))) +
     scale_x_continuous(breaks = seq(0, 10, by=1), limits = c(0, 10)) +
     labs(x = "Conservation Coefficient Score") +
     theme(text = element_text(size = 15))

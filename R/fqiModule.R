@@ -117,7 +117,6 @@ fqiUI <- function(id) {
                 h3(textOutput(NS(id, "title")))),
 
 
-
       #boxes with key values
       fluidRow(
         valueBox(
@@ -283,10 +282,6 @@ fqiServer <- function(id) {
                                 dplyr::filter(scientific_name %in% input$species))
       #bind new entry to table
       new_table = rbind(new_entry, data_entered())
-      #these lines discourage using multiple regional databases when entering data
-      one_region <- length(unique(new_table$db)) <= 1
-      shinyFeedback::feedbackDanger("FQI_db", !one_region,
-                                    "selecting multiple regions is not recommended")
       #update reactive to new table
       data_entered(new_table)
       #reset drop down menu of latin names
@@ -361,8 +356,7 @@ fqiServer <- function(id) {
       req(input_method() == "upload")
       accepted(data.frame())
 
-
-      req(input_method() == "upload", !is.null(file_upload()), input$FQI_column)
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$FQI_column)
       accepted(fqacalc::accepted_entries(x = file_upload() %>%
                                            rename("scientific_name" = input$FQI_column),
                                          key = "scientific_name",

@@ -10,10 +10,6 @@ coverUI <- function(id) {
       #labels for glide buttons
       next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
-      #customizing where they appear
-      # custom_controls = div(class = "glide-controls",
-      #                       glideControls(prevButton(class = c("prev", "btn-default")),
-      #                                     nextButton(class = "next1"))),
       controls_position = "bottom",
       height = "100%",
 
@@ -160,6 +156,7 @@ coverUI <- function(id) {
                 title = "Histogram of C Scores")
           ),
 
+          #small tables
           fluidRow(
             column(4,
                    box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
@@ -210,6 +207,12 @@ coverServer <- function(id) {
     #creating a reactive value for glide page, used as input to server fun
     cover_glide <- reactive({input$shinyglide_index_glide})
 
+    #define table for data entered manually
+    data_entered = data.frame()
+
+    #create an object with no to store inputs
+    cover_data <- reactiveVal({data_entered})
+
     #help popup
     observeEvent(input$help, {
       cover_help()
@@ -252,11 +255,11 @@ coverServer <- function(id) {
       else { toggleState("add_species", input$cover_val > 0 & input$cover_val <= 100)}
     })
 
-    #define table for data entered manually
-    data_entered = data.frame()
-
-    #create an object with no values but correct col names to store inputs
-    cover_data <- reactiveVal({data_entered})
+    # #make it so transect cant be changed after the fact
+    # observe({
+    #     toggleState("transect_id",
+    #                 is.null(input$transect_id))
+    # })
 
     #save edits
     observeEvent(input$add_species, {

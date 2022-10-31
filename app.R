@@ -153,7 +153,7 @@ ui <- fluidPage(
 
 navbarMenu("More",
            tabPanel("About this app"),
-           tabPanel("Formulas",
+           tabPanel("Equations",
                     shiny::withMathJax(),
                     includeMarkdown("rmarkdowns/equations.Rmd")),
            tabPanel("Cover Methods"),
