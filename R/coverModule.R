@@ -526,8 +526,6 @@ coverServer <- function(id) {
         cat('\n')
 
         # Write metrics dataframe to the same sink
-        cat('Cover-Weighted FQI Metrics')
-        cat('\n')
         write.csv(metrics(), row.names = F)
         cat('\n')
         cat('\n')

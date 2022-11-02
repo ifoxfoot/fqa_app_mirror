@@ -505,8 +505,6 @@ fqiServer <- function(id) {
         cat('\n')
 
          # Write metrics dataframe to the same sink
-        cat('FQI Metrics')
-        cat('\n')
         write.csv(metrics(), row.names = F)
         cat('\n')
         cat('\n')
