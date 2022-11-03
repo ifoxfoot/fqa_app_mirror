@@ -5,7 +5,7 @@ output:
 
 ## Non Cover-Weighted Equations
 
-In this set of equations, species $i$ has been assigned a conservation coefficient $C_{i}$ and a wetness coefficient $W_{i}$.
+In this set of equations, species $i$ has been assigned a coefficient of conservatism $C_{i}$ and a wetness coefficient $W_{i}$.
 
 #### Species Richness
 
@@ -41,7 +41,7 @@ $$
 
 #### Mean C
 
-The mean Conservation Coefficient of all species in the site assessment.
+The mean coefficient of conservatism of all species in the site assessment.
 
 $$
 \overline{C_{t}} = \sum_{i=0}^{t} C_{i} \bigg/ N_{t}
@@ -49,7 +49,7 @@ $$
 
 #### Native Mean C
 
-The mean Conservation Coefficient of native species in the site assessment.
+The mean coefficient of conservatism of native species in the site assessment.
 
 $$
 \overline{C_{n}} = \sum_{i=0}^{n} C_{i}\bigg/N_{n}
@@ -81,7 +81,7 @@ $$
 
 ## Cover-Weighted Equations
 
-In this set of equations, species $i$ has been assigned a conservation coefficient $C_{i}$ and a wetness coefficient $W_{i}$. Species $i$ also has a percent cover $\gamma_i$.
+In this set of equations, species $i$ has been assigned a coefficient of conservatism $C_{i}$. Species $i$ also has a percent cover $\gamma_i$.
 
 #### Plot-Level Cover-Weighted Mean C
 

@@ -83,20 +83,26 @@ fqiUI <- function(id) {
 
         mainPanel(
 
-          br(),
-          br(),
-
           textOutput(NS(id, "next_condition")),
 
-          #when user uploads file, show uploaded table
-          conditionalPanel("input['fqi-input_method'] == 'upload' && input.FQI_uploaded_file != 0",
+          #when user wants to upload a file but hasn't yet, show instructions
+          conditionalPanel("input['fqi-input_method'] == 'upload' && output['fqi-file_is_uploaded'] != true",
+                           br(),
+                           h3("File uploads must have one column containing either scientific names
+                              or acronyms. The column must go to the top of the file such that row 1
+                              is the column name.")),
 
+          #when user uploads file, show uploaded table
+          conditionalPanel("input['fqi-input_method'] == 'upload'",
+                           br(),
+                           br(),
                            dataTableOutput(NS(id, "upload_table"))),
 
 
           #when user enters species manually, show what they enter
           conditionalPanel("input['fqi-input_method'] == 'enter'",
-
+                           br(),
+                           br(),
                            dataTableOutput(NS(id, "manual_table")))
 
         )#main panel parenthesis
@@ -121,10 +127,8 @@ fqiUI <- function(id) {
       fluidRow(
         valueBox(
           htmlOutput(NS(id,"species_richness")),
-          "Species Richness",
-          icon = icon("tree"), color = "navy"
+          "Species Richness", color = "navy"
         ),
-
         valueBox(
           htmlOutput(NS(id,"mean_c")),
           "Mean C",
@@ -139,10 +143,10 @@ fqiUI <- function(id) {
 
       #all mets and graph
       fluidRow(
-        box(plotOutput(NS(id,"compare_plot")),
-            title = "Compare Frequency of C Scores to Regional FQAI"),
+        box(plotOutput(NS(id,"binned_c_score_plot")),
+            title = "Binned Histogram of C Values"),
         box(plotOutput(NS(id,"c_hist")),
-            title = "Histogram of C Scores")
+            title = "Histogram of C Values")
       ),
 
       fluidRow(
@@ -154,7 +158,7 @@ fqiUI <- function(id) {
                box(tableOutput(NS(id,"pysiog_table")), title = "Physiognomy Metrics", width = NULL)),
         column(4,
                box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
-               box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL))
+               box(tableOutput(NS(id,"proportion")), title = "C Value Percents", width = NULL))
       )
 
     )#screen 2 parenthesis
@@ -211,6 +215,12 @@ fqiServer <- function(id) {
       #store upload in reactive object
       file_upload(new_file)
     })
+
+    #if file is uploaded, show T, else F
+    output$file_is_uploaded <- reactive({
+      return(!is.null(file_upload()))
+    })
+    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #column name drop-down list based on the file uploaded
     output$FQI_colname <- renderUI({
@@ -619,10 +629,10 @@ fqiServer <- function(id) {
     output$proportion <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
-        dplyr::filter(metrics %in% c("Proportion of Species with < 1 C score",
-                                     "Proportion of Species with 1-3.9 C score",
-                                     "Proportion of Species with 4-6.9 C score",
-                                     "Proportion of Species with 7-10 C score"))
+        dplyr::filter(metrics %in% c("% of Species with 0 C Value",
+                                     "% of Species with 1-3 C Value",
+                                      "% of Species with 4-6 C Value",
+                                      "% of Species with 7-10 C Value"))
     })
 
     #ggplot output
@@ -632,11 +642,9 @@ fqiServer <- function(id) {
     })
 
     #ggplot output
-    output$compare_plot <- renderPlot({
+    output$binned_c_score_plot <- renderPlot({
       req(fqi_glide() == 1)
-      compare_plot(input_data = accepted(),
-                   db_name = as.character(input$db),
-                   db = fqacalc::view_db(input$db))
+      binned_c_score_plot(metrics())
     })
 
     #physiog table output

@@ -75,12 +75,17 @@ coverUI <- function(id) {
 
           mainPanel(
 
+            textOutput(NS(id, "next_condition")),
+
+            #when user wants to upload a file but hasn't yet, show instructions
+            conditionalPanel("input['cover-input_method'] == 'upload' && output['cover-file_is_uploaded'] != true",
+                             br(),
+                             h3("File uploads must have one column containing either scientific names
+                              or acronyms. The column must go to the top of the file such that row 1
+                              is the column name.")),
 
             conditionalPanel(
-
               condition = "input['cover-input_method'] == 'enter'",
-
-              textOutput(NS(id, "next_condition")),
 
               #input transect ID
               fluidRow(
@@ -133,10 +138,8 @@ coverUI <- function(id) {
           fluidRow(
             valueBox(
               htmlOutput(NS(id,"species_richness")),
-              "Species Richness",
-              icon = icon("tree"), color = "navy"
+              "Species Richness", color = "navy"
             ),
-
             valueBox(
               htmlOutput(NS(id,"mean_c")),
               "Mean C",
@@ -151,10 +154,10 @@ coverUI <- function(id) {
 
           #all mets and graph
           fluidRow(
-            box(plotOutput(NS(id,"compare_plot")),
-                title = "Compare Frequency of C Scores to Regional FQAI"),
+            box(plotOutput(NS(id,"binned_c_score_plot")),
+                title = "Binned Histogram of C Values"),
             box(plotOutput(NS(id,"c_hist")),
-                title = "Histogram of C Scores")
+                title = "Histogram of C Values")
           ),
 
           #small tables
@@ -167,7 +170,7 @@ coverUI <- function(id) {
                    box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
             column(4,
                    box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
-                   box(tableOutput(NS(id,"proportion")), title = "C-Score Proportions", width = NULL))
+                   box(tableOutput(NS(id,"proportion")), title = "C Value Percents", width = NULL))
           ),
 
           #output of physiog summary
@@ -213,6 +216,12 @@ coverServer <- function(id) {
 
     #create an object with no to store inputs
     cover_data <- reactiveVal({data_entered})
+
+    #if file is uploaded, show T, else F
+    output$file_is_uploaded <- reactive({
+      return(!is.null(input$upload))
+    })
+    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #help popup
     observeEvent(input$help, {
@@ -623,10 +632,10 @@ coverServer <- function(id) {
     output$proportion <- renderTable({
       req(cover_glide() == 1)
       metrics() %>%
-        dplyr::filter(metrics %in% c("Proportion of Species with < 1 C score",
-                                     "Proportion of Species with 1-3.9 C score",
-                                     "Proportion of Species with 4-6.9 C score",
-                                     "Proportion of Species with 7-10 C score"))
+        dplyr::filter(metrics %in% c("% of Species with 0 C Value",
+                                     "% of Species with 1-3 C Value",
+                                     "% of Species with 4-6 C Value",
+                                     "% of Species with 7-10 C Value"))
     })
 
     #ggplot output
@@ -636,11 +645,9 @@ coverServer <- function(id) {
     })
 
     #ggplot output
-    output$compare_plot <- renderPlot({
+    output$binned_c_score_plot <- renderPlot({
       req(cover_glide() == 1)
-      compare_plot(input_data = accepted(),
-                   db_name = as.character(input$db),
-                   db = fqacalc::view_db(input$db))
+      binned_c_score_plot(input_data = metrics())
     })
 
     #duration table output
