@@ -552,24 +552,24 @@ fqiServer <- function(id) {
       #write df with all cats to include
        physiog_cats <- data.frame(physiognomy = c("tree", "shrub", "vine", "forb", "grass",
                                                  "sedge", "rush", "fern", "bryophyte"),
-                                 count = rep.int(0, 9),
+                                 number = rep.int(0, 9),
                                  percent = rep.int(0,9))
 
        duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                   count = rep.int(0, 3),
+                                   number = rep.int(0, 3),
                                    percent = rep.int(0,3))
 
        #count observations in accepted data
        phys <- accepted() %>%
                        group_by(physiognomy) %>%
-                       summarise(count = n()) %>%
-                       mutate(percent = round((count/sum(count))*100, 2)) %>%
+                       summarise(number = n()) %>%
+                       mutate(percent = round((number/sum(number))*100, 2)) %>%
                        rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy))
 
        dur <- accepted() %>%
                         group_by(duration) %>%
-                        summarise(count = n()) %>%
-                        mutate(percent = round((count/sum(count))*100, 2)) %>%
+                        summarise(number = n()) %>%
+                        mutate(percent = round((number/sum(number))*100, 2)) %>%
                         rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
 
        #store in reactive

@@ -498,13 +498,13 @@ coverServer <- function(id) {
       req(nrow(accepted()) > 0 & cover_glide() == 1)
 
       duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                  count = rep.int(0, 3),
+                                  number = rep.int(0, 3),
                                   percent = rep.int(0,3))
 
       dur <- accepted() %>%
         group_by(duration) %>%
-        summarise(count = n()) %>%
-        mutate(percent = round((count/sum(count))*100, 2)) %>%
+        summarise(number = n()) %>%
+        mutate(percent = round((number/sum(number))*100, 2)) %>%
         rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
 
       #store in reactive
