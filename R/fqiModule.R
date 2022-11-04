@@ -479,16 +479,17 @@ fqiServer <- function(id) {
     output$download <- downloadHandler(
       #name of file based off of transect
       filename = function() {
-        paste0("FQA_assessment_", Sys.Date(), ".csv")
+        paste0("FQA_assessment_", Sys.Date(), ".zip")
       },
+
       #content of file
-      content = function(fname) {
+      content = function(file) {
         #set wd to temp directory
         tmpdir <- tempdir()
         setwd(tempdir())
 
         # Start a sink file with a CSV extension
-        sink(fname)
+        sink("FQI_metrics.csv")
         cat('\n')
         cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI."))
         cat('\n')
@@ -517,6 +518,15 @@ fqiServer <- function(id) {
 
         # Close the sink
         sink()
+
+        #now add two ggplots as pngs
+        ggsave( "binned_hist.png", plot = binned_c_score_plot(metrics()),
+                device = "png", bg = 'white')
+        ggsave( "c_value_hist.png", plot = c_score_plot(accepted()), bg='#ffffff',
+                device = "png")
+
+        # Zip them up
+        zip( file, c("FQI_metrics.csv", "binned_hist.png", "c_value_hist.png"))
       })
 
     #get all metrics

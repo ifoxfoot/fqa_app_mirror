@@ -14,10 +14,10 @@ library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map
 library(bslib) #interactive theme
-library(thematic) #for theme r graphics
+#library(thematic) #for theme r graphics (was not working with plot)
 
 #thematic for theme of plots
-thematic::thematic_shiny()
+#thematic::thematic_shiny()
 
 #define UI for application (User Interface)
 ui <- fluidPage(
@@ -45,7 +45,7 @@ ui <- fluidPage(
   tags$head(tags$style(".well { min-width: 280px; }")),
 
   #force shiny alerts to load
-  useShinyalert(force=TRUE),
+  useShinyalert(force = TRUE),
 
   #css to change shinyalert text
   tags$head(
