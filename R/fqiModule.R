@@ -349,7 +349,10 @@ fqiServer <- function(id) {
 
       if( nrow(plants_no_c) > 0 ){
         for(i in c(plants_no_c$scientific_name)) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been assigned a C score.")),
+          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+                                         assigned a C score. It will be included in species
+                                         richness metrics and mean wetness but excluded
+                                         from mean C and FQI metrics")),
                      type = "warning",  html = T, className = "alert")
         }
       }
