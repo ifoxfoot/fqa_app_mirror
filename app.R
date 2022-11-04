@@ -2,13 +2,13 @@
 library(shiny) #for app
 library(fqacalc) #for fqai metrics
 library(tidyverse) #for data wrangling/displaying
-library(rlang) #for .data and := functions
+#library(rlang) #for .data and := functions
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
 library(shinyjs) #for reset buttons, hiding elements,
 library(shinyalert) #for popups
-library(shinyFeedback) #for warning messages near widgets
+#library(shinyFeedback) #for warning messages near widgets
 library(shinyWidgets) #for dashboard layout
 library(shinydashboard) #for boxes
 library(sf) #for spatial data
@@ -90,9 +90,6 @@ ui <- fluidPage(
 
   #call this package for reset function
   useShinyjs(),
-
-  #call this package for warning/validation messages
-  #shinyFeedback::useShinyFeedback(),
 
   #initiate navbar
   navbarPage("FQA",

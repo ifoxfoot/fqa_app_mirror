@@ -34,11 +34,6 @@ coverUI <- function(id) {
                         choices = fqacalc::db_names()$name,
                         selected = "michigan_2014"),
 
-            #input data entry method
-            radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                         choices = c( "Enter Species Manually" = "enter",
-                                      "Upload a File" = "upload")),
-
             #select cover method
             selectInput(NS(id, "cover_method"), label = "Cover Method",
                         choices = c(
@@ -47,6 +42,12 @@ coverUI <- function(id) {
                           "carolina_veg_survey",
                           "daubenmire",
                           "usfs_ecodata")),
+
+            #input data entry method
+            radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+                         choices = c( "Enter Species Manually" = "enter",
+                                      "Upload a File" = "upload")),
+
 
             #when data entry method is upload, allow user to upload files
             conditionalPanel(
@@ -505,7 +506,8 @@ coverServer <- function(id) {
         group_by(duration) %>%
         summarise(number = n()) %>%
         mutate(percent = round((number/sum(number))*100, 2)) %>%
-        rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
+        rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
+        mutate(number = as.integer(number))
 
       #store in reactive
       duration_table(dur)
@@ -581,19 +583,19 @@ coverServer <- function(id) {
       req(cover_glide() == 1)
       round(
         fqacalc::species_richness(x = accepted(), db = input$db, native = F),
-        3)
+        2)
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(cover_glide() == 1)
-      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 3)
+      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 2)
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(cover_glide() == 1)
-      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 3)
+      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 2)
     })
 
     #C metrics table output
@@ -625,7 +627,8 @@ coverServer <- function(id) {
       metrics() %>%
         dplyr::filter(metrics %in% c("Total Species Richness",
                                      "Native Species Richness",
-                                     "Exotic Species Richness"))
+                                     "Exotic Species Richness")) %>%
+        mutate(values = as.integer(values))
     })
 
     #proportion table output

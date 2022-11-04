@@ -343,7 +343,7 @@ fqiServer <- function(id) {
       }
     })
 
-    #if there are unrecognized species delete dups
+    #if there are no C species, show warning
     observeEvent(input$add_species, {
       plants_no_c <- unassigned_plants(data_entered(), db = input$db)
 
@@ -353,27 +353,7 @@ fqiServer <- function(id) {
                      type = "warning",  html = T, className = "alert")
         }
       }
-
-      data_entered(data_entered() %>% filter(!scientific_name %in% plants_no_c$scientific_name))
     })
-
-    # #this allows popups for warnings about duplicates/non-matching species
-    # observeEvent(input$add_species,{
-    #   req(input$add_species)
-    #   #list to store warnings
-    #   warning_list <- list()
-    #   #catch warnings
-    #   withCallingHandlers(
-    #     fqacalc::accepted_entries(x = data_entered(),
-    #                               key = "scientific_name",
-    #                               db = input$db,
-    #                               native = FALSE),
-    #     #add to list
-    #     message = function(w) {warning_list <<- c(warning_list, list(w$message))})
-    #   #show each list item in notification
-    #   for(i in warning_list) {
-    #     shinyalert(text = strong(i), type = "warning", html = T, className = "alert") }
-    # })
 
     #when delete species is clicked, delete row
     observeEvent(input$delete_species,{
@@ -561,16 +541,18 @@ fqiServer <- function(id) {
 
        #count observations in accepted data
        phys <- accepted() %>%
-                       group_by(physiognomy) %>%
-                       summarise(number = n()) %>%
-                       mutate(percent = round((number/sum(number))*100, 2)) %>%
-                       rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy))
+         group_by(physiognomy) %>%
+         summarise(number = n()) %>%
+         mutate(percent = round((number/sum(number))*100, 2)) %>%
+         rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy)) %>%
+         mutate(number = as.integer(number))
 
        dur <- accepted() %>%
-                        group_by(duration) %>%
-                        summarise(number = n()) %>%
-                        mutate(percent = round((number/sum(number))*100, 2)) %>%
-                        rbind(duration_cats %>% filter(!duration %in% accepted()$duration))
+         group_by(duration) %>%
+         summarise(number = n()) %>%
+         mutate(percent = round((number/sum(number))*100, 2)) %>%
+         rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
+         mutate(number = as.integer(number))
 
        #store in reactive
        physiog_table(phys)
@@ -586,19 +568,19 @@ fqiServer <- function(id) {
       req(fqi_glide() == 1)
       round(
         fqacalc::species_richness(x = accepted(), db = input$db, native = F),
-        3)
+        2)
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(fqi_glide() == 1)
-      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 3)
+      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 2)
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(fqi_glide() == 1)
-      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 3)
+      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 2)
     })
 
     #metrics table output
@@ -622,7 +604,8 @@ fqiServer <- function(id) {
       metrics() %>%
         dplyr::filter(metrics %in% c("Total Species Richness",
                                      "Native Species Richness",
-                                     "Exotic Species Richness"))
+                                     "Exotic Species Richness")) %>%
+                        mutate(values = as.integer(values))
     })
 
     #proportion table output
