@@ -158,7 +158,7 @@ fqiUI <- function(id) {
                box(tableOutput(NS(id,"pysiog_table")), title = "Physiognomy Metrics", width = NULL)),
         column(4,
                box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
-               box(tableOutput(NS(id,"proportion")), title = "C Value Percents", width = NULL))
+               box(tableOutput(NS(id,"proportion")), title = "C Value Percentages", width = NULL))
       )
 
     )#screen 2 parenthesis
@@ -231,20 +231,20 @@ fqiServer <- function(id) {
                      colnames, selected = NULL)
     })
 
-#     observeEvent(input$FQI_column, {
-#       req(input$FQI_column, input$upload)
-#       file_upload(file_upload() %>% rename(scientific_name = input$FQI_column))
-#
-#       #if there are duplicate species, show warning, delete dups
-#       req(nrow(file_upload()) > 1)
-#       if( any(duplicated(file_upload() %>% select(scientific_name))) ){
-#         shinyalert(text = strong(
-#           "Duplicate species are detected. Duplicates will only be counted once."),
-#           type = "warning",  html = T, className = "alert")
-#
-#         file_upload(file_upload()[!duplicated(file_upload()["scientific_name"]),])
-#       }
-#     })
+    # observeEvent(input$FQI_column, {
+    #   req(input$FQI_column, input$upload)
+    #   file_upload(file_upload() %>% rename(scientific_name = input$FQI_column))
+    #
+    #   #if there are duplicate species, show warning, delete dups
+    #   req(nrow(file_upload()) > 1)
+    #   if( any(duplicated(file_upload() %>% select(scientific_name))) ){
+    #     shinyalert(text = strong(
+    #       "Duplicate species are detected. Duplicates will only be counted once."),
+    #       type = "warning",  html = T, className = "alert")
+    #
+    #     file_upload(file_upload()[!duplicated(file_upload()["scientific_name"]),])
+    #   }
+    # })
 
     # #if there are unrecognized species, show warning, delete dups
     # observeEvent(input$FQI_column, {
@@ -351,7 +351,7 @@ fqiServer <- function(id) {
         for(i in c(plants_no_c$scientific_name)) {
           shinyalert(text = strong(paste("Species", i, "is recognized but has not been
                                          assigned a C score. It will be included in species
-                                         richness metrics and mean wetness but excluded
+                                         richness and mean wetness metrics but excluded
                                          from mean C and FQI metrics")),
                      type = "warning",  html = T, className = "alert")
         }
@@ -413,7 +413,10 @@ fqiServer <- function(id) {
                                            %>% rename("scientific_name" = input$FQI_column),
                                          key = "scientific_name",
                                          db = input$db,
-                                         native = F))
+                                         native = FALSE,
+                                         allow_duplicates = FALSE,
+                                         allow_non_veg = FALSE,
+                                         allow_no_c = TRUE))
     })
 
     #if db is changed and there is already data entered, show popup
@@ -535,7 +538,7 @@ fqiServer <- function(id) {
     #get all metrics
     observe({
       req(fqi_glide() == 1)
-      metrics(fqacalc::all_metrics(x = accepted(), db = input$db))
+      metrics(fqacalc::all_metrics(x = accepted(), db = input$db, allow_no_c = TRUE))
     })
 
     #get pysiog and duration table
@@ -580,7 +583,7 @@ fqiServer <- function(id) {
     output$species_richness <- renderUI({
       req(fqi_glide() == 1)
       round(
-        fqacalc::species_richness(x = accepted(), db = input$db, native = F),
+        fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE),
         2)
     })
 
@@ -625,10 +628,11 @@ fqiServer <- function(id) {
     output$proportion <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
-        dplyr::filter(metrics %in% c("% of Species with 0 C Value",
+        dplyr::filter(metrics %in% c("% of Species with no C Value",
+                                     "% of Species with 0 C Value",
                                      "% of Species with 1-3 C Value",
-                                      "% of Species with 4-6 C Value",
-                                      "% of Species with 7-10 C Value"))
+                                     "% of Species with 4-6 C Value",
+                                     "% of Species with 7-10 C Value"))
     })
 
     #ggplot output

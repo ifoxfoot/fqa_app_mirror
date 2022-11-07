@@ -171,7 +171,7 @@ coverUI <- function(id) {
                    box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
             column(4,
                    box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
-                   box(tableOutput(NS(id,"proportion")), title = "C Value Percents", width = NULL))
+                   box(tableOutput(NS(id,"proportion")), title = "C Value Percentages", width = NULL))
           ),
 
           #output of physiog summary
@@ -344,8 +344,9 @@ coverServer <- function(id) {
       accepted(fqacalc::accepted_entries(x = cover_data(),
                                          key = "scientific_name",
                                          db = input$db,
-                                         native = F,
-                                         cover_metric = input$cover_method))
+                                         native = FALSE,
+                                         cover_metric = input$cover_method,
+                                         allow_no_c = TRUE))
     })
 
     #create boolean that shows if data is entered or not for next condition
@@ -440,12 +441,13 @@ coverServer <- function(id) {
 
       if( nrow(plants_no_c) > 0 ){
         for(i in c(plants_no_c$scientific_name)) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been assigned a C score.")),
+          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+                                         assigned a C score. It will be included in species
+                                         richness and mean wetness metrics but excluded
+                                         from mean C and FQI metrics")),
           type = "warning",  html = T, className = "alert")
         }
       }
-
-      cover_data(cover_data() %>% filter(!scientific_name %in% plants_no_c$scientific_name))
       })
 
 ##second screen-----------------------------------------------------------------
@@ -467,30 +469,35 @@ coverServer <- function(id) {
       metrics(fqacalc::transect_summary(x = cover_data(),
                                key = "scientific_name",
                                db = input$db,
-                               cover_metric = input$cover_method))
+                               cover_metric = input$cover_method,
+                               allow_no_c = TRUE))
 
       species_sum(fqacalc::species_summary(x = cover_data(),
                                            key = "scientific_name",
                                            db = input$db,
-                                           cover_metric = input$cover_method))
+                                           cover_metric = input$cover_method,
+                                           allow_no_c = TRUE))
 
       physiog_sum(fqacalc::physiog_summary(x = cover_data(),
                                            key = "scientific_name",
                                            db = input$db,
-                                           cover_metric = input$cover_method))
+                                           cover_metric = input$cover_method,
+                                           allow_no_c = TRUE))
 
       plot_sum(fqacalc::plot_summary(x = cover_data(),
                                      key = "scientific_name",
                                      db = input$db,
                                      cover_metric = input$cover_method,
-                                     plot_id = "plot_id"))
+                                     plot_id = "plot_id",
+                                     allow_no_c = TRUE))
 
       data_download(merge(fqacalc::accepted_entries(cover_data(),
                                                     db = input$db,
                                                     native = FALSE,
                                                     cover_weighted = TRUE,
                                                     cover_metric = input$cover_method,
-                                                    allow_duplicates = TRUE),
+                                                    allow_duplicates = TRUE,
+                                                    allow_no_c = TRUE),
                           cover_data()) %>%
                       dplyr::select(plot_id, everything()))
       })
@@ -592,7 +599,7 @@ coverServer <- function(id) {
     output$species_richness <- renderUI({
       req(cover_glide() == 1)
       round(
-        fqacalc::species_richness(x = accepted(), db = input$db, native = F),
+        fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE),
         2)
     })
 
@@ -645,7 +652,8 @@ coverServer <- function(id) {
     output$proportion <- renderTable({
       req(cover_glide() == 1)
       metrics() %>%
-        dplyr::filter(metrics %in% c("% of Species with 0 C Value",
+        dplyr::filter(metrics %in% c("% of Species with no C Value",
+                                     "% of Species with 0 C Value",
                                      "% of Species with 1-3 C Value",
                                      "% of Species with 4-6 C Value",
                                      "% of Species with 7-10 C Value"))
