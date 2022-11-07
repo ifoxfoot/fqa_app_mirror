@@ -502,19 +502,22 @@ fqiServer <- function(id) {
         cat('\n')
 
          # Write metrics dataframe to the same sink
-        write.csv(metrics(), row.names = F)
+        write.csv(metrics() %>%
+                    mutate(values = round(values, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         cat("Physiognomy Metrics")
         cat('\n')
-        write.csv(physiog_table(), row.names = F)
+        write.csv(physiog_table() %>%
+                    mutate(values = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         cat("Duration Metrics")
         cat('\n')
-        write.csv(duration_table(), row.names = F)
+        write.csv(duration_table() %>%
+                    mutate(values = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 

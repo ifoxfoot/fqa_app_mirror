@@ -545,35 +545,40 @@ coverServer <- function(id) {
         cat('\n')
 
         # Write metrics dataframe to the same sink
-        write.csv(metrics(), row.names = F)
+        write.csv(metrics() %>%
+                    mutate(values = round(values, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         # Write metrics dataframe to the same sink
         cat("Duration Frequency")
         cat('\n')
-        write.csv(duration_table(), row.names = F)
+        write.csv(duration_table() %>%
+                    mutate(values = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         # Write metrics dataframe to the same sink
         cat('Plot Summary Metrics')
         cat('\n')
-        write.csv(plot_sum(), row.names = F)
+        write.csv(plot_sum() %>%
+                    mutate(across(where(is.numeric), round, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         # Write metrics dataframe to the same sink
         cat('Species Summary Metrics')
         cat('\n')
-        write.csv(species_sum(), row.names = F)
+        write.csv(species_sum() %>%
+                    mutate(across(where(is.numeric), round, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         # Write metrics dataframe to the same sink
         cat('Physiognomy Summary Metrics')
         cat('\n')
-        write.csv(physiog_sum(), row.names = F)
+        write.csv(physiog_sum() %>%
+                    mutate(across(where(is.numeric), round, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
