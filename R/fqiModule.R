@@ -223,63 +223,59 @@ fqiServer <- function(id) {
     outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #column name drop-down list based on the file uploaded
-    output$FQI_colname <- renderUI({
-      #create list cols
-      colnames <- c("", colnames(file_upload()))
-      #create a dropdown option
-      selectizeInput(session$ns("FQI_column"), "Which Column Contains Latin Names?",
-                     colnames, selected = NULL)
+
+    observeEvent(input$upload,{
+      output$FQI_colname <- renderUI({
+        #create list cols
+        colnames <- c("", colnames(file_upload()))
+        #create a dropdown option
+        selectizeInput(session$ns("FQI_column"), "Which Column Contains Latin Names?",
+                       colnames, selected = NULL)
+      })
     })
 
-    # observeEvent(input$FQI_column, {
-    #   req(input$FQI_column, input$upload)
-    #   file_upload(file_upload() %>% rename(scientific_name = input$FQI_column))
-    #
-    #   #if there are duplicate species, show warning, delete dups
-    #   req(nrow(file_upload()) > 1)
-    #   if( any(duplicated(file_upload() %>% select(scientific_name))) ){
-    #     shinyalert(text = strong(
-    #       "Duplicate species are detected. Duplicates will only be counted once."),
-    #       type = "warning",  html = T, className = "alert")
-    #
-    #     file_upload(file_upload()[!duplicated(file_upload()["scientific_name"]),])
-    #   }
-    # })
+    #warnings for bad data in file upload
+    observeEvent(input$FQI_column, {
+      req(nrow(file_upload()) >= 1)
+      req(input$FQI_column != "")
 
-    # #if there are unrecognized species, show warning, delete dups
-    # observeEvent(input$FQI_column, {
-    #   req(nrow(file_upload()) > 1)
-    #   plants_no_c <- unassigned_plants(file_upload() %>%
-    #                                      mutate(scientific_name = {{input$FQI_column}}),
-    #                                             db = input$db)
-    #
-    #   if( nrow(plants_no_c) > 0 ){
-    #     for(i in c(plants_no_c$scientific_name)) {
-    #       shinyalert(text = strong(paste("Species", i, "is recognized but has not been assigned a C score.")),
-    #                  type = "warning",  html = T, className = "alert")
-    #     }
-    #   }
-    #
-    #   file_upload(file_upload() %>% filter(!input$FQI_column %in% plants_no_c$scientific_name))
-    # })
+      accepted_file <- accepted_entries(file_upload() %>% rename(scientific_name = input$FQI_column),
+                                        key = "scientific_name",
+                                        db = input$db,
+                                        native = FALSE,
+                                        allow_no_c = TRUE,
+                                        allow_duplicates = TRUE,
+                                        allow_non_veg = TRUE)
 
-    #this allows popups for warnings about duplicates/non-matching species
-    observeEvent(input$FQI_column,{
-      req(input$FQI_column)
-      #list to store warnings
-      warning_list <- list()
-      #catch warnings
-      withCallingHandlers(
-        fqacalc::accepted_entries(x = file_upload()
-                                  %>% rename("scientific_name" = input$FQI_column),
-                                  key = "scientific_name",
-                                  db = input$db,
-                                  native = F),
-        #add to list
-        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
-      #show each list item in notification
-      for(i in warning_list) {
-        shinyalert(text = strong(i), type = "warning", html = T, className = "alert")}
+      #if there are unrecognized plants, show warning and remove
+      for(i in c(file_upload()[,input$FQI_column])){
+        if( !toupper(i) %in% accepted_file$scientific_name) {
+          shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
+                     type = "warning",  html = T, className = "alert")
+        }
+      }
+
+      #if there plants with no c, show warning
+      plants_no_c <- unassigned_plants(file_upload() %>% rename(scientific_name = input$FQI_column),
+                                       db = input$db)
+      if( nrow(plants_no_c) > 0 ){
+        for(i in plants_no_c$scientific_name) {
+          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+                                         assigned a C score. It will be included in species
+                                         richness and mean wetness metrics but excluded
+                                         from mean C and FQI metrics.")),
+                     type = "warning",  html = T, className = "alert")
+         }
+      }
+
+      #if there are duplicate species, show warning, delete dups
+      req(nrow(file_upload()) > 1)
+
+      if( any(duplicated(file_upload() %>% select(input$FQI_column))) ){
+        shinyalert(text = strong(
+          "Duplicate species are detected. Duplicates will only be counted once."),
+          type = "warning",  html = T, className = "alert")
+      }
     })
 
     #render output table from uploaded file
@@ -409,8 +405,7 @@ fqiServer <- function(id) {
       accepted(data.frame())
 
       req(input_method() == "upload", nrow(file_upload()) > 0, input$FQI_column)
-      accepted(fqacalc::accepted_entries(x = file_upload()
-                                           %>% rename("scientific_name" = input$FQI_column),
+      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(scientific_name = input$FQI_column),
                                          key = "scientific_name",
                                          db = input$db,
                                          native = FALSE,

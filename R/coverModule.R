@@ -203,9 +203,6 @@ coverUI <- function(id) {
 
 coverServer <- function(id) {
 
-  #call server fun for species dropdown
-  selectSpeciesServer(id = id)
-
   #start module function
   moduleServer(id, function(input, output, session) {
 
@@ -256,8 +253,16 @@ coverServer <- function(id) {
                           value = 0, min = 0, max = 100)}
     })
 
-    #call server fun for species dropdown
-    selectSpeciesServer(id)
+    #species drop-down list based on regional list selected
+    output$select_species <- renderUI({
+      #create list of latin names based on regional list selected
+      latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
+      #create a dropdown option
+      selectizeInput(session$ns("species"), "Species", latin_names,
+                     selected = NULL,
+                     multiple = FALSE)
+    })
+
 
     #make it so add species button can't be clicked until all fields full
     observe({
@@ -476,7 +481,11 @@ coverServer <- function(id) {
                                            key = "scientific_name",
                                            db = input$db,
                                            cover_metric = input$cover_method,
-                                           allow_no_c = TRUE))
+                                           allow_no_c = TRUE) %>%
+                    mutate(c = as.integer(c),
+                           w = as.integer(w),
+                           coverage = as.integer(coverage))
+        )
 
       physiog_sum(fqacalc::physiog_summary(x = cover_data(),
                                            key = "scientific_name",
