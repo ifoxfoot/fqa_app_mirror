@@ -1,32 +1,27 @@
-#UI module
+#UI------------------------------------------------------------------------
+
 fqiUI <- function(id) {
 
   tagList(
 
-  glide(
-    id = NS(id, "glide"),
-    #labels for glide buttons
-    next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
-    previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
-    #customizing where they appear
-    custom_controls = div(class = "glide-controls", glideControls()),
-    controls_position = "bottom",
-    height = "100%",
+    glide(
+      id = NS(id, "glide"),
+      next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
+      previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
+      controls_position = "bottom",
+      height = "100%",
 
     screen(
-
       next_condition = "output['fqi-next_condition'] == 'TRUE'",
 
       fluidRow(
-
         sidebarPanel(
 
           titlePanel("Enter Data"),
 
           #help button
           circleButton(NS(id, "help"), icon = icon("question"),
-                       style = "position:absolute;
-                                                     top:5px; right:5px;",
+                       style = "position:absolute; top:5px; right:5px;",
                        status = "primary"),
 
             #input regional data base
@@ -49,7 +44,7 @@ fqiUI <- function(id) {
               fileInput(NS(id, "upload"), NULL, buttonLabel = "Upload...", multiple = F),
 
               #input what column to use to bind to FQA database
-              uiOutput(NS(id, "FQI_colname")),
+              uiOutput(NS(id, "species_colname")),
 
               #input button to delete uploaded file
               actionButton(NS(id, "upload_delete_all"), "Delete Uploaded File")
@@ -62,7 +57,7 @@ fqiUI <- function(id) {
               condition = "input['fqi-input_method'] == 'enter'",
 
               #input latin name
-              uiOutput(NS(id, "latin_name")),
+              uiOutput(NS(id, "select_species")),
 
               fluidRow(
                 #input add species button
@@ -97,7 +92,6 @@ fqiUI <- function(id) {
                            br(),
                            br(),
                            dataTableOutput(NS(id, "upload_table"))),
-
 
           #when user enters species manually, show what they enter
           conditionalPanel("input['fqi-input_method'] == 'enter'",
@@ -176,7 +170,7 @@ fqiServer <- function(id) {
   #start module function
   moduleServer(id, function(input, output, session) {
 
-    #storing glide index
+    #creating a reactive value for glide page, used as input to server fun
     fqi_glide <- reactive({input$shinyglide_index_glide})
 
     #making input method reactive
@@ -189,13 +183,18 @@ fqiServer <- function(id) {
     file_upload <- reactiveVal()
     data_entered <- reactiveVal({data_entered})
 
-
-#file upload server-------------------------------------------------------------
-
     #help popup
     observeEvent(input$help, {
       fqi_help()
     })
+
+#file upload server-------------------------------------------------------------
+
+    #if file is uploaded, show T, else F
+    output$file_is_uploaded <- reactive({
+      return(!is.null(file_upload()))
+    })
+    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {
@@ -216,30 +215,23 @@ fqiServer <- function(id) {
       file_upload(new_file)
     })
 
-    #if file is uploaded, show T, else F
-    output$file_is_uploaded <- reactive({
-      return(!is.null(file_upload()))
-    })
-    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
-
-    #column name drop-down list based on the file uploaded
-
+    #drop-down list (for species column) based on the file uploaded
     observeEvent(input$upload,{
-      output$FQI_colname <- renderUI({
+      output$species_colname <- renderUI({
         #create list cols
         colnames <- c("", colnames(file_upload()))
         #create a dropdown option
-        selectizeInput(session$ns("FQI_column"), "Which Column Contains Latin Names?",
+        selectizeInput(session$ns("species_column"), "Which Column Contains Latin Names?",
                        colnames, selected = NULL)
       })
     })
 
     #warnings for bad data in file upload
-    observeEvent(input$FQI_column, {
+    observeEvent(input$species_column, {
       req(nrow(file_upload()) >= 1)
-      req(input$FQI_column != "")
+      req(input$species_column != "")
 
-      accepted_file <- accepted_entries(file_upload() %>% rename(scientific_name = input$FQI_column),
+      accepted_file <- accepted_entries(file_upload() %>% rename(scientific_name = input$species_column),
                                         key = "scientific_name",
                                         db = input$db,
                                         native = FALSE,
@@ -248,7 +240,7 @@ fqiServer <- function(id) {
                                         allow_non_veg = TRUE)
 
       #if there are unrecognized plants, show warning and remove
-      for(i in c(file_upload()[,input$FQI_column])){
+      for(i in c(file_upload()[,input$species_column])){
         if( !toupper(i) %in% accepted_file$scientific_name) {
           shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
                      type = "warning",  html = T, className = "alert")
@@ -256,7 +248,7 @@ fqiServer <- function(id) {
       }
 
       #if there plants with no c, show warning
-      plants_no_c <- unassigned_plants(file_upload() %>% rename(scientific_name = input$FQI_column),
+      plants_no_c <- unassigned_plants(file_upload() %>% rename(scientific_name = input$species_column),
                                        db = input$db)
       if( nrow(plants_no_c) > 0 ){
         for(i in plants_no_c$scientific_name) {
@@ -271,7 +263,7 @@ fqiServer <- function(id) {
       #if there are duplicate species, show warning, delete dups
       req(nrow(file_upload()) > 1)
 
-      if( any(duplicated(file_upload() %>% select(input$FQI_column))) ){
+      if( any(duplicated(file_upload() %>% select(input$species_column))) ){
         shinyalert(text = strong(
           "Duplicate species are detected. Duplicates will only be counted once."),
           type = "warning",  html = T, className = "alert")
@@ -298,13 +290,13 @@ fqiServer <- function(id) {
       accepted(empty_df)
       #reset upload button
       shinyjs::reset("upload")
-      shinyjs::reset("FQI_column")
+      shinyjs::reset("species_column")
     })
 
 #manually enter data------------------------------------------------------------
 
-    #species drop-down list based on region
-    output$latin_name <- renderUI({
+    #species drop-down list based on regional list selected
+    output$select_species <- renderUI({
       #create list of latin names based on regional list selected
       latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
       #create a dropdown option
@@ -326,13 +318,13 @@ fqiServer <- function(id) {
       shinyjs::reset("species")
     })
 
-
     #if there are duplicate species, show warning, delete dups
     observeEvent(input$add_species, {
       req(nrow(data_entered()) > 1)
       if( any(duplicated(data_entered() %>% select(scientific_name))) ){
         shinyalert(text = strong(
-          "Duplicate species are detected. Duplicates will only be counted once."),
+          "Duplicate species are detected.
+          Duplicates will only be counted once."),
           type = "warning",  html = T, className = "alert")
 
         data_entered(data_entered()[!duplicated(data_entered()[1]),])
@@ -354,6 +346,18 @@ fqiServer <- function(id) {
       }
     })
 
+
+    #render output table from manually entered species on data entry page
+    output$manual_table <- DT::renderDT({
+      datatable(data_entered(),
+                selection = 'single',
+                options = list(autoWidth = TRUE,
+                               scrollX = TRUE,
+                               searching = FALSE,
+                               lengthChange = FALSE)
+      )
+    })
+
     #when delete species is clicked, delete row
     observeEvent(input$delete_species,{
       #call table
@@ -370,28 +374,21 @@ fqiServer <- function(id) {
 
     #when delete all is clicked, clear all entries
     observeEvent(input$manual_delete_all, {
-      #make an empty df
-      empty_df <- data.frame()
-      #assign it to the reactive value
-      data_entered(empty_df)
-      accepted(empty_df)
-    })
-
-    #render output table from manually entered species on data entry page
-    output$manual_table <- DT::renderDT({
-      datatable(data_entered(),
-                selection = 'single',
-                options = list(autoWidth = TRUE,
-                               scrollX = TRUE,
-                               searching = FALSE,
-                               lengthChange = FALSE)
-      )
+      data_entered(data_entered)
+      accepted(data_entered)
     })
 
 #creating accepted df ----------------------------------------------------------
 
-    #initialize accepted reactive
+    #initialize reactives
     accepted <- reactiveVal()
+    confirm_db <- reactiveVal("empty")
+    previous_dbs <- reactiveValues(prev = "michigan_2014")
+
+    #store current and previous db value in reactive element
+    observeEvent(input$db, {
+      previous_dbs$prev <- c(tail(previous_dbs$prev, 1), input$db)
+    })
 
     #if input method is enter, accepted is from data_entered
     observe({
@@ -404,8 +401,8 @@ fqiServer <- function(id) {
       req(input_method() == "upload")
       accepted(data.frame())
 
-      req(input_method() == "upload", nrow(file_upload()) > 0, input$FQI_column)
-      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(scientific_name = input$FQI_column),
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column)
+      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(scientific_name = input$species_column),
                                          key = "scientific_name",
                                          db = input$db,
                                          native = FALSE,
@@ -445,7 +442,7 @@ fqiServer <- function(id) {
         file_upload(empty_df)
         accepted(empty_df)
         shinyjs::reset("upload")
-        shinyjs::reset("FQI_column")
+        shinyjs::reset("species_column")
         confirm_db("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
@@ -468,13 +465,6 @@ fqiServer <- function(id) {
     metrics <- reactiveVal()
     physiog_table <- reactiveVal()
     duration_table <- reactiveVal()
-    confirm_db <- reactiveVal("empty")
-    previous_dbs <- reactiveValues(prev = "michigan_2014")
-
-    #store current and previous db value in reactive element
-    observeEvent(input$db, {
-      previous_dbs$prev <- c(tail(previous_dbs$prev, 1), input$db)
-    })
 
     #download cover summary server
     output$download <- downloadHandler(
@@ -482,7 +472,6 @@ fqiServer <- function(id) {
       filename = function() {
         paste0("FQA_assessment_", Sys.Date(), ".zip")
       },
-
       #content of file
       content = function(file) {
         #set wd to temp directory

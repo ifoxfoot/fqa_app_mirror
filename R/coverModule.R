@@ -1,20 +1,17 @@
 #UI------------------------------------------------------------------------
-#side bar UI function
+
 coverUI <- function(id) {
 
   tagList(
 
-    #allow glide to be used in this tab
     glide(
       id = NS(id, "glide"),
-      #labels for glide buttons
       next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
       controls_position = "bottom",
       height = "100%",
 
       screen(
-
         next_condition = "output['cover-next_condition'] == 'TRUE'",
 
         fluidRow(
@@ -25,8 +22,7 @@ coverUI <- function(id) {
 
             #help button
             circleButton(NS(id, "help"), icon = icon("question"),
-                                                     style = "position:absolute;
-                                                     top:5px; right:5px;",
+                         style = "position:absolute; top:5px; right:5px;",
                          status = "primary"),
 
             #input regional data base
@@ -48,6 +44,27 @@ coverUI <- function(id) {
                          choices = c( "Enter Species Manually" = "enter",
                                       "Upload a File" = "upload")),
 
+            #when data entry method is upload, allow user to upload files
+            conditionalPanel(
+
+              condition = "input['cover-input_method'] == 'upload'",
+
+              #input file upload widget
+              fileInput(NS(id, "upload"), NULL, buttonLabel = "Upload...", multiple = F),
+
+              #input what column to use to bind to FQA database
+              uiOutput(NS(id, "species_colname")),
+
+              #input what column to use as cover
+              uiOutput(NS(id, "cover_colname")),
+
+              #input what column to use as plot id
+              uiOutput(NS(id, "plot_colname")),
+
+              #input button to delete uploaded file
+              actionButton(NS(id, "upload_delete_all"), "Delete Uploaded File")
+
+            ), #conditional parenthesis
 
             #when data entry method is upload, allow user to upload files
             conditionalPanel(
@@ -61,16 +78,7 @@ coverUI <- function(id) {
               #button to delete all entries
               actionButton(NS(id, "delete_all"), "Delete All Entries", class = "btn-danger")
 
-            ),#conditional parenthesis
-
-            #when data entry method is upload, allow user to upload files
-            conditionalPanel(
-
-              condition = "input['cover-input_method'] == 'upload'",
-
-              "UNDER CONSTRUCTION"
-
-            ) #conditional parenthesis
+            )#conditional parenthesis
 
           ),#sidebarPanel parenthesis
 
@@ -85,30 +93,28 @@ coverUI <- function(id) {
                               or acronyms. The column must go to the top of the file such that row 1
                               is the column name.")),
 
+            #when user uploads file, show uploaded table
+            conditionalPanel("input['cover-input_method'] == 'upload'",
+                             br(),
+                             br(),
+                             dataTableOutput(NS(id, "upload_table"))),
+
+            #when user wants enters species manually, show widgets and data entered
             conditionalPanel(
               condition = "input['cover-input_method'] == 'enter'",
 
-              #input transect ID
+              #widgets for data entry
               fluidRow(
                 column(4, textInput(NS(id, "transect_id"), "Transect ID"))),
-
               fluidRow(
-                #plot id text input
                 column(2, textInput(NS(id, "plot_id"), "Plot ID")),
-                #select species
                 column(4, uiOutput(NS(id, "select_species"))),
-                #select cover value
                 column(3, uiOutput(NS(id,"cover_value"))),
-                #add species button, but initialize as disabled
                 column(3, disabled(actionButton(NS(id, "add_species"), "Add Species",
                                                 style = "margin-top: 30px; height: 40px;")))),
-
-
+              #table of data entered
               fluidRow(
-                column(12,
-                       #datatable of entered data
-                       dataTableOutput(NS(id, "cover_DT_manual")))
-              )
+                column(12,dataTableOutput(NS(id, "cover_DT_manual"))))
 
             )#conditional panel parenthesis
 
@@ -120,75 +126,68 @@ coverUI <- function(id) {
 
       screen(
 
-        #conditional panel when cover input method is manual entry
-        conditionalPanel(
-
-          condition = "input['cover-input_method'] == 'enter'",
-
-            #download button
-            downloadButton(NS(id, "download"),
-                           label = "Download", class = "downloadButton",
-                           style = "position: absolute; top: 0px; right: 0px;"),
-            br(),
-            #title
-            column(12, align = "center",
-                   h3(textOutput(NS(id, "title")))),
+        #download button
+        downloadButton(NS(id, "download"),
+                       label = "Download", class = "downloadButton",
+                       style = "position: absolute; top: 0px; right: 0px;"),
+        br(),
+        #title
+        column(12, align = "center",
+               h3(textOutput(NS(id, "title")))),
 
 
-          #boxes with key values
-          fluidRow(
-            valueBox(
-              htmlOutput(NS(id,"species_richness")),
-              "Species Richness", color = "navy"
-            ),
-            valueBox(
-              htmlOutput(NS(id,"mean_c")),
-              "Mean C",
-              icon = icon("seedling"), color = "olive"
-            ),
-            valueBox(
-              htmlOutput(NS(id,"fqi")),
-              "Total FQI",
-              icon = icon("pagelines"), color = "green"
-            )
-          ),#fluidRow parenthesis
-
-          #all mets and graph
-          fluidRow(
-            box(plotOutput(NS(id,"binned_c_score_plot")),
-                title = "Binned Histogram of C Values"),
-            box(plotOutput(NS(id,"c_hist")),
-                title = "Histogram of C Values")
+        #boxes with key values
+        fluidRow(
+          valueBox(
+            htmlOutput(NS(id,"species_richness")),
+            "Species Richness", color = "navy"
           ),
-
-          #small tables
-          fluidRow(
-            column(4,
-                   box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
-                   box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
-            column(4,
-                   box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL),
-                   box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
-            column(4,
-                   box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
-                   box(tableOutput(NS(id,"proportion")), title = "C Value Percentages", width = NULL))
+          valueBox(
+            htmlOutput(NS(id,"mean_c")),
+            "Mean C",
+            icon = icon("seedling"), color = "olive"
           ),
+          valueBox(
+            htmlOutput(NS(id,"fqi")),
+            "Total FQI",
+            icon = icon("pagelines"), color = "green"
+          )
+        ),#fluidRow parenthesis
 
-          #output of physiog summary
-          fluidRow(box(title = "Physiognomy Summary", status = "primary",
-                       tableOutput(NS(id, "cover_physiog_manual")), width = 12,
-                       style = "overflow-x: scroll")),
+        #all mets and graph
+        fluidRow(
+          box(plotOutput(NS(id,"binned_c_score_plot")),
+              title = "Binned Histogram of C Values"),
+          box(plotOutput(NS(id,"c_hist")),
+              title = "Histogram of C Values")
+        ),
 
-          #output of species summary
-          fluidRow(box(title = "Species Summary", status = "primary",
-                       tableOutput(NS(id, "cover_species_manual")), width = 12,
-                       style = "overflow-x: scroll")),
+        #small tables
+        fluidRow(
+          column(4,
+                 box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
+                 box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
+          column(4,
+                 box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL),
+                 box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
+          column(4,
+                 box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
+                 box(tableOutput(NS(id,"proportion")), title = "C Value Percentages", width = NULL))
+        ),
 
-          #output of plot summary
-          fluidRow(box(title = "Plot Summary", status = "primary",
-                       tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll"))
+        #output of physiog summary
+        fluidRow(box(title = "Physiognomy Summary", status = "primary",
+                     tableOutput(NS(id, "cover_physiog_manual")), width = 12,
+                     style = "overflow-x: scroll")),
 
-        )#conditional 1 parenthesis
+        #output of species summary
+        fluidRow(box(title = "Species Summary", status = "primary",
+                     tableOutput(NS(id, "cover_species_manual")), width = 12,
+                     style = "overflow-x: scroll")),
+
+        #output of plot summary
+        fluidRow(box(title = "Plot Summary", status = "primary",
+                     tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll"))
 
       )#screen two parenthesis
 
@@ -196,7 +195,7 @@ coverUI <- function(id) {
 
   )#taglist parenthesis
 
-  }
+}
 
 
 #Server-------------------------------------------------------------------------
@@ -209,18 +208,15 @@ coverServer <- function(id) {
     #creating a reactive value for glide page, used as input to server fun
     cover_glide <- reactive({input$shinyglide_index_glide})
 
+    #making input method reactive
+    input_method <- reactive({input$input_method})
+
     #define table for data entered manually
     data_entered = data.frame()
 
-    #create an object with no to store inputs
-    cover_data <- reactiveVal({data_entered})
-
-
-    #if file is uploaded, show T, else F
-    output$file_is_uploaded <- reactive({
-      return(!is.null(input$upload))
-    })
-    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
+    #initialize reactives to hold data entered/uploaded
+    file_upload <- reactiveVal()
+    data_entered <- reactiveVal({data_entered})
 
     #help popup
     observeEvent(input$help, {
@@ -230,10 +226,10 @@ coverServer <- function(id) {
     #drop-down list of cover values based on cover metric input
     output$cover_value <- renderUI({
       cover_vals <-
-      #list of what values appear in dropdown menu depending on cover_method_select
-      if(input$cover_method == "braun-blanquet") {
-        c("+", "1", "2", "3", "4", "5")
-      }
+        #list of what values appear in dropdown menu depending on cover_method_select
+        if(input$cover_method == "braun-blanquet") {
+          c("+", "1", "2", "3", "4", "5")
+        }
       else  if(input$cover_method == "daubenmire") {
         c("1", "2", "3", "4", "5", "6")
       }
@@ -244,14 +240,101 @@ coverServer <- function(id) {
         c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98")
       }
       if (input$cover_method != "percent_cover") {
-      #create a dropdown option
-      selectizeInput(session$ns("cover_val"), "Cover Value", c("", cover_vals),
-                     selected = NULL,
-                     multiple = FALSE) }
+        #create a dropdown option
+        selectizeInput(session$ns("cover_val"), "Cover Value", c("", cover_vals),
+                       selected = NULL,
+                       multiple = FALSE) }
       #else allow numeric input
       else { numericInput(session$ns("cover_val"), "Cover Value",
                           value = 0, min = 0, max = 100)}
     })
+
+    #file upload server-------------------------------------------------------------
+
+    #if file is uploaded, show T, else F
+    output$file_is_uploaded <- reactive({
+      return(!is.null(input$upload))
+    })
+    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
+
+    #When file is uploaded, upload and store in reactive object above
+    observeEvent(input$upload, {
+      #require that a file be uploaded
+      req(input$upload)
+      #getting extension
+      ext <- tools::file_ext(input$upload$name)
+      #reading in differently based on extension
+      new_file <- switch(ext,
+                         csv = vroom::vroom(input$upload$datapath, delim = ","),
+                         tsv = vroom::vroom(input$upload$datapath, delim = "\t"),
+                         xlsx = readxl::read_excel(input$upload$datapath),
+                         validate("Invalid file; Please upload a .csv, .tsv, or .xlsx file")) %>%
+        #drop empty data
+        filter(., rowSums(is.na(.)) != ncol(.)) %>%
+        as.data.frame(.)
+      #store upload in reactive object
+      file_upload(new_file)
+    })
+
+    #drop-down list (for species column) based on the file uploaded
+    observeEvent(input$upload,{
+      output$species_colname <- renderUI({
+        #create list cols
+        colnames <- c("", colnames(file_upload()))
+        #create a dropdown option
+        selectizeInput(session$ns("species_column"), "Which Column Contains Latin Names?",
+                       colnames, selected = NULL)
+      })
+    })
+
+    #drop-down list (for cover column) based on the file uploaded
+    observeEvent(input$upload,{
+      output$cover_colname <- renderUI({
+        #create list cols
+        colnames <- c("", colnames(file_upload()))
+        #create a dropdown option
+        selectizeInput(session$ns("cover_column"), "Which Column Contains Cover Data?",
+                       colnames, selected = NULL)
+      })
+    })
+
+    #drop-down list (for plot-id column) based on the file uploaded
+    observeEvent(input$upload,{
+      output$plot_colname <- renderUI({
+        #create list cols
+        colnames <- c("", colnames(file_upload()))
+        #create a dropdown option
+        selectizeInput(session$ns("plot_column"), "(Optional) Which Column Contains Plot IDs?",
+                       colnames, selected = NULL)
+      })
+    })
+
+    #render output table from uploaded file
+    output$upload_table <- DT::renderDT({
+      datatable(file_upload(),
+                selection = 'single',
+                options = list(autoWidth = TRUE,
+                               scrollX = TRUE,
+                               searching = FALSE,
+                               lengthChange = FALSE)
+      )
+    })
+
+    #when delete all is clicked, clear all entries
+    observeEvent(input$upload_delete_all, {
+      #make an empty df
+      empty_df <- NULL
+      #replace reactive file upload with empty file
+      file_upload(empty_df)
+      accepted(empty_df)
+      #reset upload button
+      shinyjs::reset("upload")
+      shinyjs::reset("species_column")
+    })
+
+    #needs warnings!!
+
+    #manually enter data------------------------------------------------------------
 
     #species drop-down list based on regional list selected
     output$select_species <- renderUI({
@@ -263,7 +346,6 @@ coverServer <- function(id) {
                      multiple = FALSE)
     })
 
-
     #make it so add species button can't be clicked until all fields full
     observe({
       vals <- c(input$transect_id, input$cover_val, input$species, input$plot_id)
@@ -274,27 +356,55 @@ coverServer <- function(id) {
 
     #make it so transect cant be changed after the fact
     observe({
-        toggleState("transect_id", nrow(cover_data()) == 0)
+      toggleState("transect_id", nrow(data_entered()) == 0)
     })
 
-    #save edits
+    #When add species is clicked, add row
     observeEvent(input$add_species, {
-      #combine entries into one-row df
-      new_row <- data.frame(plot_id = input$plot_id,
-                            scientific_name = input$species,
-                            cover = input$cover_val)
+      #create row with data entered
+      new_entry <- data.frame(plot_id = input$plot_id,
+                              scientific_name = input$species,
+                              cover = input$cover_val)
       #bind new entry to table
-      new_table = rbind(new_row, cover_data())
+      new_table = rbind(new_entry, data_entered())
       #make it reactive
-      cover_data(new_table)
-      #reset drop down menu of latin names
+      data_entered(new_table)
+      #reset drop down menus
       shinyjs::reset("species")
       shinyjs::reset("cover_val")
     })
 
+    #if there are duplicate species in same plot, show warning, delete dups
+    observeEvent(input$add_species, {
+      req(nrow(data_entered()) > 1)
+      if( any(duplicated(data_entered() %>% select(plot_id, scientific_name))) ){
+        shinyalert(text = strong(
+          "Duplicate species are detected in the same plot.
+          Duplicates will only be counted once."),
+          type = "warning",  html = T, className = "alert")
+
+        data_entered(data_entered()[!duplicated(data_entered()[c(1,2)]),])
+      }
+    })
+
+    #if there are unassigned species show warning
+    observeEvent(input$add_species, {
+      plants_no_c <- unassigned_plants(data_entered(), db = input$db)
+
+      if( nrow(plants_no_c) > 0 ){
+        for(i in c(plants_no_c$scientific_name)) {
+          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+                                         assigned a C score. It will be included in species
+                                         richness and mean wetness metrics but excluded
+                                         from mean C and FQI metrics")),
+                     type = "warning",  html = T, className = "alert")
+        }
+      }
+    })
+
     #render output table from manually entered species on data entry page
     output$cover_DT_manual <- DT::renderDT({
-      datatable(cover_data(),
+      datatable(data_entered(),
                 selection = 'single',
                 options = list(
                   scrollX = TRUE,
@@ -305,7 +415,7 @@ coverServer <- function(id) {
     #when delete species is clicked, delete row
     observeEvent(input$delete_species,{
       #call table
-      t = cover_data()
+      t = data_entered()
       #print table
       print(nrow(t))
       #if rows are selected, delete them
@@ -313,17 +423,17 @@ coverServer <- function(id) {
         t <- t[-as.numeric(input$cover_DT_manual_rows_selected),]
       }
       #else show the regular table
-      cover_data(t)
+      data_entered(t)
     })
 
     #when delete all is clicked, clear all entries
     observeEvent(input$delete_all, {
-      #assign it to the reactive value
-      cover_data(data_entered)
+      data_entered(data_entered)
       accepted(data_entered)
     })
 
-##accepted df ------------------------------------------------------------------
+    ##accepted df ------------------------------------------------------------------
+
     #initialize reactives
     accepted <- reactiveVal()
     confirm_db <- reactiveVal("empty")
@@ -341,31 +451,40 @@ coverServer <- function(id) {
       previous_covers$prev <- c(tail(previous_covers$prev, 1), input$cover_method)
     })
 
-    #update reactive
+    #if input method is enter, accepted is from data_entered
     observe({
-      accepted(data_entered)
-      req(nrow(cover_data()) > 0)
-
-      accepted(fqacalc::accepted_entries(x = cover_data(),
+      req(input_method() == "enter")
+      req(nrow(data_entered()) > 0)
+      accepted(fqacalc::accepted_entries(x = data_entered(),
                                          key = "scientific_name",
                                          db = input$db,
                                          native = FALSE,
+                                         cover = TRUE,
+                                         allow_duplicates = TRUE,
                                          cover_metric = input$cover_method,
                                          allow_no_c = TRUE))
     })
 
-    #create boolean that shows if data is entered or not for next condition
-    output$next_condition <- renderText(
-      nrow(accepted()) > 0
-    )
+    #if input method is upload, accepted is from file_uploaded
+    observe({
+      req(input_method() == "upload")
+      accepted(data.frame())
 
-    #hide next condition output
-    observe({shinyjs::hide("next_condition",)})
-    outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, input$cover_column)
+      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(scientific_name = input$species_column,
+                                                                      cover = input$cover_column),
+                                         key = "scientific_name",
+                                         db = input$db,
+                                         native = FALSE,
+                                         cover = TRUE,
+                                         allow_duplicates = TRUE,
+                                         cover_metric = input$cover_method,
+                                         allow_no_c = TRUE))
+    })
 
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
-      req(nrow(cover_data()) > 0)
+      req(nrow(accepted()) > 0)
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -385,9 +504,17 @@ coverServer <- function(id) {
       #create an empty df
       empty_df <- data.frame()
       #if confirm db is true and method is enter, reset entered data
-      if(confirm_db() == TRUE ) {
-        cover_data(empty_df)
+      if(confirm_db() == TRUE & input$input_method == "enter") {
+        data_entered(empty_df)
         accepted(empty_df)
+        confirm_db("empty")}
+      #if confirm db is true and method is upload, reset uploaded data
+      if(confirm_db() == TRUE & input$input_method == "upload") {
+        file_upload(empty_df)
+        accepted(empty_df)
+        shinyjs::reset("upload")
+        shinyjs::reset("species_column")
+        shinyjs::reset("cover_column")
         confirm_db("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
@@ -397,7 +524,7 @@ coverServer <- function(id) {
 
     #if cover method is changed and there is already data entered, show popup
     observeEvent(input$cover_method, {
-      req(nrow(cover_data()) > 0)
+      req(nrow(accepted()) > 0)
       #code for popup
       if(confirm_cover() != "empty") {
         confirm_cover("empty") }
@@ -416,10 +543,18 @@ coverServer <- function(id) {
       confirm_cover(input$confirm_cover_change)
       #create an empty df
       empty_df <- data.frame()
-      #if confirm db is true and method is enter, reset entered data
-      if(confirm_cover() == TRUE ) {
-        cover_data(empty_df)
+      #if confirm cover is true and method is enter, reset entered data
+      if(confirm_cover() == TRUE & input$input_method == "enter") {
+        data_entered(empty_df)
         accepted(empty_df)
+        confirm_cover("empty")}
+      #if confirm db is true and method is upload, reset uploaded data
+      if(confirm_cover() == TRUE & input$input_method == "upload") {
+        file_upload(empty_df)
+        accepted(empty_df)
+        shinyjs::reset("upload")
+        shinyjs::reset("species_column")
+        shinyjs::reset("cover_column")
         confirm_cover("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_cover() == FALSE) {
@@ -427,35 +562,16 @@ coverServer <- function(id) {
                           selected = previous_covers$prev[1])}
     })
 
-    #if there are duplicate species in same plot, show warning, delete dups
-    observeEvent(input$add_species, {
-      req(nrow(cover_data()) > 1)
-      if( any(duplicated(cover_data() %>% select(plot_id, scientific_name))) ){
-        shinyalert(text = strong(
-          "Duplicate species are detected in the same plot.
-          Duplicates will only be counted once."),
-          type = "warning",  html = T, className = "alert")
+    #create boolean that shows if data is entered or not for next condition
+    output$next_condition <- renderText(
+      nrow(accepted()) > 0
+    )
 
-        cover_data(cover_data()[!duplicated(cover_data()[c(1,2)]),])
-      }
-    })
+    #hide next condition output
+    observe({shinyjs::hide("next_condition",)})
+    outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
 
-    #if there are duplicate species in same plot, show warning, delete dups
-    observeEvent(input$add_species, {
-      plants_no_c <- unassigned_plants(cover_data(), db = input$db)
-
-      if( nrow(plants_no_c) > 0 ){
-        for(i in c(plants_no_c$scientific_name)) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-                                         assigned a C score. It will be included in species
-                                         richness and mean wetness metrics but excluded
-                                         from mean C and FQI metrics")),
-          type = "warning",  html = T, className = "alert")
-        }
-      }
-      })
-
-##second screen-----------------------------------------------------------------
+    ##second screen-----------------------------------------------------------------
 
     #initializing reactives for outputs
     metrics <- reactiveVal()
@@ -465,74 +581,6 @@ coverServer <- function(id) {
     plot_sum <- reactiveVal()
     physiog_sum <- reactiveVal()
     data_download <- reactiveVal()
-
-    #updating reactive values
-    observe({
-      #requiring second screen to update reactive values
-      req(cover_glide() == 1)
-
-      metrics(fqacalc::transect_summary(x = cover_data(),
-                               key = "scientific_name",
-                               db = input$db,
-                               cover_metric = input$cover_method,
-                               allow_no_c = TRUE))
-
-      species_sum(fqacalc::species_summary(x = cover_data(),
-                                           key = "scientific_name",
-                                           db = input$db,
-                                           cover_metric = input$cover_method,
-                                           allow_no_c = TRUE) %>%
-                    mutate(c = as.integer(c),
-                           w = as.integer(w),
-                           coverage = as.integer(coverage))
-        )
-
-      physiog_sum(fqacalc::physiog_summary(x = cover_data(),
-                                           key = "scientific_name",
-                                           db = input$db,
-                                           cover_metric = input$cover_method,
-                                           allow_no_c = TRUE))
-
-      plot_sum(fqacalc::plot_summary(x = cover_data(),
-                                     key = "scientific_name",
-                                     db = input$db,
-                                     cover_metric = input$cover_method,
-                                     plot_id = "plot_id",
-                                     allow_no_c = TRUE))
-
-      data_download(merge(fqacalc::accepted_entries(cover_data(),
-                                                    db = input$db,
-                                                    native = FALSE,
-                                                    cover_weighted = TRUE,
-                                                    cover_metric = input$cover_method,
-                                                    allow_duplicates = TRUE,
-                                                    allow_no_c = TRUE),
-                          cover_data()) %>%
-                      dplyr::select(plot_id, everything()))
-      })
-
-    #get duration table
-    observe({
-      req(nrow(accepted()) > 0 & cover_glide() == 1)
-
-      duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                  number = rep.int(0, 3),
-                                  percent = rep.int(0,3))
-
-      dur <- accepted() %>%
-        group_by(duration) %>%
-        summarise(number = n()) %>%
-        mutate(percent = round((number/sum(number))*100, 2)) %>%
-        rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-        mutate(number = as.integer(number))
-
-      #store in reactive
-      duration_table(dur)
-    })
-
-    #render title
-    output$title <- renderText({paste("Calculating metrics based on",
-                                      input$db)})
 
     #download cover summary server
     output$download <- downloadHandler(
@@ -594,7 +642,7 @@ coverServer <- function(id) {
         # Write data entered
         cat('Data Entered')
         cat('\n')
-        write.csv(data_download(), row.names = F)
+        write.csv(accepted(), row.names = F)
 
         # Close the sink
         sink()
@@ -608,6 +656,100 @@ coverServer <- function(id) {
         # Zip them up
         zip( file, c("FQI_metrics.csv", "binned_hist.png", "c_value_hist.png"))
       })
+
+    #updating reactive values
+    observe({
+      #requiring second screen to update reactive values
+      req(cover_glide() == 1)
+
+      metrics(fqacalc::transect_summary(x = accepted(),
+                                        key = "scientific_name",
+                                        db = input$db,
+                                        cover_metric = input$cover_method,
+                                        allow_no_c = TRUE))
+
+      species_sum(fqacalc::species_summary(x = accepted(),
+                                           key = "scientific_name",
+                                           db = input$db,
+                                           cover_metric = input$cover_method,
+                                           allow_no_c = TRUE) %>%
+                    mutate(c = as.integer(c),
+                           w = as.integer(w),
+                           coverage = as.integer(coverage))
+      )
+
+      physiog_sum(fqacalc::physiog_summary(x = accepted(),
+                                           key = "scientific_name",
+                                           db = input$db,
+                                           cover_metric = input$cover_method,
+                                           allow_no_c = TRUE))
+
+      if(input$input_method == "enter") {
+        plot_sum(fqacalc::plot_summary(x = data_entered(),
+                                       key = "scientific_name",
+                                       db = input$db,
+                                       cover_metric = input$cover_method,
+                                       plot_id = "plot_id",
+                                       allow_no_c = TRUE)) }
+
+      if (input$input_method == "upload" & input$plot_column == "") {
+        plot_sum(fqacalc::plot_summary(x = file_upload() %>%
+                                         rename(scientific_name = input$species_column,
+                                                cover = input$cover_column) %>%
+                                         mutate(plot_id = "1"),
+                                       key = "scientific_name",
+                                       db = input$db,
+                                       cover_metric = input$cover_method,
+                                       plot_id = "plot_id",
+                                       allow_no_c = TRUE))
+      }
+
+      if(input$input_method == "upload" & input$plot_column != "") {
+        plot_sum(fqacalc::plot_summary(x = file_upload()
+                                       %>% rename(scientific_name = input$species_column,
+                                                  cover = input$cover_column,
+                                                  plot_id = input$plot_column),
+                                       key = "scientific_name",
+                                       db = input$db,
+                                       cover_metric = input$cover_method,
+                                       plot_id = "plot_id",
+                                       allow_no_c = TRUE))
+      }
+
+      # data_download(merge(fqacalc::accepted_entries(accepted(),
+      #                                               db = input$db,
+      #                                               native = FALSE,
+      #                                               cover_weighted = TRUE,
+      #                                               cover_metric = input$cover_method,
+      #                                               allow_duplicates = TRUE,
+      #                                               allow_no_c = TRUE),
+      #                     data_entered()) %>%
+      #                 dplyr::select(plot_id, everything()))
+    })
+
+
+    #get duration table
+    observe({
+      req(nrow(accepted()) > 0 & cover_glide() == 1)
+
+      duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
+                                  number = rep.int(0, 3),
+                                  percent = rep.int(0,3))
+
+      dur <- accepted() %>%
+        group_by(duration) %>%
+        summarise(number = n()) %>%
+        mutate(percent = round((number/sum(number))*100, 2)) %>%
+        rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
+        mutate(number = as.integer(number))
+
+      #store in reactive
+      duration_table(dur)
+    })
+
+    #render title
+    output$title <- renderText({paste("Calculating metrics based on",
+                                      input$db)})
 
     #species richness
     output$species_richness <- renderUI({
