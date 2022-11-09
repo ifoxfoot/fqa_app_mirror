@@ -30,9 +30,17 @@ fqiUI <- function(id) {
                         selected = "michigan_2014"),
 
             #input data entry method
-            radioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
                          choices = c( "Enter Species Manually" = "enter",
                                       "Upload a File" = "upload")),
+
+          #input key argument
+          radioGroupButtons(NS(id, "key"), label = "Join by: ",
+                            choices = c("Scientific Names" = "scientific_name",
+                                        "Acronyms" = "acronym"),
+                            justified = TRUE,
+                            checkIcon = list(yes = icon("ok",
+                                                        lib = "glyphicon"))),
 
 
             #when data entry method is upload, allow user to upload files
