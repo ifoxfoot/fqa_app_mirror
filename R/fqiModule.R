@@ -509,18 +509,18 @@ fqiServer <- function(id) {
         cat("Physiognomy Metrics")
         cat('\n')
         write.csv(physiog_table() %>%
-                    mutate(values = round(percent, digits = 2)), row.names = F)
+                    mutate(percent = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         cat("Duration Metrics")
         cat('\n')
         write.csv(duration_table() %>%
-                    mutate(values = round(percent, digits = 2)), row.names = F)
+                    mutate(percent = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
-        cat('Data Entered')
+        cat('Species Entered')
         cat('\n')
         write.csv(accepted(), row.names = F)
 
@@ -550,27 +550,27 @@ fqiServer <- function(id) {
       #write df with all cats to include
        physiog_cats <- data.frame(physiognomy = c("tree", "shrub", "vine", "forb", "grass",
                                                  "sedge", "rush", "fern", "bryophyte"),
-                                 number = rep.int(0, 9),
+                                 frequency = rep.int(0, 9),
                                  percent = rep.int(0,9))
 
        duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                   number = rep.int(0, 3),
+                                   frequency = rep.int(0, 3),
                                    percent = rep.int(0,3))
 
        #count observations in accepted data
        phys <- accepted() %>%
          group_by(physiognomy) %>%
-         summarise(number = n()) %>%
-         mutate(percent = round((number/sum(number))*100, 2)) %>%
+         summarise(frequency = n()) %>%
+         mutate(percent = round((frequency/sum(frequency))*100, 2)) %>%
          rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy)) %>%
-         mutate(number = as.integer(number))
+         mutate(frequency = as.integer(frequency))
 
        dur <- accepted() %>%
          group_by(duration) %>%
-         summarise(number = n()) %>%
-         mutate(percent = round((number/sum(number))*100, 2)) %>%
+         summarise(frequency = n()) %>%
+         mutate(percent = round((frequency/sum(frequency))*100, 2)) %>%
          rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-         mutate(number = as.integer(number))
+         mutate(frequency = as.integer(frequency))
 
        #store in reactive
        physiog_table(phys)

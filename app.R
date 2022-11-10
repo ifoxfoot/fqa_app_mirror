@@ -1,19 +1,17 @@
-#load package
+#load packages
 library(shiny) #for app
 library(fqacalc) #for fqai metrics
 library(tidyverse) #for data wrangling/displaying
-#library(rlang) #for .data and := functions
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
 library(shinyjs) #for reset buttons, hiding elements,
 library(shinyalert) #for popups
-#library(shinyFeedback) #for warning messages near widgets
-library(shinyWidgets) #for dashboard layout
+library(shinyWidgets) #for some more custom widgets
 library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map
-library(bslib) #interactive theme
+library(bslib) #for theme
 #library(thematic) #for theme r graphics (was not working with plot)
 
 #thematic for theme of plots

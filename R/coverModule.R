@@ -626,7 +626,7 @@ coverServer <- function(id) {
         cat("Duration Frequency")
         cat('\n')
         write.csv(duration_table() %>%
-                    mutate(values = round(percent, digits = 2)), row.names = F)
+                    mutate(percent = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
@@ -655,7 +655,7 @@ coverServer <- function(id) {
         cat('\n')
 
         # Write data entered
-        cat('Data Entered')
+        cat('Species Entered')
         cat('\n')
         write.csv(accepted(), row.names = F)
 
@@ -750,15 +750,15 @@ coverServer <- function(id) {
       req(nrow(accepted()) > 0 & cover_glide() == 1)
 
       duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                  number = rep.int(0, 3),
+                                  frequency = rep.int(0, 3),
                                   percent = rep.int(0,3))
 
       dur <- accepted() %>%
         group_by(duration) %>%
-        summarise(number = n()) %>%
-        mutate(percent = round((number/sum(number))*100, 2)) %>%
+        summarise(frequency = n()) %>%
+        mutate(percent = round((frequency/sum(frequency))*100, 2)) %>%
         rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-        mutate(number = as.integer(number))
+        mutate(frequency = as.integer(number))
 
       #store in reactive
       duration_table(dur)
