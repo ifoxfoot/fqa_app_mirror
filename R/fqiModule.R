@@ -228,8 +228,11 @@ fqiServer <- function(id) {
       output$species_colname <- renderUI({
         #create list cols
         colnames <- c("", colnames(file_upload()))
+        #create var for key
+        key_var <- if(input$key == "scientific_name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
-        selectizeInput(session$ns("species_column"), "Which Column Contains Latin Names?",
+        selectizeInput(session$ns("species_column"),
+                       paste0("Which Column Contains ", key_var, "?"),
                        colnames, selected = NULL)
       })
     })
@@ -239,8 +242,9 @@ fqiServer <- function(id) {
       req(nrow(file_upload()) >= 1)
       req(input$species_column != "")
 
-      accepted_file <- accepted_entries(file_upload() %>% rename(scientific_name = input$species_column),
-                                        key = "scientific_name",
+      accepted_file <- accepted_entries(file_upload() %>%
+                                          rename(!!as.name(input$key) := input$species_column),
+                                        key = input$key,
                                         db = input$db,
                                         native = FALSE,
                                         allow_no_c = TRUE,
@@ -249,17 +253,19 @@ fqiServer <- function(id) {
 
       #if there are unrecognized plants, show warning and remove
       for(i in c(file_upload()[,input$species_column])){
-        if( !toupper(i) %in% accepted_file$scientific_name) {
+        if( !toupper(i) %in% accepted_file[,input$key]) {
           shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
                      type = "warning",  html = T, className = "alert")
         }
       }
 
       #if there plants with no c, show warning
-      plants_no_c <- unassigned_plants(file_upload() %>% rename(scientific_name = input$species_column),
+      plants_no_c <- unassigned_plants(file_upload() %>%
+                                         rename(!!as.name(input$key) := input$species_column),
+                                       key = input$key,
                                        db = input$db)
       if( nrow(plants_no_c) > 0 ){
-        for(i in plants_no_c$scientific_name) {
+        for(i in plants_no_c[, input$key]) {
           shinyalert(text = strong(paste("Species", i, "is recognized but has not been
                                          assigned a C score. It will be included in species
                                          richness and mean wetness metrics but excluded
@@ -417,8 +423,9 @@ fqiServer <- function(id) {
       accepted(data.frame())
 
       req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column)
-      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(scientific_name = input$species_column),
-                                         key = "scientific_name",
+      accepted(fqacalc::accepted_entries(x = file_upload() %>%
+                                           rename(!!as.name(input$key) := input$species_column),
+                                         key = input$key,
                                          db = input$db,
                                          native = FALSE,
                                          allow_duplicates = FALSE,

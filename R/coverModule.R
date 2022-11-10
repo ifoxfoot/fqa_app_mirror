@@ -289,8 +289,11 @@ coverServer <- function(id) {
       output$species_colname <- renderUI({
         #create list cols
         colnames <- c("", colnames(file_upload()))
+        #create key variable
+        key_var <- if(input$key == "scientific_name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
-        selectizeInput(session$ns("species_column"), "Which Column Contains Latin Names?",
+        selectizeInput(session$ns("species_column"),
+                       paste0("Which Column Contains ", key_var, "?"),
                        colnames, selected = NULL)
       })
     })
@@ -486,9 +489,9 @@ coverServer <- function(id) {
       accepted(data.frame())
 
       req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, input$cover_column)
-      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(scientific_name = input$species_column,
+      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(!!as.name(input$key) := input$species_column,
                                                                       cover = input$cover_column),
-                                         key = "scientific_name",
+                                         key = input$key,
                                          db = input$db,
                                          native = FALSE,
                                          cover = TRUE,
@@ -710,10 +713,10 @@ coverServer <- function(id) {
       if (input$input_method == "upload") {
         if(input$plot_column == "") {
         plot_sum(fqacalc::plot_summary(x = file_upload() %>%
-                                         rename(scientific_name = input$species_column,
+                                         rename(!!as.name(input$key) := input$species_column,
                                                 cover = input$cover_column) %>%
                                          mutate(plot_id = "1"),
-                                       key = "scientific_name",
+                                       key = input$key,
                                        db = input$db,
                                        cover_metric = input$cover_method,
                                        plot_id = "plot_id",
@@ -722,10 +725,10 @@ coverServer <- function(id) {
 
       if(input$input_method == "upload" & input$plot_column != "") {
         plot_sum(fqacalc::plot_summary(x = file_upload()
-                                       %>% rename(scientific_name = input$species_column,
+                                       %>% rename(!!as.name(input$key) := input$species_column,
                                                   cover = input$cover_column,
                                                   plot_id = input$plot_column),
-                                       key = "scientific_name",
+                                       key = input$key,
                                        db = input$db,
                                        cover_metric = input$cover_method,
                                        plot_id = "plot_id",
@@ -758,7 +761,7 @@ coverServer <- function(id) {
         summarise(frequency = n()) %>%
         mutate(percent = round((frequency/sum(frequency))*100, 2)) %>%
         rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-        mutate(frequency = as.integer(number))
+        mutate(frequency = as.integer(frequency))
 
       #store in reactive
       duration_table(dur)
