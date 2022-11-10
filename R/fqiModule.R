@@ -306,9 +306,11 @@ fqiServer <- function(id) {
     #species drop-down list based on regional list selected
     output$select_species <- renderUI({
       #create list of latin names based on regional list selected
-      latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
+      names <- if(input$key == "scientific_name")
+      {c("", unique(fqacalc::view_db(input$db)$scientific_name))}
+      else {c("", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
-      selectizeInput(session$ns("species"), "Select Species", latin_names,
+      selectizeInput(session$ns("species"), "Select Species", names,
                      selected = NULL,
                      multiple = TRUE)
     })
@@ -316,8 +318,11 @@ fqiServer <- function(id) {
     #When add species is clicked, add row
     observeEvent(input$add_species, {
       #find species
+      if(input$key == "scientific_name") {
       new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                dplyr::filter(scientific_name %in% input$species))
+                                dplyr::filter(scientific_name %in% input$species)) }
+      else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+                                       dplyr::filter(acronym %in% input$species))}
       #bind new entry to table
       new_table = rbind(new_entry, data_entered())
       #update reactive to new table
@@ -341,7 +346,9 @@ fqiServer <- function(id) {
 
     #if there are no C species, show warning
     observeEvent(input$add_species, {
-      plants_no_c <- unassigned_plants(data_entered(), db = input$db)
+      plants_no_c <- unassigned_plants(data_entered(),
+                                       key = "scientific_name",
+                                       db = input$db)
 
       if( nrow(plants_no_c) > 0 ){
         for(i in c(plants_no_c$scientific_name)) {

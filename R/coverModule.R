@@ -39,6 +39,11 @@ coverUI <- function(id) {
                           "daubenmire",
                           "usfs_ecodata")),
 
+            #input data entry method
+            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+                         choices = c( "Enter Species Manually" = "enter",
+                                      "Upload a File" = "upload")),
+
             #input key argument
             radioGroupButtons(NS(id, "key"), label = "Join by: ",
                               choices = c("Scientific Names" = "scientific_name",
@@ -46,11 +51,6 @@ coverUI <- function(id) {
                               justified = TRUE,
                               checkIcon = list(yes = icon("ok",
                                                           lib = "glyphicon"))),
-
-            #input data entry method
-            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                         choices = c( "Enter Species Manually" = "enter",
-                                      "Upload a File" = "upload")),
 
             #when data entry method is upload, allow user to upload files
             conditionalPanel(
@@ -346,10 +346,12 @@ coverServer <- function(id) {
 
     #species drop-down list based on regional list selected
     output$select_species <- renderUI({
-      #create list of latin names based on regional list selected
-      latin_names <- c("", unique(fqacalc::view_db(input$db)$scientific_name))
+      #create list names based on regional list selected
+      names <- if(input$key == "scientific_name")
+      {c("", unique(fqacalc::view_db(input$db)$scientific_name))}
+      else {c("", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
-      selectizeInput(session$ns("species"), "Species", latin_names,
+      selectizeInput(session$ns("species"), "Select Species", names,
                      selected = NULL,
                      multiple = FALSE)
     })
@@ -370,9 +372,14 @@ coverServer <- function(id) {
     #When add species is clicked, add row
     observeEvent(input$add_species, {
       #create row with data entered
-      new_entry <- data.frame(plot_id = input$plot_id,
-                              scientific_name = input$species,
-                              cover = input$cover_val)
+      if(input$key == "scientific_name") {
+        new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+                                  dplyr::filter(scientific_name %in% input$species)) }
+      else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+                                      dplyr::filter(acronym %in% input$species))}
+      #add plot id and cover value
+      new_entry <- new_entry %>%
+        mutate(plot_id = input$plot_id, cover = input$cover_val)
       #bind new entry to table
       new_table = rbind(new_entry, data_entered())
       #make it reactive
@@ -700,7 +707,8 @@ coverServer <- function(id) {
                                        plot_id = "plot_id",
                                        allow_no_c = TRUE)) }
 
-      if (input$input_method == "upload" & input$plot_column == "") {
+      if (input$input_method == "upload") {
+        if(input$plot_column == "") {
         plot_sum(fqacalc::plot_summary(x = file_upload() %>%
                                          rename(scientific_name = input$species_column,
                                                 cover = input$cover_column) %>%
@@ -722,6 +730,7 @@ coverServer <- function(id) {
                                        cover_metric = input$cover_method,
                                        plot_id = "plot_id",
                                        allow_no_c = TRUE))
+      }
       }
 
       # data_download(merge(fqacalc::accepted_entries(accepted(),
