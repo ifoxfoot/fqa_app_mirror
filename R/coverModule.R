@@ -39,11 +39,6 @@ coverUI <- function(id) {
                           "daubenmire",
                           "usfs_ecodata")),
 
-            #input data entry method
-            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                         choices = c( "Enter Species Manually" = "enter",
-                                      "Upload a File" = "upload")),
-
             #input key argument
             radioGroupButtons(NS(id, "key"), label = "Join by: ",
                               choices = c("Scientific Names" = "scientific_name",
@@ -51,6 +46,12 @@ coverUI <- function(id) {
                               justified = TRUE,
                               checkIcon = list(yes = icon("ok",
                                                           lib = "glyphicon"))),
+
+            #input data entry method
+            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+                         choices = c( "Enter Species Manually" = "enter",
+                                      "Upload a File" = "upload")),
+
 
             #when data entry method is upload, allow user to upload files
             conditionalPanel(
@@ -205,7 +206,6 @@ coverUI <- function(id) {
 
 }
 
-
 #Server-------------------------------------------------------------------------
 
 coverServer <- function(id) {
@@ -257,7 +257,7 @@ coverServer <- function(id) {
                           value = 0, min = 0, max = 100)}
     })
 
-    #file upload server-------------------------------------------------------------
+#file upload server-------------------------------------------------------------
 
     #if file is uploaded, show T, else F
     output$file_is_uploaded <- reactive({
@@ -343,9 +343,51 @@ coverServer <- function(id) {
       shinyjs::reset("species_column")
     })
 
-    #needs warnings!!
+    #warnings for bad data in file upload
+    observe({
+      req(nrow(file_upload()) > 0, input$species_column, input$cover_column)
+      accepted_file <- accepted_entries(file_upload() %>%
+                                          rename(!!as.name(input$key) := input$species_column),
+                                        key = input$key,
+                                        db = input$db,
+                                        native = FALSE,
+                                        allow_no_c = TRUE,
+                                        allow_duplicates = TRUE,
+                                        allow_non_veg = TRUE)
 
-    #manually enter data------------------------------------------------------------
+      #if there are unrecognized plants, show warning
+      for(i in c(file_upload()[,input$species_column])){
+        if( !toupper(i) %in% accepted_file[,input$key]) {
+          shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
+                     type = "warning",  html = T, className = "alert")
+        }
+      }
+      #if there plants with no c, show warning
+      plants_no_c <- unassigned_plants(file_upload() %>%
+                                         rename(!!as.name(input$key) := input$species_column),
+                                       key = input$key,
+                                       db = input$db)
+      if( nrow(plants_no_c) > 0 ) {
+        for(i in plants_no_c[, input$key]) {
+          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+                                         assigned a C score. It will be included in species
+                                         richness and mean wetness metrics but excluded
+                                         from mean C and FQI metrics.")),
+                     type = "warning",  html = T, className = "alert")
+        }
+      }
+      #if there are duplicate species in same plot, show warning
+      if( !input$plot_column %in% c("", NULL) ) {
+        if( any(duplicated(file_upload() %>%
+                                       select(input$species_column, input$plot_column))) ){
+        shinyalert(text = strong(
+          "Duplicate species are detected. Duplicates will only be counted once."),
+          type = "warning",  html = T, className = "alert")
+    }
+    }
+    })
+
+#manually enter data------------------------------------------------------------
 
     #species drop-down list based on regional list selected
     output$select_species <- renderUI({

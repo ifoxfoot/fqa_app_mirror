@@ -29,11 +29,6 @@ fqiUI <- function(id) {
                         choices = fqacalc::db_names()$name,
                         selected = "michigan_2014"),
 
-            #input data entry method
-            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                         choices = c( "Enter Species Manually" = "enter",
-                                      "Upload a File" = "upload")),
-
           #input key argument
           radioGroupButtons(NS(id, "key"), label = "Join by: ",
                             choices = c("Scientific Names" = "scientific_name",
@@ -41,6 +36,12 @@ fqiUI <- function(id) {
                             justified = TRUE,
                             checkIcon = list(yes = icon("ok",
                                                         lib = "glyphicon"))),
+
+            #input data entry method
+            prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
+                         choices = c( "Enter Species Manually" = "enter",
+                                      "Upload a File" = "upload")),
+
 
 
             #when data entry method is upload, allow user to upload files
@@ -275,8 +276,6 @@ fqiServer <- function(id) {
       }
 
       #if there are duplicate species, show warning, delete dups
-      req(nrow(file_upload()) > 1)
-
       if( any(duplicated(file_upload() %>% select(input$species_column))) ){
         shinyalert(text = strong(
           "Duplicate species are detected. Duplicates will only be counted once."),
@@ -352,6 +351,7 @@ fqiServer <- function(id) {
 
     #if there are no C species, show warning
     observeEvent(input$add_species, {
+      req(data_entered() > 0)
       plants_no_c <- unassigned_plants(data_entered(),
                                        key = "scientific_name",
                                        db = input$db)
