@@ -26,8 +26,7 @@ binned_c_score_plot <- function(input_data) {
     labs(y = "Percent", x = "") +
     theme(text = element_text(size = 15),
           axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
-            legend.position = "none"
-          )
+            legend.position = "none")
 
   return(c_plot)
 

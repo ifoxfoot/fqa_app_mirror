@@ -156,10 +156,12 @@ fqiUI <- function(id) {
       fluidRow(
         column(4,
                box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
-               box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL)),
+               box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL,
+                   style = "overflow-x: scroll")),
         column(4,
                box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL),
-               box(tableOutput(NS(id,"pysiog_table")), title = "Physiognomy Metrics", width = NULL)),
+               box(tableOutput(NS(id,"pysiog_table")), title = "Physiognomy Metrics", width = NULL,
+                   style = "overflow-x: scroll")),
         column(4,
                box(tableOutput(NS(id,"species_mets")), title = "Species Richness Metrics", width = NULL),
                box(tableOutput(NS(id,"proportion")), title = "C Value Percentages", width = NULL))
