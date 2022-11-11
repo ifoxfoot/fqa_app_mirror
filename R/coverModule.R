@@ -117,7 +117,8 @@ coverUI <- function(id) {
                 column(4, textInput(NS(id, "transect_id"), "Transect ID"))),
               fluidRow(
                 column(2, textInput(NS(id, "plot_id"), "Plot ID")),
-                column(4, uiOutput(NS(id, "select_species"))),
+                column(4, selectizeInput(NS(id, "select_species"), label = "Select Species",
+                                         choices = NULL, selected = NULL)),
                 column(3, uiOutput(NS(id,"cover_value"))),
                 column(3, disabled(actionButton(NS(id, "add_species"), "Add Species",
                                                 style = "margin-top: 30px; height: 40px;")))),
@@ -390,20 +391,22 @@ coverServer <- function(id) {
 #manually enter data------------------------------------------------------------
 
     #species drop-down list based on regional list selected
-    output$select_species <- renderUI({
+    observe({
       #create list names based on regional list selected
       names <- if(input$key == "scientific_name")
       {c("", unique(fqacalc::view_db(input$db)$scientific_name))}
       else {c("", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
-      selectizeInput(session$ns("species"), "Select Species", names,
-                     selected = NULL,
-                     multiple = FALSE)
+      updateSelectizeInput(session, "select_species",
+                           choices =  names,
+                           selected = character(0),
+                           server = TRUE)
     })
+
 
     #make it so add species button can't be clicked until all fields full
     observe({
-      vals <- c(input$transect_id, input$cover_val, input$species, input$plot_id)
+      vals <- c(input$transect_id, input$cover_val, input$select_species, input$plot_id)
       if (input$cover_method != "percent_cover") {
         toggleState("add_species", !"" %in% vals) }
       else { toggleState("add_species", input$cover_val > 0 & input$cover_val <= 100)}
@@ -419,9 +422,9 @@ coverServer <- function(id) {
       #create row with data entered
       if(input$key == "scientific_name") {
         new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                  dplyr::filter(scientific_name %in% input$species)) }
+                                  dplyr::filter(scientific_name %in% input$select_species)) }
       else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                      dplyr::filter(acronym %in% input$species))}
+                                      dplyr::filter(acronym %in% input$select_species))}
       #add plot id and cover value
       new_entry <- new_entry %>%
         mutate(plot_id = input$plot_id, cover = input$cover_val)
@@ -430,7 +433,7 @@ coverServer <- function(id) {
       #make it reactive
       data_entered(new_table)
       #reset drop down menus
-      shinyjs::reset("species")
+      shinyjs::reset("select_species")
       shinyjs::reset("cover_val")
     })
 
@@ -488,8 +491,9 @@ coverServer <- function(id) {
 
     #when delete all is clicked, clear all entries
     observeEvent(input$delete_all, {
-      data_entered(data_entered)
-      accepted(data_entered)
+      empty_df <- data.frame()
+      data_entered(empty_df)
+      accepted(empty_df)
     })
 
     ##accepted df ------------------------------------------------------------------

@@ -66,7 +66,8 @@ fqiUI <- function(id) {
               condition = "input['fqi-input_method'] == 'enter'",
 
               #input latin name
-              uiOutput(NS(id, "select_species")),
+              selectizeInput(NS(id, "select_species"), label = "Select Species",
+                       choices = NULL, selected = NULL, multiple = TRUE),
 
               fluidRow(
                 #input add species button
@@ -309,15 +310,16 @@ fqiServer <- function(id) {
 #manually enter data------------------------------------------------------------
 
     #species drop-down list based on regional list selected
-    output$select_species <- renderUI({
-      #create list of latin names based on regional list selected
+    observe({
+      #create list names based on regional list selected
       names <- if(input$key == "scientific_name")
       {c("", unique(fqacalc::view_db(input$db)$scientific_name))}
       else {c("", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
-      selectizeInput(session$ns("species"), "Select Species", names,
-                     selected = NULL,
-                     multiple = TRUE)
+      updateSelectizeInput(session, "select_species",
+                           choices =  names,
+                           selected = character(0),
+                           server = TRUE)
     })
 
     #When add species is clicked, add row
@@ -325,15 +327,15 @@ fqiServer <- function(id) {
       #find species
       if(input$key == "scientific_name") {
       new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                dplyr::filter(scientific_name %in% input$species)) }
+                                dplyr::filter(scientific_name %in% input$select_species)) }
       else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                       dplyr::filter(acronym %in% input$species))}
+                                       dplyr::filter(acronym %in% input$select_species))}
       #bind new entry to table
       new_table = rbind(new_entry, data_entered())
       #update reactive to new table
       data_entered(new_table)
       #reset drop down menu of latin names
-      shinyjs::reset("species")
+      shinyjs::reset("select_species")
     })
 
     #if there are duplicate species, show warning, delete dups
@@ -395,8 +397,9 @@ fqiServer <- function(id) {
 
     #when delete all is clicked, clear all entries
     observeEvent(input$manual_delete_all, {
-      data_entered(data_entered)
-      accepted(data_entered)
+      empty_df <- data.frame()
+      data_entered(empty_df)
+      accepted(empty_df)
     })
 
 #creating accepted df ----------------------------------------------------------
