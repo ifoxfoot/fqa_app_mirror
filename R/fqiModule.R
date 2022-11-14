@@ -440,7 +440,7 @@ fqiServer <- function(id) {
 
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
-      req(nrow(accepted()) > 0)
+      req(nrow(data_entered()) > 0 || nrow(file_upload()) > 0)
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -462,7 +462,7 @@ fqiServer <- function(id) {
       #if confirm db is true and method is enter, reset entered data
       if(confirm_db() == TRUE) {
         data_entered(empty_df)
-        file_upload(empty_df)
+        file_upload(NULL)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
         accepted(empty_df)

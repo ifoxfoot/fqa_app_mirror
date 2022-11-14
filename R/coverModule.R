@@ -261,6 +261,9 @@ coverServer <- function(id) {
 
 #file upload server-------------------------------------------------------------
 
+    #init cover column check reactive
+    cover_column_is_good <- reactiveVal()
+
     #if file is uploaded, show T, else F
     output$file_is_uploaded <- reactive({
       return(!is.null(input$upload))
@@ -351,7 +354,7 @@ coverServer <- function(id) {
 
       cover_vals <- c(file_upload()[,input$cover_column])
 
-      cover_column_is_good <-
+      cover_column_is_good(
         if(input$cover_method == "percent_cover"
            & is.numeric(cover_vals)
            & max(cover_vals) <= 100
@@ -364,14 +367,14 @@ coverServer <- function(id) {
          !any(!cover_vals %in% c(1:10))) {TRUE}
         else if(input$cover_method == "usfs_ecodata" &
          !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
-        else {FALSE}
+        else {FALSE})
 
-      if(cover_column_is_good == FALSE) {
+      if(cover_column_is_good() == FALSE) {
         shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
                    type = "warning",  html = T, className = "alert")
       }
 
-      req(nrow(file_upload()) > 0, input$species_column, cover_column_is_good)
+      req(nrow(file_upload()) > 0, input$species_column, cover_column_is_good() == TRUE)
       accepted_file <- accepted_entries(file_upload() %>%
                                           rename(!!as.name(input$key) := input$species_column),
                                         key = input$key,
@@ -559,7 +562,7 @@ coverServer <- function(id) {
       req(input_method() == "upload")
       accepted(data.frame())
 
-      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, cover_column_is_good)
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, cover_column_is_good() == TRUE)
       accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(!!as.name(input$key) := input$species_column,
                                                                       cover = input$cover_column),
                                          key = input$key,
@@ -573,7 +576,7 @@ coverServer <- function(id) {
 
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
-      req(nrow(accepted()) > 0)
+      req(nrow(data_entered()) > 0 || nrow(file_upload()) > 0)
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -595,7 +598,7 @@ coverServer <- function(id) {
       #if confirm db is true reset entered data
       if(confirm_db() == TRUE) {
         data_entered(empty_df)
-        file_upload(empty_df)
+        file_upload(NULL)
         accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
@@ -609,7 +612,7 @@ coverServer <- function(id) {
 
     #if cover method is changed and there is already data entered, show popup
     observeEvent(input$cover_method, {
-      req(nrow(accepted()) > 0)
+      req(nrow(data_entered()) > 0 || nrow(file_upload()) > 0)
       #code for popup
       if(confirm_cover() != "empty") {
         confirm_cover("empty") }
@@ -631,7 +634,7 @@ coverServer <- function(id) {
       #if confirm cover is true reset entered data
       if(confirm_cover() == TRUE) {
         data_entered(empty_df)
-        file_upload(empty_df)
+        file_upload(NULL)
         accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
