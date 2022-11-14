@@ -5,7 +5,7 @@ This app was created to be a convenient user-interface for the R package 'fqacal
 
 This app was created with funding from...
 
-To report an issue with this application contact...
+To report a mistake or unexpected issue on this webpage, contact - brook.d.herman@usace.army.mil
 
 Last updated on November 1st, 2022
 

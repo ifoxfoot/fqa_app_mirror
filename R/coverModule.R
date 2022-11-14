@@ -559,7 +559,7 @@ coverServer <- function(id) {
       req(input_method() == "upload")
       accepted(data.frame())
 
-      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, input$cover_column)
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, cover_column_is_good)
       accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(!!as.name(input$key) := input$species_column,
                                                                       cover = input$cover_column),
                                          key = input$key,
@@ -592,13 +592,9 @@ coverServer <- function(id) {
       confirm_db(input$confirm_db_change)
       #create an empty df
       empty_df <- data.frame()
-      #if confirm db is true and method is enter, reset entered data
-      if(confirm_db() == TRUE & input$input_method == "enter") {
+      #if confirm db is true reset entered data
+      if(confirm_db() == TRUE) {
         data_entered(empty_df)
-        accepted(empty_df)
-        confirm_db("empty")}
-      #if confirm db is true and method is upload, reset uploaded data
-      if(confirm_db() == TRUE & input$input_method == "upload") {
         file_upload(empty_df)
         accepted(empty_df)
         shinyjs::reset("upload")
@@ -632,13 +628,9 @@ coverServer <- function(id) {
       confirm_cover(input$confirm_cover_change)
       #create an empty df
       empty_df <- data.frame()
-      #if confirm cover is true and method is enter, reset entered data
-      if(confirm_cover() == TRUE & input$input_method == "enter") {
+      #if confirm cover is true reset entered data
+      if(confirm_cover() == TRUE) {
         data_entered(empty_df)
-        accepted(empty_df)
-        confirm_cover("empty")}
-      #if confirm db is true and method is upload, reset uploaded data
-      if(confirm_cover() == TRUE & input$input_method == "upload") {
         file_upload(empty_df)
         accepted(empty_df)
         shinyjs::reset("upload")

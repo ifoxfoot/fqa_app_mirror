@@ -460,16 +460,12 @@ fqiServer <- function(id) {
       #create an empty df
       empty_df <- data.frame()
       #if confirm db is true and method is enter, reset entered data
-      if(confirm_db() == TRUE & input$input_method == "enter") {
+      if(confirm_db() == TRUE) {
         data_entered(empty_df)
-        accepted(empty_df)
-        confirm_db("empty")}
-      #if confirm db is true and method is upload, reset uploaded data
-      if(confirm_db() == TRUE & input$input_method == "upload") {
         file_upload(empty_df)
-        accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
+        accepted(empty_df)
         confirm_db("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
