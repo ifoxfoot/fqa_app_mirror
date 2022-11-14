@@ -99,7 +99,7 @@ coverUI <- function(id) {
             conditionalPanel("input['cover-input_method'] == 'upload' && output['cover-file_is_uploaded'] != true",
                              br(),
                              h3("File uploads must have one column containing either scientific names
-                              or acronyms. The column must go to the top of the file such that row 1
+                              or acronyms. The columns must go to the top of the file such that row 1
                               is the column name.")),
 
             #when user uploads file, show uploaded table
@@ -347,7 +347,31 @@ coverServer <- function(id) {
 
     #warnings for bad data in file upload
     observe({
-      req(nrow(file_upload()) > 0, input$species_column, input$cover_column)
+      req(nrow(file_upload()) > 0, input$cover_column)
+
+      cover_vals <- c(file_upload()[,input$cover_column])
+
+      cover_column_is_good <-
+        if(input$cover_method == "percent_cover"
+           & is.numeric(cover_vals)
+           & max(cover_vals) <= 100
+           & min(cover_vals) > 0) {TRUE}
+        else if(input$cover_method == "braun-blanquet" &
+         !any(!cover_vals %in% c("+", 1:5))) {TRUE}
+        else if(input$cover_method == "daubenmire" &
+         !any(!cover_vals %in% c(1:6))) {TRUE}
+        else if(input$cover_method == "carolina_veg_survey" &
+         !any(!cover_vals %in% c(1:10))) {TRUE}
+        else if(input$cover_method == "usfs_ecodata" &
+         !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
+        else {FALSE}
+
+      if(cover_column_is_good == FALSE) {
+        shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
+                   type = "warning",  html = T, className = "alert")
+      }
+
+      req(nrow(file_upload()) > 0, input$species_column, cover_column_is_good)
       accepted_file <- accepted_entries(file_upload() %>%
                                           rename(!!as.name(input$key) := input$species_column),
                                         key = input$key,

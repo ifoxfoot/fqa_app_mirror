@@ -94,7 +94,7 @@ fqiUI <- function(id) {
           conditionalPanel("input['fqi-input_method'] == 'upload' && output['fqi-file_is_uploaded'] != true",
                            br(),
                            h3("File uploads must have one column containing either scientific names
-                              or acronyms. The column must go to the top of the file such that row 1
+                              or acronyms. The columns must go to the top of the file such that row 1
                               is the column name.")),
 
           #when user uploads file, show uploaded table
