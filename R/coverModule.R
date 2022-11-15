@@ -187,6 +187,11 @@ coverUI <- function(id) {
         ),
 
         #output of physiog summary
+        fluidRow(box(title = "Relative Cover Terms", status = "primary",
+                     includeMarkdown("rmarkdowns/rel_terms.Rmd"), width = 12,
+                     style = "overflow-x: scroll")),
+
+        #output of physiog summary
         fluidRow(box(title = "Physiognomy Summary", status = "primary",
                      tableOutput(NS(id, "cover_physiog_manual")), width = 12,
                      style = "overflow-x: scroll")),
@@ -547,6 +552,7 @@ coverServer <- function(id) {
     observe({
       req(input_method() == "enter")
       req(nrow(data_entered()) > 0)
+
       accepted(fqacalc::accepted_entries(x = data_entered(),
                                          key = "scientific_name",
                                          db = input$db,
@@ -655,7 +661,7 @@ coverServer <- function(id) {
     observe({shinyjs::hide("next_condition",)})
     outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
 
-    ##second screen-----------------------------------------------------------------
+##second screen-----------------------------------------------------------------
 
     #initializing reactives for outputs
     metrics <- reactiveVal()
@@ -726,7 +732,16 @@ coverServer <- function(id) {
         # Write data entered
         cat('Species Entered')
         cat('\n')
-        write.csv(accepted(), row.names = F)
+        if(input$input_method == "enter")
+          { write.csv(left_join(accepted(), data_entered()), row.names = F) }
+        else if(input$input_method == "upload" & !is.null(input$plot_column))
+        { write.csv(left_join(accepted(),
+                              file_upload() %>% rename(!!as.name(input$key) := input$species_column,
+                                                       cover = input$cover_column) %>%
+                                mutate(!!as.name(input$key) := toupper(!!as.name(input$key))) %>%
+                                select(!!as.name(input$key), !!as.name(input$plot_column)),
+                              by = "scientific_name"), row.names = F) }
+        else{write.csv(accepted(), row.names = F)}
 
         # Close the sink
         sink()

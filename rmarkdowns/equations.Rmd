@@ -101,7 +101,7 @@ $$
 
 #### Transect-Level Cover-Weighted Mean C
 
-....
+The sum of each species' C value multiplied by the species' mean cover and divided by the sum of each species' mean cover. 
 
 $$
 \overline{C_{t\gamma}} = \sum_{i=0}^{t} C_{i}\overline{\gamma_{i}} \bigg/ \sum_{i=0}^{t}\overline{\gamma_{i}}
@@ -109,7 +109,7 @@ $$
 
 #### Transect-Level Native Cover-Weighted Mean C
 
-....
+The sum of each native species' C value multiplied by the species' mean cover and divided by the sum of each native species' mean cover. 
 
 $$
 \overline{C_{n\gamma}} = \sum_{i=0}^{n} C_{i}\overline{\gamma_{i}} \bigg/ \sum_{i=0}^{n}\overline{\gamma_{i}}
