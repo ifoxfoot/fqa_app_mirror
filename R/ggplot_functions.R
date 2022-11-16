@@ -23,7 +23,8 @@ binned_c_score_plot <- function(input_data) {
 
   c_plot <- ggplot(data = dat) +
     geom_col(col = "black", aes(y = values, x = metrics, fill = values)) +
-    labs(y = "Percent", x = "") +
+    labs(y = "Percent (%)", x = "") +
+    ylim(0,100) +
     theme(text = element_text(size = 15),
           axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
             legend.position = "none")
