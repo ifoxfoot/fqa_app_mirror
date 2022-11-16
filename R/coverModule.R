@@ -733,7 +733,7 @@ coverServer <- function(id) {
         cat('Species Entered')
         cat('\n')
         if(input$input_method == "enter")
-          { write.csv(left_join(accepted(), data_entered()), row.names = F) }
+        { write.csv(data_entered(), row.names = F) }
         else if(input$input_method == "upload" & !is.null(input$plot_column))
         { write.csv(left_join(accepted(),
                               file_upload() %>% rename(!!as.name(input$key) := input$species_column,
@@ -764,13 +764,13 @@ coverServer <- function(id) {
       metrics(fqacalc::transect_summary(x = accepted(),
                                         key = "scientific_name",
                                         db = input$db,
-                                        cover_metric = input$cover_method,
+                                        cover_metric = "percent_cover",
                                         allow_no_c = TRUE))
 
       species_sum(fqacalc::species_summary(x = accepted(),
                                            key = "scientific_name",
                                            db = input$db,
-                                           cover_metric = input$cover_method,
+                                           cover_metric = "percent_cover",
                                            allow_no_c = TRUE) %>%
                     mutate(c = as.integer(c),
                            w = as.integer(w),
@@ -780,7 +780,7 @@ coverServer <- function(id) {
       physiog_sum(fqacalc::physiog_summary(x = accepted(),
                                            key = "scientific_name",
                                            db = input$db,
-                                           cover_metric = input$cover_method,
+                                           cover_metric = "percent_cover",
                                            allow_no_c = TRUE))
 
       if(input$input_method == "enter") {
