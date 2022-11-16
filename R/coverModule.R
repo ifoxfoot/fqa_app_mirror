@@ -460,7 +460,8 @@ coverServer <- function(id) {
                                       dplyr::filter(acronym %in% input$select_species))}
       #add plot id and cover value
       new_entry <- new_entry %>%
-        mutate(plot_id = input$plot_id, cover = input$cover_val)
+        mutate(plot_id = input$plot_id, cover = input$cover_val) %>%
+        select(plot_id, cover, everything())
       #bind new entry to table
       new_table = rbind(new_entry, data_entered())
       #make it reactive
@@ -834,15 +835,15 @@ coverServer <- function(id) {
       req(nrow(accepted()) > 0 & cover_glide() == 1)
 
       duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                  frequency = rep.int(0, 3),
+                                  number = rep.int(0, 3),
                                   percent = rep.int(0,3))
 
       dur <- accepted() %>%
         group_by(duration) %>%
-        summarise(frequency = n()) %>%
-        mutate(percent = round((frequency/sum(frequency))*100, 2)) %>%
+        summarise(number = n()) %>%
+        mutate(percent = round((number/sum(number))*100, 2)) %>%
         rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-        mutate(frequency = as.integer(frequency))
+        mutate(number = as.integer(number))
 
       #store in reactive
       duration_table(dur)
