@@ -471,7 +471,7 @@ coverServer <- function(id) {
       shinyjs::reset("cover_val")
     })
 
-    #if there are duplicate species in same plot, show warning, delete dups
+    #if there are duplicate species in same plot, show warning
     observeEvent(input$add_species, {
       req(nrow(data_entered()) > 1)
       if( any(duplicated(data_entered() %>% select(plot_id, scientific_name))) ){
@@ -480,6 +480,7 @@ coverServer <- function(id) {
           Duplicates will only be counted once."),
           type = "warning",  html = T, className = "alert")
 
+        #then delete dups
         data_entered(data_entered()[!duplicated(data_entered()[c(1,2)]),])
       }
     })
@@ -560,25 +561,55 @@ coverServer <- function(id) {
                                          native = FALSE,
                                          cover = TRUE,
                                          allow_duplicates = TRUE,
+                                         plot_id = "plot_id",
                                          cover_metric = input$cover_method,
-                                         allow_no_c = TRUE))
+                                         allow_no_c = TRUE,
+                                         allow_non_veg = TRUE))
     })
 
     #if input method is upload, accepted is from file_uploaded
     observe({
+      #require filt to be uploaded
       req(input_method() == "upload")
       accepted(data.frame())
 
-      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, cover_column_is_good() == TRUE)
-      accepted(fqacalc::accepted_entries(x = file_upload() %>% rename(!!as.name(input$key) := input$species_column,
-                                                                      cover = input$cover_column),
-                                         key = input$key,
-                                         db = input$db,
-                                         native = FALSE,
-                                         cover = TRUE,
-                                         allow_duplicates = TRUE,
-                                         cover_metric = input$cover_method,
-                                         allow_no_c = TRUE))
+      #require upload to be bigger than one row, species column to be set, and cover column to have no NAS
+      req(input_method() == "upload",
+          nrow(file_upload()) > 0,
+          input$species_column,
+          cover_column_is_good() == TRUE)
+
+      #if plot column is set, include plot column
+      if( !input$plot_column %in% c(NULL, "")) {
+
+        accepted(fqacalc::accepted_entries(x = file_upload() %>%
+                                             rename(!!as.name(input$key) := input$species_column,
+                                                    cover = input$cover_column,
+                                                    plot_id = input$plot_column),
+                                           key = input$key,
+                                           db = input$db,
+                                           native = FALSE,
+                                           cover = TRUE,
+                                           allow_duplicates = TRUE,
+                                           cover_metric = input$cover_method,
+                                           allow_no_c = TRUE,
+                                           allow_non_veg = TRUE,
+                                           plot_id = "plot_id")) }
+      else {
+
+        #if plot column is not set, do not include in accepted entries
+        accepted(fqacalc::accepted_entries(x = file_upload() %>%
+                                             rename(!!as.name(input$key) := input$species_column,
+                                                    cover = input$cover_column),
+                                           key = input$key,
+                                           db = input$db,
+                                           native = FALSE,
+                                           cover = TRUE,
+                                           allow_duplicates = TRUE,
+                                           cover_metric = input$cover_method,
+                                           allow_no_c = TRUE,
+                                           allow_non_veg = TRUE))
+      }
     })
 
     #if db is changed and there is already data entered, show popup
@@ -733,16 +764,7 @@ coverServer <- function(id) {
         # Write data entered
         cat('Species Entered')
         cat('\n')
-        if(input$input_method == "enter")
-        { write.csv(data_entered(), row.names = F) }
-        else if(input$input_method == "upload" & !is.null(input$plot_column))
-        { write.csv(left_join(accepted(),
-                              file_upload() %>% rename(!!as.name(input$key) := input$species_column,
-                                                       cover = input$cover_column) %>%
-                                mutate(!!as.name(input$key) := toupper(!!as.name(input$key))) %>%
-                                select(!!as.name(input$key), !!as.name(input$plot_column)),
-                              by = "scientific_name"), row.names = F) }
-        else{write.csv(accepted(), row.names = F)}
+        write.csv(accepted(), row.names = F)
 
         # Close the sink
         sink()

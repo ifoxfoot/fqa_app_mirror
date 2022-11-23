@@ -1,7 +1,10 @@
 #load packages
 library(shiny) #for app
 library(fqacalc) #for fqai metrics
-library(tidyverse) #for data wrangling/displaying
+library(dplyr) #for data wrangling/piping
+library(stringr) #for string manipulation
+library(ggplot2) #for charts
+#library(tidyverse) #for data wrangling/displaying
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
@@ -12,7 +15,7 @@ library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map
 library(bslib) #for theme
-#library(thematic) #for theme r graphics (was not working with plot)
+library(thematic) #for theme r graphics (was not working with plot)
 
 #thematic for theme of plots
 #thematic::thematic_shiny()
@@ -211,7 +214,7 @@ server <- function(input, output, session) {
 
 # VIEW SERVER-------------------------------------------------------------------
 
-  #call to viewModule server function
+  #call to view Module server function
   viewServer("view")
 
 }#server brackets
