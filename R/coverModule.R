@@ -490,8 +490,17 @@ coverServer <- function(id) {
       new_table = rbind(new_entry, data_entered())
       #make it reactive
       data_entered(new_table)
+
       #reset drop down menus
-      shinyjs::reset("select_species")
+      names <- if(input$key == "scientific_name")
+      {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$scientific_name))}
+      else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
+
+      updateSelectizeInput(session, "select_species",
+                           choices =  names,
+                           selected = character(0),
+                           server = TRUE)
+
       shinyjs::reset("cover_val")
     })
 
