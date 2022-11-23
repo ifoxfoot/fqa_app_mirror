@@ -427,8 +427,8 @@ coverServer <- function(id) {
     observe({
       #create list names based on regional list selected
       names <- if(input$key == "scientific_name")
-      {c("", unique(fqacalc::view_db(input$db)$scientific_name))}
-      else {c("", unique(fqacalc::view_db(input$db)$acronym))}
+      {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$scientific_name))}
+      else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
       updateSelectizeInput(session, "select_species",
                            choices =  names,
@@ -454,9 +454,33 @@ coverServer <- function(id) {
     observeEvent(input$add_species, {
       #create row with data entered
       if(input$key == "scientific_name") {
-        new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+        new_entry <- data.frame(rbind(fqacalc::view_db(input$db),
+                                      data.frame(
+                                      scientific_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
+                                      synonym = c(NA, NA),
+                                      family = c("Unvegetated Ground", "Unvegetated Water"),
+                                      acronym = c("GROUND", "WATER"),
+                                      native = c(NA, NA),
+                                      c = c(0, 0),
+                                      w = c(0, 0),
+                                      physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
+                                      duration = c("Unvegetated Ground", "Unvegetated Water"),
+                                      common_name = c(NA, NA),
+                                      fqa_db = c({{input$db}}, {{input$db}}))) %>%
                                   dplyr::filter(scientific_name %in% input$select_species)) }
-      else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
+      else {new_entry <- data.frame(rbind(fqacalc::view_db(input$db),
+                                          data.frame(
+                                            scientific_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
+                                            synonym = c(NA, NA),
+                                            family = c("Unvegetated Ground", "Unvegetated Water"),
+                                            acronym = c("GROUND", "WATER"),
+                                            native = c(NA, NA),
+                                            c = c(0, 0),
+                                            w = c(0, 0),
+                                            physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
+                                            duration = c("Unvegetated Ground", "Unvegetated Water"),
+                                            common_name = c(NA, NA),
+                                            fqa_db = c({{input$db}}, {{input$db}}))) %>%
                                       dplyr::filter(acronym %in% input$select_species))}
       #add plot id and cover value
       new_entry <- new_entry %>%
@@ -942,7 +966,8 @@ coverServer <- function(id) {
     #ggplot output
     output$c_hist <- renderPlot({
       req(cover_glide() == 1)
-      c_score_plot(accepted())
+      c_score_plot(accepted() %>%
+                     filter(!acronym %in% c("WATER", "GROUND")))
     })
 
     #ggplot output
