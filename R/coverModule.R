@@ -199,11 +199,12 @@ coverUI <- function(id) {
         #output of species summary
         fluidRow(box(title = "Species Summary", status = "primary",
                      tableOutput(NS(id, "cover_species_manual")), width = 12,
-                     style = "overflow-x: scroll")),
+                     style = "overflow-x: auto;l")),
 
         #output of plot summary
-        fluidRow(box(title = "Plot Summary", status = "primary",
-                     tableOutput(NS(id, "cover_plot_manual")), width = 12, style = "overflow-x: scroll"))
+        fluidRow(box(title = "Plot Summary", status = "primary", width = 12,
+                     style = "overflow-x: auto;",
+                     tableOutput(NS(id, "cover_plot_manual"))))
 
       )#screen two parenthesis
 
@@ -491,7 +492,7 @@ coverServer <- function(id) {
       #make it reactive
       data_entered(new_table)
 
-      #reset drop down menus
+      #reset species drop down from scratch
       names <- if(input$key == "scientific_name")
       {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$scientific_name))}
       else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
@@ -501,7 +502,10 @@ coverServer <- function(id) {
                            selected = character(0),
                            server = TRUE)
 
+      #reset cover value
       shinyjs::reset("cover_val")
+      #reset so cursor is on plot id widget
+      shinyjs::js$refocus("cover-plot_id")
     })
 
     #if there are duplicate species in same plot, show warning

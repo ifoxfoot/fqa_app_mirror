@@ -20,6 +20,10 @@ library(thematic) #for theme r graphics (was not working with plot)
 #thematic for theme of plots
 #thematic::thematic_shiny()
 
+# JS cursor refocus function
+jscode <- "shinyjs.refocus = function(id) {
+  document.getElementById(id).focus();}"
+
 #define UI for application (User Interface)
 ui <- fluidPage(
 
@@ -91,6 +95,9 @@ ui <- fluidPage(
 
   #call this package for reset function
   useShinyjs(),
+
+  #create function for resetting cursor in certain position
+  extendShinyjs(text = jscode, functions = "refocus"),
 
   #initiate navbar
   navbarPage("FQA",
