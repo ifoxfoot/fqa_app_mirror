@@ -3,19 +3,18 @@ library(shiny) #for app
 library(fqacalc) #for fqai metrics
 library(dplyr) #for data wrangling/piping
 library(stringr) #for string manipulation
-library(ggplot2) #for charts
-#library(tidyverse) #for data wrangling/displaying
+library(ggplot2) #for graphics
 library(shinyglide) #for glide panels
 library(readxl) #for reading in xl files
 library(DT) #for displaying tables
-library(shinyjs) #for reset buttons, hiding elements,
+library(shinyjs) #for using javascript
 library(shinyalert) #for popups
-library(shinyWidgets) #for some more custom widgets
+library(shinyWidgets) #for some custom widgets
 library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map
-library(bslib) #for theme
-library(thematic) #for theme r graphics (was not working with plot)
+#library(bslib) #for theme
+#library(thematic) #for theme r graphics (was not working with plot)
 
 #thematic for theme of plots
 #thematic::thematic_shiny()
@@ -204,12 +203,12 @@ server <- function(input, output, session) {
 
 # FQI SERVER -------------------------------------------------------------------
 
-  #call to fqi module server
+  #call to fqi Module server
   fqiServer("fqi")
 
 # COVER SERVER------------------------------------------------------------------
 
-  #call to coverModule server function
+  #call to cover Module server function
   coverServer("cover")
 
 # ABOUT SERVER------------------------------------------------------------------

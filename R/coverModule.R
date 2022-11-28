@@ -833,8 +833,7 @@ coverServer <- function(id) {
                                            cover_metric = "percent_cover",
                                            allow_no_c = TRUE) %>%
                     mutate(c = as.integer(c),
-                           w = as.integer(w),
-                           coverage = as.integer(coverage))
+                           w = as.integer(w))
       )
 
       physiog_sum(fqacalc::physiog_summary(x = accepted(),
@@ -876,18 +875,7 @@ coverServer <- function(id) {
                                        allow_no_c = TRUE))
       }
       }
-
-      # data_download(merge(fqacalc::accepted_entries(accepted(),
-      #                                               db = input$db,
-      #                                               native = FALSE,
-      #                                               cover_weighted = TRUE,
-      #                                               cover_metric = input$cover_method,
-      #                                               allow_duplicates = TRUE,
-      #                                               allow_no_c = TRUE),
-      #                     data_entered()) %>%
-      #                 dplyr::select(plot_id, everything()))
     })
-
 
     #get duration table
     observe({
