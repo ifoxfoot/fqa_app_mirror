@@ -5,10 +5,10 @@ account: ifoxfoot
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7478162
-bundleId: 6520538
+bundleId: 6563831
 url: https://ifoxfoot.shinyapps.io/fqacalc_app/
-when: 1668602172.2877
-lastSyncTime: 1668602172.28773
+when: 1669661631.00863
+lastSyncTime: 1669661631.00864
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: www/EL.png|www/ERDC.png

@@ -46,8 +46,7 @@ viewServer <- function(id) {
                 #options
                 options = list(scrollX=TRUE,
                                scrollY= TRUE,
-                               lengthMenu = c(7,10,15),
-                               paging = TRUE, searching = TRUE,
+                               paging = FALSE, searching = TRUE,
                                fixedColumns = TRUE, autoWidth = TRUE,
                                ordering = TRUE))
       })
