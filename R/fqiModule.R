@@ -31,7 +31,7 @@ fqiUI <- function(id) {
 
           #input key argument
           radioGroupButtons(NS(id, "key"), label = "Join by: ",
-                            choices = c("Scientific Names" = "scientific_name",
+                            choices = c("Scientific Names" = "name",
                                         "Acronyms" = "acronym"),
                             justified = TRUE,
                             checkIcon = list(yes = icon("ok",
@@ -233,7 +233,7 @@ fqiServer <- function(id) {
         #create list cols
         colnames <- c("", colnames(file_upload()))
         #create var for key
-        key_var <- if(input$key == "scientific_name") {"Scientific Names"} else {"Acronyms"}
+        key_var <- if(input$key == "name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
         selectizeInput(session$ns("species_column"),
                        paste0("Which Column Contains ", key_var, "?"),
@@ -314,8 +314,8 @@ fqiServer <- function(id) {
     #species drop-down list based on regional list selected
     observe({
       #create list names based on regional list selected
-      names <- if(input$key == "scientific_name")
-      {c("", unique(fqacalc::view_db(input$db)$scientific_name))}
+      names <- if(input$key == "name")
+      {c("", unique(fqacalc::view_db(input$db)$name))}
       else {c("", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
       updateSelectizeInput(session, "select_species",
@@ -327,9 +327,9 @@ fqiServer <- function(id) {
     #When add species is clicked, add row
     observeEvent(input$add_species, {
       #find species
-      if(input$key == "scientific_name") {
+      if(input$key == "name") {
       new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                dplyr::filter(scientific_name %in% input$select_species)) }
+                                dplyr::filter(name %in% input$select_species)) }
       else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
                                        dplyr::filter(acronym %in% input$select_species))}
       #bind new entry to table
@@ -343,7 +343,7 @@ fqiServer <- function(id) {
     #if there are duplicate species, show warning, delete dups
     observeEvent(input$add_species, {
       req(nrow(data_entered()) > 1)
-      if( any(duplicated(data_entered() %>% select(scientific_name))) ){
+      if( any(duplicated(data_entered() %>% select(name))) ){
         shinyalert(text = strong(
           "Duplicate species are detected.
           Duplicates will only be counted once."),
@@ -357,11 +357,11 @@ fqiServer <- function(id) {
     observeEvent(input$add_species, {
       req(data_entered() > 0)
       plants_no_c <- unassigned_plants(data_entered(),
-                                       key = "scientific_name",
+                                       key = "name",
                                        db = input$db)
 
       if( nrow(plants_no_c) > 0 ){
-        for(i in c(plants_no_c$scientific_name)) {
+        for(i in c(plants_no_c$name)) {
           shinyalert(text = strong(paste("Species", i, "is recognized but has not been
                                          assigned a C score. It will be included in species
                                          richness and mean wetness metrics but excluded

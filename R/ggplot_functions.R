@@ -3,7 +3,7 @@ c_score_plot <- function(input_data) {
 
   c_plot <- ggplot(data = input_data,
                   aes(x = c,
-                      fill = native)) +
+                      fill = nativity)) +
     geom_histogram(col = "black", binwidth = 1, boundary = -0.5) +
     scale_x_continuous(breaks = seq(0,10, by = 1), limits = c(-1, 11)) +
     labs(x = "Coefficient of Conservatism Value",

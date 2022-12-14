@@ -41,7 +41,7 @@ coverUI <- function(id) {
 
             #input key argument
             radioGroupButtons(NS(id, "key"), label = "Join by: ",
-                              choices = c("Scientific Names" = "scientific_name",
+                              choices = c("Scientific Names" = "name",
                                           "Acronyms" = "acronym"),
                               justified = TRUE,
                               checkIcon = list(yes = icon("ok",
@@ -198,13 +198,13 @@ coverUI <- function(id) {
 
         #output of species summary
         fluidRow(box(title = "Species Summary", status = "primary",
-                     tableOutput(NS(id, "cover_species_manual")), width = 12,
+                     DT::dataTableOutput(NS(id, "cover_species_manual")), width = 12,
                      style = "overflow-x: auto;l")),
 
         #output of plot summary
         fluidRow(box(title = "Plot Summary", status = "primary", width = 12,
                      style = "overflow-x: auto;",
-                     tableOutput(NS(id, "cover_plot_manual"))))
+                     DT::dataTableOutput(NS(id, "cover_plot_manual"))))
 
       )#screen two parenthesis
 
@@ -301,7 +301,7 @@ coverServer <- function(id) {
         #create list cols
         colnames <- c("", colnames(file_upload()))
         #create key variable
-        key_var <- if(input$key == "scientific_name") {"Scientific Names"} else {"Acronyms"}
+        key_var <- if(input$key == "name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
         selectizeInput(session$ns("species_column"),
                        paste0("Which Column Contains ", key_var, "?"),
@@ -427,8 +427,8 @@ coverServer <- function(id) {
     #species drop-down list based on regional list selected
     observe({
       #create list names based on regional list selected
-      names <- if(input$key == "scientific_name")
-      {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$scientific_name))}
+      names <- if(input$key == "name")
+      {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$name))}
       else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
       updateSelectizeInput(session, "select_species",
@@ -454,28 +454,30 @@ coverServer <- function(id) {
     #When add species is clicked, add row
     observeEvent(input$add_species, {
       #create row with data entered
-      if(input$key == "scientific_name") {
+      if(input$key == "name") {
         new_entry <- data.frame(rbind(fqacalc::view_db(input$db),
                                       data.frame(
-                                      scientific_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
-                                      synonym = c(NA, NA),
-                                      family = c("Unvegetated Ground", "Unvegetated Water"),
-                                      acronym = c("GROUND", "WATER"),
-                                      native = c(NA, NA),
-                                      c = c(0, 0),
-                                      w = c(0, 0),
-                                      physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
-                                      duration = c("Unvegetated Ground", "Unvegetated Water"),
-                                      common_name = c(NA, NA),
+                                        name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
+                                        name_origin = c(NA, NA),
+                                        acronym = c("GROUND", "WATER"),
+                                        proper_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
+                                        family = c("Unvegetated Ground", "Unvegetated Water"),
+                                        nativity = c(NA, NA),
+                                        c = c(0, 0),
+                                        w = c(0, 0),
+                                        physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
+                                        duration = c("Unvegetated Ground", "Unvegetated Water"),
+                                        common_name = c(NA, NA),
                                       fqa_db = c({{input$db}}, {{input$db}}))) %>%
-                                  dplyr::filter(scientific_name %in% input$select_species)) }
+                                  dplyr::filter(name %in% input$select_species)) }
       else {new_entry <- data.frame(rbind(fqacalc::view_db(input$db),
                                           data.frame(
-                                            scientific_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
-                                            synonym = c(NA, NA),
-                                            family = c("Unvegetated Ground", "Unvegetated Water"),
+                                            name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
+                                            name_origin = c(NA, NA),
                                             acronym = c("GROUND", "WATER"),
-                                            native = c(NA, NA),
+                                            proper_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
+                                            family = c("Unvegetated Ground", "Unvegetated Water"),
+                                            nativity = c(NA, NA),
                                             c = c(0, 0),
                                             w = c(0, 0),
                                             physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
@@ -493,8 +495,8 @@ coverServer <- function(id) {
       data_entered(new_table)
 
       #reset species drop down from scratch
-      names <- if(input$key == "scientific_name")
-      {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$scientific_name))}
+      names <- if(input$key == "name")
+      {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$name))}
       else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
 
       updateSelectizeInput(session, "select_species",
@@ -511,7 +513,7 @@ coverServer <- function(id) {
     #if there are duplicate species in same plot, show warning
     observeEvent(input$add_species, {
       req(nrow(data_entered()) > 1)
-      if( any(duplicated(data_entered() %>% select(plot_id, scientific_name))) ){
+      if( any(duplicated(data_entered() %>% select(plot_id, name))) ){
         shinyalert(text = strong(
           "Duplicate species are detected in the same plot.
           Duplicates will only be counted once."),
@@ -527,7 +529,7 @@ coverServer <- function(id) {
       plants_no_c <- unassigned_plants(data_entered(), db = input$db)
 
       if( nrow(plants_no_c) > 0 ){
-        for(i in c(plants_no_c$scientific_name)) {
+        for(i in c(plants_no_c$name)) {
           shinyalert(text = strong(paste("Species", i, "is recognized but has not been
                                          assigned a C score. It will be included in species
                                          richness and mean wetness metrics but excluded
@@ -593,7 +595,7 @@ coverServer <- function(id) {
       req(nrow(data_entered()) > 0)
 
       accepted(fqacalc::accepted_entries(x = data_entered(),
-                                         key = "scientific_name",
+                                         key = "name",
                                          db = input$db,
                                          native = FALSE,
                                          cover = TRUE,
@@ -822,13 +824,13 @@ coverServer <- function(id) {
       req(cover_glide() == 1)
 
       metrics(fqacalc::transect_summary(x = accepted(),
-                                        key = "scientific_name",
+                                        key = "name",
                                         db = input$db,
                                         cover_metric = "percent_cover",
                                         allow_no_c = TRUE))
 
       species_sum(fqacalc::species_summary(x = accepted(),
-                                           key = "scientific_name",
+                                           key = "name",
                                            db = input$db,
                                            cover_metric = "percent_cover",
                                            allow_no_c = TRUE) %>%
@@ -837,14 +839,14 @@ coverServer <- function(id) {
       )
 
       physiog_sum(fqacalc::physiog_summary(x = accepted(),
-                                           key = "scientific_name",
+                                           key = "name",
                                            db = input$db,
                                            cover_metric = "percent_cover",
                                            allow_no_c = TRUE))
 
       if(input$input_method == "enter") {
         plot_sum(fqacalc::plot_summary(x = data_entered(),
-                                       key = "scientific_name",
+                                       key = "name",
                                        db = input$db,
                                        cover_metric = input$cover_method,
                                        plot_id = "plot_id",
@@ -984,19 +986,25 @@ coverServer <- function(id) {
     })
 
     #plot summary
-    output$cover_plot_manual <- renderTable({
+    output$cover_plot_manual <- DT::renderDataTable({
       #requiring second screen
       req(cover_glide() == 1)
       #call to reactive plot summary
-      plot_sum()
+      datatable(plot_sum())
     })
 
     #species summary
-    output$cover_species_manual <- renderTable({
+    output$cover_species_manual <- DT::renderDataTable({
       #requiring second screen
       req(cover_glide() == 1)
       #call to reactive species summary
-      species_sum()
+      datatable(species_sum(),
+                #options
+                options = list(scrollX=TRUE,
+                               scrollY= TRUE,
+                               paging = FALSE, searching = TRUE,
+                               fixedColumns = TRUE, autoWidth = TRUE,
+                               ordering = TRUE))
     })
 
     #physiog summary
