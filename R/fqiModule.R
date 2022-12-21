@@ -188,12 +188,9 @@ fqiServer <- function(id) {
     #making input method reactive
     input_method <- reactive({input$input_method})
 
-    #define table for data entered manually
-    data_entered <- data.frame()
-
     #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
-    data_entered <- reactiveVal({data_entered})
+    data_entered <- reactiveVal({data.frame()})
 
     #help popup
     observeEvent(input$help, {
@@ -326,55 +323,71 @@ fqiServer <- function(id) {
 
     #When add species is clicked, add row
     observeEvent(input$add_species, {
-      #find species
-      if(input$key == "name") {
-      new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                dplyr::filter(name %in% input$select_species)) }
-      else {new_entry <- data.frame(fqacalc::view_db(input$db) %>%
-                                       dplyr::filter(acronym %in% input$select_species))}
+      #list species
+      if(input$key == "name"){
+        new_entry <- data.frame(name = c(input$select_species))}
+      else {new_entry <- data.frame(acronym = c(input$select_species))}
       #bind new entry to table
-      new_table = rbind(new_entry, data_entered())
+      if(nrow(accepted() > 0))
+      {new_entry <- rbind(new_entry, accepted() %>% dplyr::select(input$key))}
       #update reactive to new table
-      data_entered(new_table)
+      data_entered(new_entry)
       #reset drop down menu of latin names
       shinyjs::reset("select_species")
     })
 
-    #if there are duplicate species, show warning, delete dups
-    observeEvent(input$add_species, {
-      req(nrow(data_entered()) > 1)
-      if( any(duplicated(data_entered() %>% select(name))) ){
-        shinyalert(text = strong(
-          "Duplicate species are detected.
-          Duplicates will only be counted once."),
-          type = "warning",  html = T, className = "alert")
+    # #if there are duplicate species, show warning, delete dups
+    # observeEvent(input$add_species, {
+    #   req(nrow(data_entered()) > 1)
+    #   if( any(duplicated(data_entered() %>% select(name))) ){
+    #     shinyalert(text = strong(
+    #       "Duplicate species are detected.
+    #       Duplicates will only be counted once."),
+    #       type = "warning",  html = T, className = "alert")
+    #
+    #     data_entered(data_entered()[!duplicated(data_entered()[1]),])
+    #   }
+    # })
+    #
+    # #if there are no C species, show warning
+    # observeEvent(input$add_species, {
+    #   req(data_entered() > 0)
+    #   plants_no_c <- unassigned_plants(data_entered(),
+    #                                    key = "name",
+    #                                    db = input$db)
+    #
+    #   if( nrow(plants_no_c) > 0 ){
+    #     for(i in c(plants_no_c$name)) {
+    #       shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+    #                                      assigned a C score. It will be included in species
+    #                                      richness and mean wetness metrics but excluded
+    #                                      from mean C and FQI metrics")),
+    #                  type = "warning",  html = T, className = "alert")
+    #     }
+    #   }
+    # })
 
-        data_entered(data_entered()[!duplicated(data_entered()[1]),])
-      }
+    #this allows popups for warnings about duplicates/non-matching species
+    observeEvent(input$add_species,{
+      nrow(data_entered()) > 0
+      #list to store warnings
+      warning_list <- list()
+      #catch warnings
+      withCallingHandlers(
+        fqacalc::accepted_entries(x = data_entered(),
+                                  key = input$key,
+                                  db = input$db,
+                                  native = FALSE),
+        #add to list
+        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      #show each list item in notification
+      for(i in warning_list) {
+        shinyalert(text = strong(i), type = "warning", html = T) }
     })
-
-    #if there are no C species, show warning
-    observeEvent(input$add_species, {
-      req(data_entered() > 0)
-      plants_no_c <- unassigned_plants(data_entered(),
-                                       key = "name",
-                                       db = input$db)
-
-      if( nrow(plants_no_c) > 0 ){
-        for(i in c(plants_no_c$name)) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-                                         assigned a C score. It will be included in species
-                                         richness and mean wetness metrics but excluded
-                                         from mean C and FQI metrics")),
-                     type = "warning",  html = T, className = "alert")
-        }
-      }
-    })
-
 
     #render output table from manually entered species on data entry page
     output$manual_table <- DT::renderDT({
-      datatable(data_entered(),
+      datatable(accepted(),
                 selection = 'single',
                 options = list(autoWidth = TRUE,
                                scrollX = TRUE,
@@ -386,7 +399,7 @@ fqiServer <- function(id) {
     #when delete species is clicked, delete row
     observeEvent(input$delete_species,{
       #call table
-      t = data_entered()
+      t = accepted()
       #print table
       print(nrow(t))
       #if rows are selected, delete them
@@ -394,7 +407,7 @@ fqiServer <- function(id) {
         t <- t[-as.numeric(input$manual_table_rows_selected),]
       }
       #else show the regular table
-      data_entered(t)
+      accepted(t)
     })
 
     #when delete all is clicked, clear all entries
@@ -407,7 +420,7 @@ fqiServer <- function(id) {
 #creating accepted df ----------------------------------------------------------
 
     #initialize reactives
-    accepted <- reactiveVal()
+    accepted <- reactiveVal(data.frame())
     confirm_db <- reactiveVal("empty")
     previous_dbs <- reactiveValues(prev = "michigan_2014")
 
@@ -418,8 +431,14 @@ fqiServer <- function(id) {
 
     #if input method is enter, accepted is from data_entered
     observe({
-      req(input_method() == "enter")
-      accepted(distinct(data_entered()))
+      req(input_method() == "enter" & nrow(data_entered()) > 0)
+      accepted(fqacalc::accepted_entries(x = data_entered(),
+                                         key = input$key,
+                                         db = input$db,
+                                         native = FALSE,
+                                         allow_duplicates = FALSE,
+                                         allow_non_veg = FALSE,
+                                         allow_no_c = TRUE))
     })
 
     #if input method is upload, accepted is from file upload
