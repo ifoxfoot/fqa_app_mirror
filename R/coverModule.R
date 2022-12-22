@@ -39,13 +39,18 @@ coverUI <- function(id) {
                           "daubenmire",
                           "usfs_ecodata")),
 
-            #input key argument
-            radioGroupButtons(NS(id, "key"), label = "Join by: ",
-                              choices = c("Scientific Names" = "name",
-                                          "Acronyms" = "acronym"),
-                              justified = TRUE,
-                              checkIcon = list(yes = icon("ok",
-                                                          lib = "glyphicon"))),
+            #when db has incomplete acronyms hide acronym option
+            conditionalPanel(
+
+              condition = "output['cover-complete_acronym'] == 'TRUE'",
+              #input key argument
+              radioGroupButtons(NS(id, "key"), label = "Join by: ",
+                                choices = c("Scientific Names" = "name",
+                                            "Acronyms" = "acronym"),
+                                justified = TRUE,
+                                checkIcon = list(yes = icon("ok",
+                                                            lib = "glyphicon"))),
+            ),
 
             #input data entry method
             prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
@@ -94,6 +99,7 @@ coverUI <- function(id) {
           mainPanel(
 
             textOutput(NS(id, "next_condition")),
+            textOutput(NS(id, "complete_acronym")),
 
             #when user wants to upload a file but hasn't yet, show instructions
             conditionalPanel("input['cover-input_method'] == 'upload' && output['cover-file_is_uploaded'] != true",
@@ -264,6 +270,27 @@ coverServer <- function(id) {
       else { numericInput(session$ns("cover_val"), "Cover Value",
                           value = 0, min = 0, max = 100)}
     })
+
+    #create reactive for complete acronym test
+    complete_acronym <- reactiveVal({})
+
+    #test if db contains complete acronyms (T/F), store in reactive
+    observeEvent(input$db, {
+      regional_fqai <- view_db(input$db)
+      acronym <- if( any(is.na(regional_fqai$acronym)
+                         & regional_fqai$name_origin == "accepted_scientific_name") )
+      {FALSE} else {TRUE}
+      complete_acronym(acronym)
+    })
+
+    #create complete acronym output
+    output$complete_acronym <- renderText(
+      complete_acronym()
+    )
+
+    #hide complete_acronym output
+    observe({shinyjs::hide("complete_acronym",)})
+    outputOptions(output, "complete_acronym", suspendWhenHidden=FALSE)
 
 #file upload server-------------------------------------------------------------
 

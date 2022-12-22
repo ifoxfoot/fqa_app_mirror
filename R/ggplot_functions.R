@@ -11,8 +11,6 @@ c_score_plot <- function(input_data) {
          fill = "Native or Non-native") +
     theme(text = element_text(size = 15)))
 
-  print(input_data)
-
   return(c_plot)
 
 }
