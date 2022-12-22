@@ -11,36 +11,41 @@ fqiUI <- function(id) {
       controls_position = "bottom",
       height = "100%",
 
-    screen(
-      next_condition = "output['fqi-next_condition'] == 'TRUE'",
+      screen(
+        next_condition = "output['fqi-next_condition'] == 'TRUE'",
 
-      fluidRow(
-        sidebarPanel(
+        fluidRow(
+          sidebarPanel(
 
-          titlePanel("Enter Data"),
+            titlePanel("Enter Data"),
 
-          #help button
-          circleButton(NS(id, "help"), icon = icon("question"),
-                       style = "position:absolute; top:5px; right:5px;",
-                       status = "primary"),
+            #help button
+            circleButton(NS(id, "help"), icon = icon("question"),
+                         style = "position:absolute; top:5px; right:5px;",
+                         status = "primary"),
 
             #input regional data base
             selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
                         choices = fqacalc::db_names()$name,
                         selected = "michigan_2014"),
 
-          #input key argument
-          radioGroupButtons(NS(id, "key"), label = "Join by: ",
-                            choices = c("Scientific Names" = "name",
-                                        "Acronyms" = "acronym"),
-                            justified = TRUE,
-                            checkIcon = list(yes = icon("ok",
-                                                        lib = "glyphicon"))),
+            #when db has incomplete acronyms hide acronym option
+            conditionalPanel(
+
+              condition = "output['fqi-complete_acronym'] == 'TRUE'",
+              #input key argument
+              radioGroupButtons(NS(id, "key"), label = "Join by: ",
+                                choices = c("Scientific Names" = "name",
+                                            "Acronyms" = "acronym"),
+                                justified = TRUE,
+                                checkIcon = list(yes = icon("ok",
+                                                            lib = "glyphicon"))),
+            ),
 
             #input data entry method
             prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                         choices = c( "Enter Species Manually" = "enter",
-                                      "Upload a File" = "upload")),
+                               choices = c( "Enter Species Manually" = "enter",
+                                            "Upload a File" = "upload")),
 
 
 
@@ -67,7 +72,7 @@ fqiUI <- function(id) {
 
               #input latin name
               selectizeInput(NS(id, "select_species"), label = "Select Species",
-                       choices = NULL, selected = NULL, multiple = TRUE),
+                             choices = NULL, selected = NULL, multiple = TRUE),
 
               fluidRow(
                 #input add species button
@@ -84,11 +89,12 @@ fqiUI <- function(id) {
 
             ) #conditional 2 parenthesis
 
-        ), #side bar panel
+          ), #side bar panel
 
         mainPanel(
 
           textOutput(NS(id, "next_condition")),
+          textOutput(NS(id, "complete_acronym")),
 
           #when user wants to upload a file but hasn't yet, show instructions
           conditionalPanel("input['fqi-input_method'] == 'upload' && output['fqi-file_is_uploaded'] != true",
@@ -196,6 +202,27 @@ fqiServer <- function(id) {
     observeEvent(input$help, {
       fqi_help()
     })
+
+    #create reactive for complete acronym test
+    complete_acronym <- reactiveVal({})
+
+    #test if db contains complete acronyms (T/F), store in reactive
+    observeEvent(input$db, {
+      regional_fqai <- view_db(input$db)
+      acronym <- if( any(is.na(regional_fqai$acronym)
+                         & regional_fqai$name_origin == "accepted_scientific_name") )
+      {FALSE} else {TRUE}
+      complete_acronym(acronym)
+    })
+
+    #create complete acronym output
+    output$complete_acronym <- renderText(
+      complete_acronym()
+    )
+
+    #hide complete_acronym output
+    observe({shinyjs::hide("complete_acronym",)})
+    outputOptions(output, "complete_acronym", suspendWhenHidden=FALSE)
 
 #file upload server-------------------------------------------------------------
 
