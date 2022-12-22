@@ -8,7 +8,7 @@ tmap_function <- function(file_path){
   regional_fqa_map <- read_sf(file_path)
 
   #set tmap to interactive
-  tmap_mode("view")
+  suppressMessages(tmap_mode("view"))
 
   #make map
   tmap <- tm_shape(regional_fqa_map) +

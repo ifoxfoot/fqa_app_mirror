@@ -1,15 +1,17 @@
 #this file contains functions to produce ggplots
 c_score_plot <- function(input_data) {
 
-  c_plot <- ggplot(data = input_data,
+  c_plot <- suppressWarnings(ggplot(data = input_data,
                   aes(x = c,
                       fill = nativity)) +
-    geom_histogram(col = "black", binwidth = 1, boundary = -0.5) +
+    geom_histogram(col = "black", binwidth = 1, boundary = -0.5, na.rm = TRUE) +
     scale_x_continuous(breaks = seq(0,10, by = 1), limits = c(-1, 11)) +
     labs(x = "Coefficient of Conservatism Value",
          y = "Number of Species",
          fill = "Native or Non-native") +
-    theme(text = element_text(size = 15))
+    theme(text = element_text(size = 15)))
+
+  print(input_data)
 
   return(c_plot)
 
