@@ -13,6 +13,7 @@ library(shinyWidgets) #for some custom widgets
 library(shinydashboard) #for boxes
 library(sf) #for spatial data
 library(tmap) #for interactive map
+library(rlang)
 #library(bslib) #for theme
 #library(thematic) #for theme r graphics (was not working with plot)
 

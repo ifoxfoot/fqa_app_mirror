@@ -270,44 +270,20 @@ fqiServer <- function(id) {
       req(nrow(file_upload()) >= 1)
       req(input$species_column != "")
 
-      accepted_file <- accepted_entries(file_upload() %>%
-                                          rename(!!as.name(input$key) := input$species_column),
-                                        key = input$key,
-                                        db = input$db,
-                                        native = FALSE,
-                                        allow_no_c = TRUE,
-                                        allow_duplicates = TRUE,
-                                        allow_non_veg = TRUE)
-
-      #if there are unrecognized plants, show warning and remove
-      for(i in c(file_upload()[,input$species_column])){
-        if( !toupper(i) %in% accepted_file[,input$key]) {
-          shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
-                     type = "warning",  html = T, className = "alert")
-        }
-      }
-
-      #if there plants with no c, show warning
-      plants_no_c <- unassigned_plants(file_upload() %>%
-                                         rename(!!as.name(input$key) := input$species_column),
-                                       key = input$key,
-                                       db = input$db)
-      if( nrow(plants_no_c) > 0 ){
-        for(i in plants_no_c[, input$key]) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-                                         assigned a C score. It will be included in species
-                                         richness and mean wetness metrics but excluded
-                                         from mean C and FQI metrics.")),
-                     type = "warning",  html = T, className = "alert")
-         }
-      }
-
-      #if there are duplicate species, show warning, delete dups
-      if( any(duplicated(file_upload() %>% select(input$species_column))) ){
-        shinyalert(text = strong(
-          "Duplicate species are detected. Duplicates will only be counted once."),
-          type = "warning",  html = T, className = "alert")
-      }
+      #list to store warnings
+      warning_list <- list()
+      #catch warnings
+      withCallingHandlers(
+        accepted_file <- accepted_entries(file_upload() %>%
+                                            rename(!!as.name(input$key) := input$species_column),
+                                          key = input$key,
+                                          db = input$db,
+                                          native = FALSE),
+        #add to list
+        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      #show each list item in notification
+      for(i in warning_list) {
+        shinyalert(text = strong(i), type = "warning", html = T) }
     })
 
     #render output table from uploaded file
@@ -362,37 +338,6 @@ fqiServer <- function(id) {
       #reset drop down menu of latin names
       shinyjs::reset("select_species")
     })
-
-    # #if there are duplicate species, show warning, delete dups
-    # observeEvent(input$add_species, {
-    #   req(nrow(data_entered()) > 1)
-    #   if( any(duplicated(data_entered() %>% select(name))) ){
-    #     shinyalert(text = strong(
-    #       "Duplicate species are detected.
-    #       Duplicates will only be counted once."),
-    #       type = "warning",  html = T, className = "alert")
-    #
-    #     data_entered(data_entered()[!duplicated(data_entered()[1]),])
-    #   }
-    # })
-    #
-    # #if there are no C species, show warning
-    # observeEvent(input$add_species, {
-    #   req(data_entered() > 0)
-    #   plants_no_c <- unassigned_plants(data_entered(),
-    #                                    key = "name",
-    #                                    db = input$db)
-    #
-    #   if( nrow(plants_no_c) > 0 ){
-    #     for(i in c(plants_no_c$name)) {
-    #       shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-    #                                      assigned a C score. It will be included in species
-    #                                      richness and mean wetness metrics but excluded
-    #                                      from mean C and FQI metrics")),
-    #                  type = "warning",  html = T, className = "alert")
-    #     }
-    #   }
-    # })
 
     #this allows popups for warnings about duplicates/non-matching species
     observeEvent(input$add_species,{

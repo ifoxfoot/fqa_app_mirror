@@ -381,73 +381,101 @@ coverServer <- function(id) {
       shinyjs::reset("species_column")
     })
 
-    #warnings for bad data in file upload
+    # #warnings for bad data in file upload
     observe({
-      req(nrow(file_upload()) > 0, input$cover_column)
+      req(nrow(file_upload()) > 0, input$cover_column, input$plot_column)
 
-      cover_vals <- c(file_upload()[,input$cover_column])
+      plot_col <- if(input$plot_column == ""){NULL} else {input$plot_column}
 
-      cover_column_is_good(
-        if(input$cover_method == "percent_cover"
-           & is.numeric(cover_vals)
-           & max(cover_vals) <= 100
-           & min(cover_vals) > 0) {TRUE}
-        else if(input$cover_method == "braun-blanquet" &
-         !any(!cover_vals %in% c("+", 1:5))) {TRUE}
-        else if(input$cover_method == "daubenmire" &
-         !any(!cover_vals %in% c(1:6))) {TRUE}
-        else if(input$cover_method == "carolina_veg_survey" &
-         !any(!cover_vals %in% c(1:10))) {TRUE}
-        else if(input$cover_method == "usfs_ecodata" &
-         !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
-        else {FALSE})
-
-      if(cover_column_is_good() == FALSE) {
-        shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
-                   type = "warning",  html = T, className = "alert")
-      }
-
-      req(nrow(file_upload()) > 0, input$species_column, cover_column_is_good() == TRUE)
-      accepted_file <- accepted_entries(file_upload() %>%
-                                          rename(!!as.name(input$key) := input$species_column),
-                                        key = input$key,
-                                        db = input$db,
-                                        native = FALSE,
-                                        allow_no_c = TRUE,
-                                        allow_duplicates = TRUE,
-                                        allow_non_veg = TRUE)
-
-      #if there are unrecognized plants, show warning
-      for(i in c(file_upload()[,input$species_column])){
-        if( !toupper(i) %in% accepted_file[,input$key]) {
-          shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
-                     type = "warning",  html = T, className = "alert")
-        }
-      }
-      #if there plants with no c, show warning
-      plants_no_c <- unassigned_plants(file_upload() %>%
-                                         rename(!!as.name(input$key) := input$species_column),
-                                       key = input$key,
-                                       db = input$db)
-      if( nrow(plants_no_c) > 0 ) {
-        for(i in plants_no_c[, input$key]) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-                                         assigned a C score. It will be included in species
-                                         richness and mean wetness metrics but excluded
-                                         from mean C and FQI metrics.")),
-                     type = "warning",  html = T, className = "alert")
-        }
-      }
-      #if there are duplicate species in same plot, show warning
-      if( !input$plot_column %in% c("", NULL) ) {
-        if( any(duplicated(file_upload() %>%
-                                       select(input$species_column, input$plot_column))) ){
-        shinyalert(text = strong(
-          "Duplicate species are detected. Duplicates will only be counted once."),
-          type = "warning",  html = T, className = "alert")
-    }
-    }
+      #list to store warnings
+      warning_list <- list()
+      #catch warnings
+      withCallingHandlers(
+        fqacalc::accepted_entries(x = file_upload() %>%
+                                    dplyr::rename(!!as.name(input$key) := input$species_column,
+                                           cover = input$cover_column),
+                                  key = input$key,
+                                  db = input$db,
+                                  native = FALSE,
+                                  cover = TRUE,
+                                  allow_duplicates = TRUE,
+                                  cover_metric = input$cover_method,
+                                  allow_no_c = FALSE,
+                                  allow_non_veg = TRUE,
+                                  plot_id = plot_col),
+        #add to list
+        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      #show each list item in notification
+      for(i in warning_list) {
+        shinyalert(text = strong(i), type = "warning", html = T) }
     })
+    # #warnings for bad data in file upload
+    # observe({
+    #   req(nrow(file_upload()) > 0, input$cover_column)
+    #
+    #   cover_vals <- c(file_upload()[,input$cover_column])
+    #
+    #   cover_column_is_good(
+    #     if(input$cover_method == "percent_cover"
+    #        & is.numeric(cover_vals)
+    #        & max(cover_vals) <= 100
+    #        & min(cover_vals) > 0) {TRUE}
+    #     else if(input$cover_method == "braun-blanquet" &
+    #      !any(!cover_vals %in% c("+", 1:5))) {TRUE}
+    #     else if(input$cover_method == "daubenmire" &
+    #      !any(!cover_vals %in% c(1:6))) {TRUE}
+    #     else if(input$cover_method == "carolina_veg_survey" &
+    #      !any(!cover_vals %in% c(1:10))) {TRUE}
+    #     else if(input$cover_method == "usfs_ecodata" &
+    #      !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
+    #     else {FALSE})
+    #
+    #   if(cover_column_is_good() == FALSE) {
+    #     shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
+    #                type = "warning",  html = T, className = "alert")
+    #   }
+    #
+    #   req(nrow(file_upload()) > 0, input$species_column, cover_column_is_good() == TRUE)
+    #   accepted_file <- accepted_entries(file_upload() %>%
+    #                                       rename(!!as.name(input$key) := input$species_column),
+    #                                     key = input$key,
+    #                                     db = input$db,
+    #                                     native = FALSE,
+    #                                     allow_no_c = TRUE,
+    #                                     allow_duplicates = TRUE,
+    #                                     allow_non_veg = TRUE)
+    #
+    #   #if there are unrecognized plants, show warning
+    #   for(i in c(file_upload()[,input$species_column])){
+    #     if( !toupper(i) %in% accepted_file[,input$key]) {
+    #       shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
+    #                  type = "warning",  html = T, className = "alert")
+    #     }
+    #   }
+    #   #if there plants with no c, show warning
+    #   plants_no_c <- unassigned_plants(file_upload() %>%
+    #                                      rename(!!as.name(input$key) := input$species_column),
+    #                                    key = input$key,
+    #                                    db = input$db)
+    #   if( nrow(plants_no_c) > 0 ) {
+    #     for(i in plants_no_c[, input$key]) {
+    #       shinyalert(text = strong(paste("Species", i, "is recognized but has not been
+    #                                      assigned a C score. It will be included in species
+    #                                      richness and mean wetness metrics but excluded
+    #                                      from mean C and FQI metrics.")),
+    #                  type = "warning",  html = T, className = "alert")
+    #     }
+    #   }
+    #   #if there are duplicate species in same plot, show warning
+    #   if( !input$plot_column %in% c("", NULL) ) {
+    #     if( any(duplicated(file_upload() %>%
+    #                                    select(input$species_column, input$plot_column))) ){
+    #     shinyalert(text = strong(
+    #       "Duplicate species are detected. Duplicates will only be counted once."),
+    #       type = "warning",  html = T, className = "alert")
+    # }
+    # }
+    # })
 
 #manually enter data------------------------------------------------------------
 
@@ -480,47 +508,22 @@ coverServer <- function(id) {
 
     #When add species is clicked, add row
     observeEvent(input$add_species, {
-      #create row with data entered
+      #create df with data entered
       if(input$key == "name") {
-        new_entry <- data.frame(rbind(fqacalc::view_db(input$db),
-                                      data.frame(
-                                        name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
-                                        name_origin = c(NA, NA),
-                                        acronym = c("GROUND", "WATER"),
-                                        proper_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
-                                        family = c("Unvegetated Ground", "Unvegetated Water"),
-                                        nativity = c(NA, NA),
-                                        c = c(0, 0),
-                                        w = c(0, 0),
-                                        physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
-                                        duration = c("Unvegetated Ground", "Unvegetated Water"),
-                                        common_name = c(NA, NA),
-                                      fqa_db = c({{input$db}}, {{input$db}}))) %>%
-                                  dplyr::filter(name %in% input$select_species)) }
-      else {new_entry <- data.frame(rbind(fqacalc::view_db(input$db),
-                                          data.frame(
-                                            name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
-                                            name_origin = c(NA, NA),
-                                            acronym = c("GROUND", "WATER"),
-                                            proper_name = c("UNVEGETATED GROUND", "UNVEGETATED WATER"),
-                                            family = c("Unvegetated Ground", "Unvegetated Water"),
-                                            nativity = c(NA, NA),
-                                            c = c(0, 0),
-                                            w = c(0, 0),
-                                            physiognomy = c("Unvegetated Ground", "Unvegetated Water"),
-                                            duration = c("Unvegetated Ground", "Unvegetated Water"),
-                                            common_name = c(NA, NA),
-                                            fqa_db = c({{input$db}}, {{input$db}}))) %>%
-                                      dplyr::filter(acronym %in% input$select_species))}
-      #add plot id and cover value
-      new_entry <- new_entry %>%
-        mutate(plot_id = input$plot_id, cover = input$cover_val) %>%
-        select(plot_id, cover, everything())
+        new_entry <- data.frame(plot_id = c(input$plot_id),
+                                name = c(input$select_species),
+                                cover = c(input$cover_val))
+      } else {
+        new_entry <- data.frame(plot_id = c(input$plot_id),
+                                acronym = c(input$select_species),
+                                cover = c(input$cover_val))
+      }
       #bind new entry to table
-      new_table = rbind(new_entry, data_entered())
+      if(nrow(accepted() > 0)) {
+        new_entry<- rbind(new_entry, accepted() %>% dplyr::select(plot_id, input$key, cover))
+      }
       #make it reactive
-      data_entered(new_table)
-
+      data_entered(new_entry)
       #reset species drop down from scratch
       names <- if(input$key == "name")
       {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$name))}
@@ -537,38 +540,33 @@ coverServer <- function(id) {
       shinyjs::js$refocus("cover-plot_id")
     })
 
-    #if there are duplicate species in same plot, show warning
-    observeEvent(input$add_species, {
-      req(nrow(data_entered()) > 1)
-      if( any(duplicated(data_entered() %>% select(plot_id, name))) ){
-        shinyalert(text = strong(
-          "Duplicate species are detected in the same plot.
-          Duplicates will only be counted once."),
-          type = "warning",  html = T, className = "alert")
-
-        #then delete dups
-        data_entered(data_entered()[!duplicated(data_entered()[c(1,2)]),])
-      }
-    })
-
-    #if there are unassigned species show warning
-    observeEvent(input$add_species, {
-      plants_no_c <- unassigned_plants(data_entered(), db = input$db)
-
-      if( nrow(plants_no_c) > 0 ){
-        for(i in c(plants_no_c$name)) {
-          shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-                                         assigned a C score. It will be included in species
-                                         richness and mean wetness metrics but excluded
-                                         from mean C and FQI metrics")),
-                     type = "warning",  html = T, className = "alert")
-        }
-      }
+    #this allows popups for warnings about duplicates/non-matching species
+    observeEvent(input$add_species,{
+      nrow(data_entered()) > 0
+      #list to store warnings
+      warning_list <- list()
+      #catch warnings
+      withCallingHandlers(
+        fqacalc::accepted_entries(x = data_entered(),
+                                  key = input$key,
+                                  db = input$db,
+                                  native = FALSE,
+                                  cover = TRUE,
+                                  allow_duplicates = TRUE,
+                                  plot_id = "plot_id",
+                                  cover_metric = input$cover_method,
+                                  allow_no_c = FALSE,
+                                  allow_non_veg = TRUE),
+        #add to list
+        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      #show each list item in notification
+      for(i in warning_list) {
+        shinyalert(text = strong(i), type = "warning", html = T) }
     })
 
     #render output table from manually entered species on data entry page
     output$cover_DT_manual <- DT::renderDT({
-      datatable(data_entered(),
+      datatable(accepted(),
                 selection = 'single',
                 options = list(
                   scrollX = TRUE,
@@ -579,7 +577,7 @@ coverServer <- function(id) {
     #when delete species is clicked, delete row
     observeEvent(input$delete_species,{
       #call table
-      t = data_entered()
+      t = accepted()
       #print table
       print(nrow(t))
       #if rows are selected, delete them
@@ -587,7 +585,7 @@ coverServer <- function(id) {
         t <- t[-as.numeric(input$cover_DT_manual_rows_selected),]
       }
       #else show the regular table
-      data_entered(t)
+      accepted(t)
     })
 
     #when delete all is clicked, clear all entries
@@ -600,7 +598,7 @@ coverServer <- function(id) {
     ##accepted df ------------------------------------------------------------------
 
     #initialize reactives
-    accepted <- reactiveVal()
+    accepted <- reactiveVal(data.frame())
     confirm_db <- reactiveVal("empty")
     confirm_cover <- reactiveVal("empty")
     previous_dbs <- reactiveValues(prev = "michigan_2014")
@@ -622,7 +620,7 @@ coverServer <- function(id) {
       req(nrow(data_entered()) > 0)
 
       accepted(fqacalc::accepted_entries(x = data_entered(),
-                                         key = "name",
+                                         key = input$key,
                                          db = input$db,
                                          native = FALSE,
                                          cover = TRUE,
@@ -649,7 +647,7 @@ coverServer <- function(id) {
       if( !input$plot_column %in% c(NULL, "")) {
 
         accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                             rename(!!as.name(input$key) := input$species_column,
+                                             dplyr::rename(!!as.name(input$key) := input$species_column,
                                                     cover = input$cover_column,
                                                     plot_id = input$plot_column),
                                            key = input$key,
@@ -665,7 +663,7 @@ coverServer <- function(id) {
 
         #if plot column is not set, do not include in accepted entries
         accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                             rename(!!as.name(input$key) := input$species_column,
+                                             dplyr::rename(!!as.name(input$key) := input$species_column,
                                                     cover = input$cover_column),
                                            key = input$key,
                                            db = input$db,
@@ -882,7 +880,7 @@ coverServer <- function(id) {
       if (input$input_method == "upload") {
         if(input$plot_column == "") {
         plot_sum(fqacalc::plot_summary(x = file_upload() %>%
-                                         rename(!!as.name(input$key) := input$species_column,
+                                         dplyr::rename(!!as.name(input$key) := input$species_column,
                                                 cover = input$cover_column) %>%
                                          mutate(plot_id = "1"),
                                        key = input$key,
@@ -894,7 +892,7 @@ coverServer <- function(id) {
 
       if(input$input_method == "upload" & input$plot_column != "") {
         plot_sum(fqacalc::plot_summary(x = file_upload()
-                                       %>% rename(!!as.name(input$key) := input$species_column,
+                                       %>% dplyr::rename(!!as.name(input$key) := input$species_column,
                                                   cover = input$cover_column,
                                                   plot_id = input$plot_column),
                                        key = input$key,
