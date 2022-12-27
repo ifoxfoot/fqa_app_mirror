@@ -383,7 +383,7 @@ coverServer <- function(id) {
 
     # #warnings for bad data in file upload
     observe({
-      req(nrow(file_upload()) > 0, input$cover_column, input$plot_column)
+      req(nrow(file_upload()) > 0, input$cover_column)
 
       plot_col <- if(input$plot_column == ""){NULL} else {input$plot_column}
 
@@ -409,73 +409,33 @@ coverServer <- function(id) {
       for(i in warning_list) {
         shinyalert(text = strong(i), type = "warning", html = T) }
     })
-    # #warnings for bad data in file upload
-    # observe({
-    #   req(nrow(file_upload()) > 0, input$cover_column)
-    #
-    #   cover_vals <- c(file_upload()[,input$cover_column])
-    #
-    #   cover_column_is_good(
-    #     if(input$cover_method == "percent_cover"
-    #        & is.numeric(cover_vals)
-    #        & max(cover_vals) <= 100
-    #        & min(cover_vals) > 0) {TRUE}
-    #     else if(input$cover_method == "braun-blanquet" &
-    #      !any(!cover_vals %in% c("+", 1:5))) {TRUE}
-    #     else if(input$cover_method == "daubenmire" &
-    #      !any(!cover_vals %in% c(1:6))) {TRUE}
-    #     else if(input$cover_method == "carolina_veg_survey" &
-    #      !any(!cover_vals %in% c(1:10))) {TRUE}
-    #     else if(input$cover_method == "usfs_ecodata" &
-    #      !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
-    #     else {FALSE})
-    #
-    #   if(cover_column_is_good() == FALSE) {
-    #     shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
-    #                type = "warning",  html = T, className = "alert")
-    #   }
-    #
-    #   req(nrow(file_upload()) > 0, input$species_column, cover_column_is_good() == TRUE)
-    #   accepted_file <- accepted_entries(file_upload() %>%
-    #                                       rename(!!as.name(input$key) := input$species_column),
-    #                                     key = input$key,
-    #                                     db = input$db,
-    #                                     native = FALSE,
-    #                                     allow_no_c = TRUE,
-    #                                     allow_duplicates = TRUE,
-    #                                     allow_non_veg = TRUE)
-    #
-    #   #if there are unrecognized plants, show warning
-    #   for(i in c(file_upload()[,input$species_column])){
-    #     if( !toupper(i) %in% accepted_file[,input$key]) {
-    #       shinyalert(text = strong(paste("Species", i, "is not recognized. It will be removed.")),
-    #                  type = "warning",  html = T, className = "alert")
-    #     }
-    #   }
-    #   #if there plants with no c, show warning
-    #   plants_no_c <- unassigned_plants(file_upload() %>%
-    #                                      rename(!!as.name(input$key) := input$species_column),
-    #                                    key = input$key,
-    #                                    db = input$db)
-    #   if( nrow(plants_no_c) > 0 ) {
-    #     for(i in plants_no_c[, input$key]) {
-    #       shinyalert(text = strong(paste("Species", i, "is recognized but has not been
-    #                                      assigned a C score. It will be included in species
-    #                                      richness and mean wetness metrics but excluded
-    #                                      from mean C and FQI metrics.")),
-    #                  type = "warning",  html = T, className = "alert")
-    #     }
-    #   }
-    #   #if there are duplicate species in same plot, show warning
-    #   if( !input$plot_column %in% c("", NULL) ) {
-    #     if( any(duplicated(file_upload() %>%
-    #                                    select(input$species_column, input$plot_column))) ){
-    #     shinyalert(text = strong(
-    #       "Duplicate species are detected. Duplicates will only be counted once."),
-    #       type = "warning",  html = T, className = "alert")
-    # }
-    # }
-    # })
+
+    #check cover values
+    observe({
+      req(nrow(file_upload()) > 0, input$cover_column)
+
+      cover_vals <- c(file_upload()[,input$cover_column])
+
+      cover_column_is_good(
+        if(input$cover_method == "percent_cover"
+           & is.numeric(cover_vals)
+           & max(cover_vals) <= 100
+           & min(cover_vals) > 0) {TRUE}
+        else if(input$cover_method == "braun-blanquet" &
+         !any(!cover_vals %in% c("+", 1:5))) {TRUE}
+        else if(input$cover_method == "daubenmire" &
+         !any(!cover_vals %in% c(1:6))) {TRUE}
+        else if(input$cover_method == "carolina_veg_survey" &
+         !any(!cover_vals %in% c(1:10))) {TRUE}
+        else if(input$cover_method == "usfs_ecodata" &
+         !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
+        else {FALSE})
+
+      if(cover_column_is_good() == FALSE) {
+        shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
+                   type = "warning",  html = T, className = "alert")
+      }
+    })
 
 #manually enter data------------------------------------------------------------
 
@@ -633,15 +593,14 @@ coverServer <- function(id) {
 
     #if input method is upload, accepted is from file_uploaded
     observe({
-      #require filt to be uploaded
+      #require file to be uploaded
       req(input_method() == "upload")
+      #make sure accepted is empty
       accepted(data.frame())
-
-      #require upload to be bigger than one row, species column to be set, and cover column to have no NAS
-      req(input_method() == "upload",
-          nrow(file_upload()) > 0,
+      #require upload to have data, species column to be set, and cover column to have no NAS
+      req(nrow(file_upload()) > 0,
           input$species_column,
-          cover_column_is_good() == TRUE)
+          input$cover_column)
 
       #if plot column is set, include plot column
       if( !input$plot_column %in% c(NULL, "")) {
