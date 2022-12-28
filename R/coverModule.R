@@ -297,6 +297,14 @@ coverServer <- function(id) {
     #init cover column check reactive
     cover_column_is_good <- reactiveVal()
 
+    #init reactive to produce list of column names of file upload
+    column_names <- reactiveVal()
+
+    #init reactive column names
+    species_columns <- reactiveVal()
+    cover_columns <- reactiveVal()
+    plot_columns <- reactiveVal()
+
     #if file is uploaded, show T, else F
     output$file_is_uploaded <- reactive({
       return(!is.null(input$upload))
@@ -322,39 +330,63 @@ coverServer <- function(id) {
       file_upload(new_file)
     })
 
+    #store column names in reactive values
+    observe({
+      req(input$upload)
+      column_names(c("", colnames(file_upload())))
+      species_columns(c("", colnames(file_upload())))
+      cover_columns(c("", colnames(file_upload())))
+      plot_columns(c("", colnames(file_upload())))
+    })
+
+    #when species column is selected, remove it as option for other dropdowns
+    observeEvent(input$species_column, {
+      req(input$species_column)
+      cover_columns(column_names()[column_names() != input$species_column])
+      plot_columns(column_names()[column_names() != input$species_column])
+    })
+
+    #when cover column is selected, remove it as option for other dropdowns
+    observeEvent(input$cover_column, {
+      req(input$species_column)
+      species_columns(column_names()[column_names() != input$cover_column])
+      plot_columns(column_names()[column_names() != input$cover_column])
+    })
+
+    #when plot column is selected, remove it as option for other dropdowns
+    observeEvent(input$plot_column, {
+      req(input$species_column)
+      species_columns(column_names()[column_names() != input$plot_column])
+      cover_columns(column_names()[column_names() != input$plot_column])
+    })
+
     #drop-down list (for species column) based on the file uploaded
     observeEvent(input$upload,{
       output$species_colname <- renderUI({
-        #create list cols
-        colnames <- c("", colnames(file_upload()))
         #create key variable
         key_var <- if(input$key == "name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
         selectizeInput(session$ns("species_column"),
                        paste0("Which Column Contains ", key_var, "?"),
-                       colnames, selected = NULL)
+                       species_columns(), selected = NULL)
       })
     })
 
     #drop-down list (for cover column) based on the file uploaded
     observeEvent(input$upload,{
       output$cover_colname <- renderUI({
-        #create list cols
-        colnames <- c("", colnames(file_upload()))
         #create a dropdown option
         selectizeInput(session$ns("cover_column"), "Which Column Contains Cover Data?",
-                       colnames, selected = NULL)
+                       cover_columns(), selected = NULL)
       })
     })
 
     #drop-down list (for plot-id column) based on the file uploaded
     observeEvent(input$upload,{
       output$plot_colname <- renderUI({
-        #create list cols
-        colnames <- c("", colnames(file_upload()))
         #create a dropdown option
         selectizeInput(session$ns("plot_column"), "(Optional) Which Column Contains Plot IDs?",
-                       colnames, selected = NULL)
+                       plot_columns(), selected = NULL)
       })
     })
 
@@ -379,14 +411,14 @@ coverServer <- function(id) {
       #reset upload button
       shinyjs::reset("upload")
       shinyjs::reset("species_column")
+      shinyjs::reset("cover_column")
+      shinyjs::reset("plot_column")
     })
 
     # #warnings for bad data in file upload
     observe({
       req(nrow(file_upload()) > 0, input$cover_column)
-
       plot_col <- if(input$plot_column == ""){NULL} else {input$plot_column}
-
       #list to store warnings
       warning_list <- list()
       #catch warnings
