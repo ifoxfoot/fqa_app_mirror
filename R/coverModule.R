@@ -297,19 +297,12 @@ coverServer <- function(id) {
     #init cover column check reactive
     cover_column_is_good <- reactiveVal()
 
+    #init columns are good check reactive
+    columns_are_good <- reactiveVal()
+
     #init reactive to produce list of column names of file upload
     column_names <- reactiveVal()
 
-    #init reactive column names
-    species_columns <- reactiveVal()
-    cover_columns <- reactiveVal()
-    plot_columns <- reactiveVal()
-
-    #if file is uploaded, show T, else F
-    output$file_is_uploaded <- reactive({
-      return(!is.null(input$upload))
-    })
-    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {
@@ -330,35 +323,39 @@ coverServer <- function(id) {
       file_upload(new_file)
     })
 
+    #if file is uploaded, show T, else F
+    output$file_is_uploaded <- reactive({
+      return(!is.null(input$upload))
+    })
+    #send to UI for conditional panel, but hide it
+    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
+
     #store column names in reactive values
     observe({
       req(input$upload)
       column_names(c("", colnames(file_upload())))
-      species_columns(c("", colnames(file_upload())))
-      cover_columns(c("", colnames(file_upload())))
-      plot_columns(c("", colnames(file_upload())))
     })
 
-    #when species column is selected, remove it as option for other dropdowns
-    observeEvent(input$species_column, {
-      req(input$species_column)
-      cover_columns(column_names()[column_names() != input$species_column])
-      plot_columns(column_names()[column_names() != input$species_column])
-    })
-
-    #when cover column is selected, remove it as option for other dropdowns
-    observeEvent(input$cover_column, {
-      req(input$species_column)
-      species_columns(column_names()[column_names() != input$cover_column])
-      plot_columns(column_names()[column_names() != input$cover_column])
-    })
-
-    #when plot column is selected, remove it as option for other dropdowns
-    observeEvent(input$plot_column, {
-      req(input$species_column)
-      species_columns(column_names()[column_names() != input$plot_column])
-      cover_columns(column_names()[column_names() != input$plot_column])
-    })
+    # #when species column is selected, remove it as option for other dropdowns
+    # observeEvent(input$species_column, {
+    #   req(input$species_column)
+    #   cover_columns(column_names()[column_names() != input$species_column])
+    #   plot_columns(column_names()[column_names() != input$species_column])
+    # })
+    #
+    # #when cover column is selected, remove it as option for other dropdowns
+    # observeEvent(input$cover_column, {
+    #   req(input$species_column)
+    #   species_columns(column_names()[column_names() != input$cover_column])
+    #   plot_columns(column_names()[column_names() != input$cover_column])
+    # })
+    #
+    # #when plot column is selected, remove it as option for other dropdowns
+    # observeEvent(input$plot_column, {
+    #   req(input$species_column)
+    #   species_columns(column_names()[column_names() != input$plot_column])
+    #   cover_columns(column_names()[column_names() != input$plot_column])
+    # })
 
     #drop-down list (for species column) based on the file uploaded
     observeEvent(input$upload,{
@@ -368,7 +365,7 @@ coverServer <- function(id) {
         #create a dropdown option
         selectizeInput(session$ns("species_column"),
                        paste0("Which Column Contains ", key_var, "?"),
-                       species_columns(), selected = NULL)
+                       column_names(), selected = NULL)
       })
     })
 
@@ -377,7 +374,7 @@ coverServer <- function(id) {
       output$cover_colname <- renderUI({
         #create a dropdown option
         selectizeInput(session$ns("cover_column"), "Which Column Contains Cover Data?",
-                       cover_columns(), selected = NULL)
+                       column_names(), selected = NULL)
       })
     })
 
@@ -386,7 +383,7 @@ coverServer <- function(id) {
       output$plot_colname <- renderUI({
         #create a dropdown option
         selectizeInput(session$ns("plot_column"), "(Optional) Which Column Contains Plot IDs?",
-                       plot_columns(), selected = NULL)
+                       column_names(), selected = NULL)
       })
     })
 
@@ -415,17 +412,62 @@ coverServer <- function(id) {
       shinyjs::reset("plot_column")
     })
 
-    # #warnings for bad data in file upload
+    #check cover values
     observe({
       req(nrow(file_upload()) > 0, input$cover_column)
+      cover_vals <- c(file_upload()[,input$cover_column])
+      cover_column_is_good(
+        if(input$cover_method == "percent_cover"
+           & is.numeric(cover_vals)
+           & max(cover_vals) <= 100
+           & min(cover_vals) > 0) {TRUE}
+        else if(input$cover_method == "braun-blanquet" &
+                !any(!cover_vals %in% c("+", 1:5))) {TRUE}
+        else if(input$cover_method == "daubenmire" &
+                !any(!cover_vals %in% c(1:6))) {TRUE}
+        else if(input$cover_method == "carolina_veg_survey" &
+                !any(!cover_vals %in% c(1:10))) {TRUE}
+        else if(input$cover_method == "usfs_ecodata" &
+                !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
+        else {FALSE})
+
+      if(cover_column_is_good() == FALSE) {
+        shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
+                   type = "warning",  html = T, className = "alert")
+      }
+    })
+
+    #check input of columns
+    observe({
+      req(nrow(file_upload()) > 0, input$species_column, input$cover_column)
+      columns <- c(input$species_column, input$cover_column, input$plot_column)
+        if ( length(unique(columns)) == 3 &
+             any(!columns %in% names(file_upload() )))
+             { columns_are_good(TRUE) }
+        else ( columns_are_good(FALSE) )
+
+      #send alert if columns need fixing
+      if(columns_are_good() == FALSE) {
+        shinyalert(text = strong(paste("The columns selected for species, cover, or plot ID must be unique.")),
+                   type = "warning",  html = T, className = "alert")
+      }
+    })
+
+    #warnings for bad data in file upload
+    observe({
+      req(columns_are_good() == TRUE)
       plot_col <- if(input$plot_column == ""){NULL} else {input$plot_column}
       #list to store warnings
       warning_list <- list()
+      #file upload renames
+      upload_renamed <- file_upload() %>%
+        rename("cover" = input$cover_column) %>%
+        dplyr::rename_with(
+         ~ input$key, matches(input$species_column),
+        )
       #catch warnings
       withCallingHandlers(
-        fqacalc::accepted_entries(x = file_upload() %>%
-                                    dplyr::rename(!!as.name(input$key) := input$species_column,
-                                           cover = input$cover_column),
+        fqacalc::accepted_entries(x = upload_renamed,
                                   key = input$key,
                                   db = input$db,
                                   native = FALSE,
@@ -440,33 +482,6 @@ coverServer <- function(id) {
       #show each list item in notification
       for(i in warning_list) {
         shinyalert(text = strong(i), type = "warning", html = T) }
-    })
-
-    #check cover values
-    observe({
-      req(nrow(file_upload()) > 0, input$cover_column)
-
-      cover_vals <- c(file_upload()[,input$cover_column])
-
-      cover_column_is_good(
-        if(input$cover_method == "percent_cover"
-           & is.numeric(cover_vals)
-           & max(cover_vals) <= 100
-           & min(cover_vals) > 0) {TRUE}
-        else if(input$cover_method == "braun-blanquet" &
-         !any(!cover_vals %in% c("+", 1:5))) {TRUE}
-        else if(input$cover_method == "daubenmire" &
-         !any(!cover_vals %in% c(1:6))) {TRUE}
-        else if(input$cover_method == "carolina_veg_survey" &
-         !any(!cover_vals %in% c(1:10))) {TRUE}
-        else if(input$cover_method == "usfs_ecodata" &
-         !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
-        else {FALSE})
-
-      if(cover_column_is_good() == FALSE) {
-        shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
-                   type = "warning",  html = T, className = "alert")
-      }
     })
 
 #manually enter data------------------------------------------------------------
@@ -630,15 +645,13 @@ coverServer <- function(id) {
       #make sure accepted is empty
       accepted(data.frame())
       #require upload to have data, species column to be set, and cover column to have no NAS
-      req(nrow(file_upload()) > 0,
-          input$species_column,
-          input$cover_column)
+      req( columns_are_good() )
 
       #if plot column is set, include plot column
       if( !input$plot_column %in% c(NULL, "")) {
 
         accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                             dplyr::rename(!!as.name(input$key) := input$species_column,
+                                             dplyr::rename(!!input$key := !!input$species_column,
                                                     cover = input$cover_column,
                                                     plot_id = input$plot_column),
                                            key = input$key,
@@ -654,7 +667,7 @@ coverServer <- function(id) {
 
         #if plot column is not set, do not include in accepted entries
         accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                             dplyr::rename(!!as.name(input$key) := input$species_column,
+                                             dplyr::rename(!!input$key := !!input$species_column,
                                                     cover = input$cover_column),
                                            key = input$key,
                                            db = input$db,
