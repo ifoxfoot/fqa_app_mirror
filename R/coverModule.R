@@ -295,10 +295,10 @@ coverServer <- function(id) {
 #file upload server-------------------------------------------------------------
 
     #init cover column check reactive
-    cover_column_is_good <- reactiveVal()
+    cover_column_is_good <- reactiveVal(FALSE)
 
     #init columns are good check reactive
-    columns_are_good <- reactiveVal()
+    columns_are_good <- reactiveVal(FALSE)
 
     #init reactive to produce list of column names of file upload
     column_names <- reactiveVal()
@@ -335,27 +335,6 @@ coverServer <- function(id) {
       req(input$upload)
       column_names(c("", colnames(file_upload())))
     })
-
-    # #when species column is selected, remove it as option for other dropdowns
-    # observeEvent(input$species_column, {
-    #   req(input$species_column)
-    #   cover_columns(column_names()[column_names() != input$species_column])
-    #   plot_columns(column_names()[column_names() != input$species_column])
-    # })
-    #
-    # #when cover column is selected, remove it as option for other dropdowns
-    # observeEvent(input$cover_column, {
-    #   req(input$species_column)
-    #   species_columns(column_names()[column_names() != input$cover_column])
-    #   plot_columns(column_names()[column_names() != input$cover_column])
-    # })
-    #
-    # #when plot column is selected, remove it as option for other dropdowns
-    # observeEvent(input$plot_column, {
-    #   req(input$species_column)
-    #   species_columns(column_names()[column_names() != input$plot_column])
-    #   cover_columns(column_names()[column_names() != input$plot_column])
-    # })
 
     #drop-down list (for species column) based on the file uploaded
     observeEvent(input$upload,{
@@ -398,20 +377,6 @@ coverServer <- function(id) {
       )
     })
 
-    #when delete all is clicked, clear all entries
-    observeEvent(input$upload_delete_all, {
-      #make an empty df
-      empty_df <- NULL
-      #replace reactive file upload with empty file
-      file_upload(empty_df)
-      accepted(empty_df)
-      #reset upload button
-      shinyjs::reset("upload")
-      shinyjs::reset("species_column")
-      shinyjs::reset("cover_column")
-      shinyjs::reset("plot_column")
-    })
-
     #check cover values
     observe({
       req(nrow(file_upload()) > 0, input$cover_column)
@@ -442,7 +407,7 @@ coverServer <- function(id) {
       req(nrow(file_upload()) > 0, input$species_column, input$cover_column)
       columns <- c(input$species_column, input$cover_column, input$plot_column)
         if ( length(unique(columns)) == 3 &
-             any(!columns %in% names(file_upload() )))
+             any(!columns %in% names(file_upload()) ))
              { columns_are_good(TRUE) }
         else ( columns_are_good(FALSE) )
 
@@ -461,10 +426,8 @@ coverServer <- function(id) {
       warning_list <- list()
       #file upload renames
       upload_renamed <- file_upload() %>%
-        rename("cover" = input$cover_column) %>%
-        dplyr::rename_with(
-         ~ input$key, matches(input$species_column),
-        )
+        rename("cover" = input$cover_column,
+               !!input$key := !!input$species_column)
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = upload_renamed,
@@ -483,6 +446,22 @@ coverServer <- function(id) {
       for(i in warning_list) {
         shinyalert(text = strong(i), type = "warning", html = T) }
     })
+
+    #when delete all is clicked, clear all entries
+    observeEvent(input$upload_delete_all, {
+      #make an empty df
+      empty_df <- NULL
+      #replace reactive file upload with empty file
+      file_upload(empty_df)
+      accepted(empty_df)
+      columns_are_good(FALSE)
+      #reset upload button
+      shinyjs::reset("upload")
+      shinyjs::reset("species_column")
+      shinyjs::reset("cover_column")
+      shinyjs::reset("plot_column")
+    })
+
 
 #manually enter data------------------------------------------------------------
 
@@ -641,7 +620,7 @@ coverServer <- function(id) {
     #if input method is upload, accepted is from file_uploaded
     observe({
       #require file to be uploaded
-      req(input_method() == "upload")
+      req(input_method() == "upload", input$species_column, input$cover_column)
       #make sure accepted is empty
       accepted(data.frame())
       #require upload to have data, species column to be set, and cover column to have no NAS
@@ -1019,7 +998,16 @@ coverServer <- function(id) {
       #requiring second screen
       req(cover_glide() == 1)
       #call to reactive plot summary
-      datatable(plot_sum())
+      datatable(plot_sum(),
+                #options
+                options = list(scrollX=TRUE,
+                               scrollY= TRUE,
+                               paging = TRUE,
+                               pageLength = 20,
+                               searching = TRUE,
+                               fixedColumns = TRUE,
+                               autoWidth = TRUE,
+                               ordering = TRUE))
     })
 
     #species summary
@@ -1031,8 +1019,11 @@ coverServer <- function(id) {
                 #options
                 options = list(scrollX=TRUE,
                                scrollY= TRUE,
-                               paging = FALSE, searching = TRUE,
-                               fixedColumns = TRUE, autoWidth = TRUE,
+                               paging = TRUE,
+                               pageLength = 20,
+                               searching = TRUE,
+                               fixedColumns = TRUE,
+                               autoWidth = TRUE,
                                ordering = TRUE))
     })
 
