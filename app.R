@@ -125,7 +125,7 @@ ui <- fluidPage(
 
 # VIEW TAB----------------------------------------------------------------------
 
-             tabPanel("View Regional FQA Lists",
+             tabPanel("View Regional FQA Databases",
 
                       #vall to view UI module
                       viewUI("view"),

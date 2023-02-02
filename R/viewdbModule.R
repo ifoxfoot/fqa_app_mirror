@@ -7,7 +7,7 @@ viewUI <- function(id) {
     fluidRow(
 
       #select database to view/download
-      selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
+      selectInput(NS(id, "db"), label = "Select Regional FQA Database",
                   choices = fqacalc::db_names()$name,
                   selected = "michigan_2014"),
 

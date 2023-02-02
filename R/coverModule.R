@@ -44,7 +44,7 @@ coverUI <- function(id) {
 
               condition = "output['cover-complete_acronym'] == 'TRUE'",
               #input key argument
-              radioGroupButtons(NS(id, "key"), label = "Join by: ",
+              radioGroupButtons(NS(id, "key"), label = "Enter Species Using: ",
                                 choices = c("Scientific Names" = "name",
                                             "Acronyms" = "acronym"),
                                 justified = TRUE,
