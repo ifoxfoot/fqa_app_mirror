@@ -192,7 +192,7 @@ coverUI <- function(id) {
                  box(tableOutput(NS(id,"proportion")), title = "C Value Percentages", width = NULL))
         ),
 
-        #output of physiog summary
+        #output of terms
         fluidRow(box(title = "Relative Cover Terms", status = "primary",
                      includeMarkdown("rmarkdowns/rel_terms.Rmd"), width = 12,
                      style = "overflow-x: scroll")),
@@ -202,15 +202,15 @@ coverUI <- function(id) {
                      tableOutput(NS(id, "cover_physiog_manual")), width = 12,
                      style = "overflow-x: scroll")),
 
-        #output of species summary
-        fluidRow(box(title = "Species Summary", status = "primary",
-                     DT::dataTableOutput(NS(id, "cover_species_manual")), width = 12,
-                     style = "overflow-x: auto;l")),
-
         #output of plot summary
         fluidRow(box(title = "Plot Summary", status = "primary", width = 12,
                      style = "overflow-x: auto;",
-                     DT::dataTableOutput(NS(id, "cover_plot_manual"))))
+                     DT::dataTableOutput(NS(id, "cover_plot_manual")))),
+
+        #output of species summary
+        fluidRow(box(title = "Species Summary", status = "primary",
+                     DT::dataTableOutput(NS(id, "cover_species_manual")), width = 12,
+                     style = "overflow-x: auto;l"))
 
       )#screen two parenthesis
 
@@ -395,11 +395,6 @@ coverServer <- function(id) {
         else if(input$cover_method == "usfs_ecodata" &
                 !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
         else {FALSE})
-
-      if(cover_column_is_good() == FALSE) {
-        shinyalert(text = strong(paste("Some values in ", input$cover_column, "are not acceptable cover values. See the 'More' tab for more information on cover values.")),
-                   type = "warning",  html = T, className = "alert")
-      }
     })
 
     #check input of columns
@@ -407,13 +402,21 @@ coverServer <- function(id) {
       req(nrow(file_upload()) > 0, input$species_column, input$cover_column)
       columns <- c(input$species_column, input$cover_column, input$plot_column)
         if ( length(unique(columns)) == 3 &
-             any(!columns %in% names(file_upload()) ))
+             !input$species_column %in% c("cover", "plot_id") &
+             !input$cover_column %in% c("plot_id", "name", "acronym") &
+             !input$plot_column %in% c("cover", "name", "acronym"))
              { columns_are_good(TRUE) }
         else ( columns_are_good(FALSE) )
 
       #send alert if columns need fixing
       if(columns_are_good() == FALSE) {
-        shinyalert(text = strong(paste("The columns selected for species, cover, or plot ID must be unique.")),
+        shinyalert(text = strong(paste("The columns selected for species,
+                                       cover, or plot ID must be unique.
+                                       Additionally, the species column cannot
+                                       be set to 'cover' or 'plot_id', the cover column
+                                       cannot be set to 'plot_id', 'name' or 'acronym',
+                                       and the plot ID column cannot be set to 'cover',
+                                       'name' or 'acronym'")),
                    type = "warning",  html = T, className = "alert")
       }
     })
