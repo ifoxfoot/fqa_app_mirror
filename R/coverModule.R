@@ -468,9 +468,9 @@ coverServer <- function(id) {
 
 #manually enter data------------------------------------------------------------
 
-    #species drop-down list based on regional list selected
+    #species drop-down list based on regional database selected
     observe({
-      #create list names based on regional list selected
+      #create list names based on regional database selected
       names <- if(input$key == "name")
       {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$name))}
       else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
@@ -844,9 +844,7 @@ coverServer <- function(id) {
                                            key = "name",
                                            db = input$db,
                                            cover_class = "percent_cover",
-                                           allow_no_c = TRUE) %>%
-                    mutate(c = as.integer(c),
-                           w = as.integer(w))
+                                          allow_no_c = TRUE)
       )
 
       physiog_sum(fqacalc::physiog_summary(x = accepted(),
@@ -916,9 +914,7 @@ coverServer <- function(id) {
     #species richness
     output$species_richness <- renderUI({
       req(cover_glide() == 1)
-      round(
-        fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE),
-        2)
+      fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)
     })
 
     #mean C

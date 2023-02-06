@@ -311,9 +311,9 @@ fqiServer <- function(id) {
 
 #manually enter data------------------------------------------------------------
 
-    #species drop-down list based on regional list selected
+    #species drop-down list based on regional database selected
     observe({
-      #create list names based on regional list selected
+      #create list names based on regional database selected
       names <- if(input$key == "name")
       {c("", unique(fqacalc::view_db(input$db)$name))}
       else {c("", unique(fqacalc::view_db(input$db)$acronym))}
