@@ -184,7 +184,7 @@ coverUI <- function(id) {
                  box(tableOutput(NS(id,"c_metrics")), title = "FQI Metrics", width = NULL),
                  box(tableOutput(NS(id,"wetness")), title = "Wetness Metrics", width = NULL)),
           column(4,
-                 box(tableOutput(NS(id,"cover_metrics")), title = "Cover-Weighted Metrics", width = NULL),
+                 box(tableOutput(NS(id,"cover_classs")), title = "Cover-Weighted Metrics", width = NULL),
                  box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL,
                      style = "overflow-x: scroll")),
           column(4,
@@ -439,7 +439,7 @@ coverServer <- function(id) {
                                   native = FALSE,
                                   cover = TRUE,
                                   allow_duplicates = TRUE,
-                                  cover_metric = input$cover_method,
+                                  cover_class = input$cover_method,
                                   allow_no_c = FALSE,
                                   allow_non_veg = TRUE,
                                   plot_id = plot_col),
@@ -543,7 +543,7 @@ coverServer <- function(id) {
                                   cover = TRUE,
                                   allow_duplicates = TRUE,
                                   plot_id = "plot_id",
-                                  cover_metric = input$cover_method,
+                                  cover_class = input$cover_method,
                                   allow_no_c = FALSE,
                                   allow_non_veg = TRUE),
         #add to list
@@ -615,7 +615,7 @@ coverServer <- function(id) {
                                          cover = TRUE,
                                          allow_duplicates = TRUE,
                                          plot_id = "plot_id",
-                                         cover_metric = input$cover_method,
+                                         cover_class = input$cover_method,
                                          allow_no_c = TRUE,
                                          allow_non_veg = TRUE))
     })
@@ -641,7 +641,7 @@ coverServer <- function(id) {
                                            native = FALSE,
                                            cover = TRUE,
                                            allow_duplicates = TRUE,
-                                           cover_metric = input$cover_method,
+                                           cover_class = input$cover_method,
                                            allow_no_c = TRUE,
                                            allow_non_veg = TRUE,
                                            plot_id = "plot_id")) }
@@ -656,7 +656,7 @@ coverServer <- function(id) {
                                            native = FALSE,
                                            cover = TRUE,
                                            allow_duplicates = TRUE,
-                                           cover_metric = input$cover_method,
+                                           cover_class = input$cover_method,
                                            allow_no_c = TRUE,
                                            allow_non_veg = TRUE))
       }
@@ -837,13 +837,13 @@ coverServer <- function(id) {
       metrics(fqacalc::transect_summary(x = accepted(),
                                         key = "name",
                                         db = input$db,
-                                        cover_metric = "percent_cover",
+                                        cover_class = "percent_cover",
                                         allow_no_c = TRUE))
 
       species_sum(fqacalc::species_summary(x = accepted(),
                                            key = "name",
                                            db = input$db,
-                                           cover_metric = "percent_cover",
+                                           cover_class = "percent_cover",
                                            allow_no_c = TRUE) %>%
                     mutate(c = as.integer(c),
                            w = as.integer(w))
@@ -852,14 +852,14 @@ coverServer <- function(id) {
       physiog_sum(fqacalc::physiog_summary(x = accepted(),
                                            key = "name",
                                            db = input$db,
-                                           cover_metric = "percent_cover",
+                                           cover_class = "percent_cover",
                                            allow_no_c = TRUE))
 
       if(input$input_method == "enter") {
         plot_sum(fqacalc::plot_summary(x = data_entered(),
                                        key = "name",
                                        db = input$db,
-                                       cover_metric = input$cover_method,
+                                       cover_class = input$cover_method,
                                        plot_id = "plot_id",
                                        allow_no_c = TRUE)) }
 
@@ -871,7 +871,7 @@ coverServer <- function(id) {
                                          mutate(plot_id = "1"),
                                        key = input$key,
                                        db = input$db,
-                                       cover_metric = input$cover_method,
+                                       cover_class = input$cover_method,
                                        plot_id = "plot_id",
                                        allow_no_c = TRUE))
       }
@@ -883,7 +883,7 @@ coverServer <- function(id) {
                                                   plot_id = input$plot_column),
                                        key = input$key,
                                        db = input$db,
-                                       cover_metric = input$cover_method,
+                                       cover_class = input$cover_method,
                                        plot_id = "plot_id",
                                        allow_no_c = TRUE))
       }
@@ -942,7 +942,7 @@ coverServer <- function(id) {
     })
 
     #cover metrics table output
-    output$cover_metrics <- renderTable({
+    output$cover_classs <- renderTable({
       req(cover_glide() == 1)
       metrics() %>%
         dplyr::filter(metrics %in% c("Cover-Weighted Mean C", "Cover-Weighted Native Mean C",

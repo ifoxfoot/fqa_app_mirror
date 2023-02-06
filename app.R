@@ -163,7 +163,7 @@ navbarMenu("More",
            tabPanel("Equations",
                     shiny::withMathJax(),
                     includeMarkdown("rmarkdowns/equations.Rmd")),
-           tabPanel("Cover Methods",
+           tabPanel("Cover Classes",
                     includeMarkdown("rmarkdowns/cover_mets.Rmd"),),
            tabPanel("Additional Resources")
 
