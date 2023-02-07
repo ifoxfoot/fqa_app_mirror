@@ -10,6 +10,7 @@ fqiUI <- function(id) {
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
       controls_position = "bottom",
       height = "100%",
+      keyboard = FALSE,
 
       screen(
         next_condition = "output['fqi-next_condition'] == 'TRUE'",
@@ -442,7 +443,7 @@ fqiServer <- function(id) {
         showCancelButton = T,
         showConfirmButton = T, confirmButtonText = "Proceed",
         confirmButtonCol = "red", type = "warning",
-        html = T, inputId = "confirm_db_change", className = "alert")}
+        html = T, inputId = "confirm_db_change")}
     })
 
     observeEvent(input$confirm_db_change, {
@@ -454,9 +455,9 @@ fqiServer <- function(id) {
       if(confirm_db() == TRUE) {
         data_entered(empty_df)
         file_upload(NULL)
+        accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
-        accepted(empty_df)
         confirm_db("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {

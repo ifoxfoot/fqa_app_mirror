@@ -10,6 +10,7 @@ coverUI <- function(id) {
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
       controls_position = "bottom",
       height = "100%",
+      keyboard = FALSE,
 
       screen(
         next_condition = "output['cover-next_condition'] == 'TRUE'",
@@ -17,7 +18,6 @@ coverUI <- function(id) {
         fluidRow(
           sidebarPanel(
 
-            #title of side bar
             titlePanel("Enter Data"),
 
             #help button
@@ -691,6 +691,7 @@ coverServer <- function(id) {
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
         shinyjs::reset("cover_column")
+        shinyjs::reset("plot_column")
         confirm_db("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
@@ -727,6 +728,7 @@ coverServer <- function(id) {
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
         shinyjs::reset("cover_column")
+        shinyjs::reset("plot_column")
         confirm_cover("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_cover() == FALSE) {
