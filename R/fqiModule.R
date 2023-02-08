@@ -613,7 +613,7 @@ fqiServer <- function(id) {
     output$wetness <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
-        dplyr::filter(metrics %in% c("Mean Wetness", "Native Mean Wetness"))
+        dplyr::filter(metrics %in% c("Mean Wetness", "Native Mean Wetness", "% Hydrophytes"))
     })
 
     #nativity table output
