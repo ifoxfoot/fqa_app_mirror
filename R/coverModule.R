@@ -361,8 +361,8 @@ coverServer <- function(id) {
     observeEvent(input$upload,{
       output$plot_colname <- renderUI({
         #create a dropdown option
-        selectizeInput(session$ns("plot_column"), "(Optional) Which Column Contains Plot IDs?",
-                       column_names(), selected = NULL)
+        selectizeInput(session$ns("plot_column"), "Which Column Contains Plot IDs?",
+                       c("NA", column_names()), selected = "")
       })
     })
 
@@ -399,7 +399,7 @@ coverServer <- function(id) {
 
     #check input of columns
     observe({
-      req(nrow(file_upload()) > 0, input$species_column, input$cover_column)
+      req(nrow(file_upload()) > 0, input$species_column, input$cover_column, input$plot_column)
       columns <- c(input$species_column, input$cover_column, input$plot_column)
         if ( length(unique(columns)) == 3 &
              !input$species_column %in% c("cover", "plot_id") &
@@ -424,7 +424,7 @@ coverServer <- function(id) {
     #warnings for bad data in file upload
     observe({
       req(columns_are_good() == TRUE)
-      plot_col <- if(input$plot_column == ""){NULL} else {input$plot_column}
+      plot_col <- if(input$plot_column == "NA"){NULL} else {input$plot_column}
       #list to store warnings
       warning_list <- list()
       #file upload renames
@@ -624,14 +624,14 @@ coverServer <- function(id) {
     #if input method is upload, accepted is from file_uploaded
     observe({
       #require file to be uploaded
-      req(input_method() == "upload", input$species_column, input$cover_column)
+      req(input_method() == "upload", input$species_column, input$cover_column, input$plot_column)
       #make sure accepted is empty
       accepted(data.frame())
       #require upload to have data, species column to be set, and cover column to have no NAS
       req( columns_are_good() )
 
       #if plot column is set, include plot column
-      if( !input$plot_column %in% c(NULL, "")) {
+      if( !input$plot_column %in% c("NA")) {
 
         accepted(fqacalc::accepted_entries(x = file_upload() %>%
                                              dplyr::rename(!!input$key := !!input$species_column,
@@ -857,27 +857,19 @@ coverServer <- function(id) {
                                            allow_no_c = TRUE))
 
       if(input$input_method == "enter") {
+        if(length(unique(data_entered()$plot_id)) == 1) {
+          plot_sum(NULL)} else {
         plot_sum(fqacalc::plot_summary(x = data_entered(),
                                        key = "name",
                                        db = input$db,
                                        cover_class = input$cover_method,
                                        plot_id = "plot_id",
                                        allow_no_c = TRUE)) }
-
-      if (input$input_method == "upload") {
-        if(input$plot_column == "") {
-        plot_sum(fqacalc::plot_summary(x = file_upload() %>%
-                                         dplyr::rename(!!as.name(input$key) := input$species_column,
-                                                cover = input$cover_column) %>%
-                                         mutate(plot_id = "1"),
-                                       key = input$key,
-                                       db = input$db,
-                                       cover_class = input$cover_method,
-                                       plot_id = "plot_id",
-                                       allow_no_c = TRUE))
       }
 
-      if(input$input_method == "upload" & input$plot_column != "") {
+      if (input$input_method == "upload") {
+        if(input$plot_column == "NA") {
+        plot_sum(NULL)} else {
         plot_sum(fqacalc::plot_summary(x = file_upload()
                                        %>% dplyr::rename(!!as.name(input$key) := input$species_column,
                                                   cover = input$cover_column,
