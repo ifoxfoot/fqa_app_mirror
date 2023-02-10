@@ -50,7 +50,7 @@ ui <- fluidPage(
   tags$head(tags$style(".well { min-width: 280px; }")),
 
   tags$head(
-    tags$style(HTML(" .view-citations.shiny-text-output.shiny-bound-output {
+    tags$style(HTML(".view-citations.shiny-text-output.shiny-bound-output {
                 display:block;
                 padding:9.5px;
                 margin:0 0 10px;

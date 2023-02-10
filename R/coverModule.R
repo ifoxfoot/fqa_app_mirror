@@ -54,8 +54,8 @@ coverUI <- function(id) {
 
             #input data entry method
             prettyRadioButtons(NS(id, "input_method"), label = "Select Data Entry Method",
-                         choices = c( "Enter Species Manually" = "enter",
-                                      "Upload a File" = "upload")),
+                               choices = c( "Enter Species Manually" = "enter",
+                                            "Upload a File" = "upload")),
 
 
             #when data entry method is upload, allow user to upload files
@@ -292,7 +292,7 @@ coverServer <- function(id) {
     observe({shinyjs::hide("complete_acronym",)})
     outputOptions(output, "complete_acronym", suspendWhenHidden=FALSE)
 
-#file upload server-------------------------------------------------------------
+    #file upload server-------------------------------------------------------------
 
     #init cover column check reactive
     cover_column_is_good <- reactiveVal(FALSE)
@@ -401,12 +401,12 @@ coverServer <- function(id) {
     observe({
       req(nrow(file_upload()) > 0, input$species_column, input$cover_column, input$plot_column)
       columns <- c(input$species_column, input$cover_column, input$plot_column)
-        if ( length(unique(columns)) == 3 &
-             !input$species_column %in% c("cover", "plot_id") &
-             !input$cover_column %in% c("plot_id", "name", "acronym") &
-             !input$plot_column %in% c("cover", "name", "acronym"))
-             { columns_are_good(TRUE) }
-        else ( columns_are_good(FALSE) )
+      if ( length(unique(columns)) == 3 &
+           !input$species_column %in% c("cover", "plot_id") &
+           !input$cover_column %in% c("plot_id", "name", "acronym") &
+           !input$plot_column %in% c("cover", "name", "acronym"))
+      { columns_are_good(TRUE) }
+      else ( columns_are_good(FALSE) )
 
       #send alert if columns need fixing
       if(columns_are_good() == FALSE) {
@@ -466,7 +466,7 @@ coverServer <- function(id) {
     })
 
 
-#manually enter data------------------------------------------------------------
+    #manually enter data------------------------------------------------------------
 
     #species drop-down list based on regional database selected
     observe({
@@ -546,7 +546,8 @@ coverServer <- function(id) {
                                   plot_id = "plot_id",
                                   cover_class = input$cover_method,
                                   allow_no_c = FALSE,
-                                  allow_non_veg = TRUE),
+                                  allow_non_veg = TRUE,
+                                  wetland_warning = FALSE),
         #add to list
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
@@ -609,16 +610,16 @@ coverServer <- function(id) {
       req(input_method() == "enter")
       req(nrow(data_entered()) > 0)
 
-      accepted(fqacalc::accepted_entries(x = data_entered(),
-                                         key = input$key,
-                                         db = input$db,
-                                         native = FALSE,
-                                         cover = TRUE,
-                                         allow_duplicates = TRUE,
-                                         plot_id = "plot_id",
-                                         cover_class = input$cover_method,
-                                         allow_no_c = TRUE,
-                                         allow_non_veg = TRUE))
+      suppressMessages(accepted(fqacalc::accepted_entries(x = data_entered(),
+                                                          key = input$key,
+                                                          db = input$db,
+                                                          native = FALSE,
+                                                          cover = TRUE,
+                                                          allow_duplicates = TRUE,
+                                                          plot_id = "plot_id",
+                                                          cover_class = input$cover_method,
+                                                          allow_no_c = TRUE,
+                                                          allow_non_veg = TRUE)))
     })
 
     #if input method is upload, accepted is from file_uploaded
@@ -633,33 +634,33 @@ coverServer <- function(id) {
       #if plot column is set, include plot column
       if( !input$plot_column %in% c("NA")) {
 
-        accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                             dplyr::rename(!!input$key := !!input$species_column,
-                                                    cover = input$cover_column,
-                                                    plot_id = input$plot_column),
-                                           key = input$key,
-                                           db = input$db,
-                                           native = FALSE,
-                                           cover = TRUE,
-                                           allow_duplicates = TRUE,
-                                           cover_class = input$cover_method,
-                                           allow_no_c = TRUE,
-                                           allow_non_veg = TRUE,
-                                           plot_id = "plot_id")) }
+        suppressMessages(accepted(fqacalc::accepted_entries(x = file_upload() %>%
+                                                              dplyr::rename(!!input$key := !!input$species_column,
+                                                                            cover = input$cover_column,
+                                                                            plot_id = input$plot_column),
+                                                            key = input$key,
+                                                            db = input$db,
+                                                            native = FALSE,
+                                                            cover = TRUE,
+                                                            allow_duplicates = TRUE,
+                                                            cover_class = input$cover_method,
+                                                            allow_no_c = TRUE,
+                                                            allow_non_veg = TRUE,
+                                                            plot_id = "plot_id"))) }
       else {
 
         #if plot column is not set, do not include in accepted entries
-        accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                             dplyr::rename(!!input$key := !!input$species_column,
-                                                    cover = input$cover_column),
-                                           key = input$key,
-                                           db = input$db,
-                                           native = FALSE,
-                                           cover = TRUE,
-                                           allow_duplicates = TRUE,
-                                           cover_class = input$cover_method,
-                                           allow_no_c = TRUE,
-                                           allow_non_veg = TRUE))
+        suppressMessages(accepted(fqacalc::accepted_entries(x = file_upload() %>%
+                                                              dplyr::rename(!!input$key := !!input$species_column,
+                                                                            cover = input$cover_column),
+                                                            key = input$key,
+                                                            db = input$db,
+                                                            native = FALSE,
+                                                            cover = TRUE,
+                                                            allow_duplicates = TRUE,
+                                                            cover_class = input$cover_method,
+                                                            allow_no_c = TRUE,
+                                                            allow_non_veg = TRUE)))
       }
     })
 
@@ -716,6 +717,27 @@ coverServer <- function(id) {
         html = T, inputId = "confirm_cover_change", className = "alert")}
     })
 
+    #wetland warnings
+    observeEvent(input$db, {
+      if( all(is.na(view_db(input$db)$w)) ) {
+        shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
+                                       wetland metrics cannot be calculated.")), type = "warning", html = T)
+      }
+      if( input$db == "wyoming_2017") {
+        shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+                                 wetland indicator status regions. This package defaults
+                                 to the Arid West wetland indicator region when
+                                 calculating Wyoming metrics."), type = "warning", html = T)
+      }
+      if ( input$db == "colorado_2020" ){
+        shinyalert(text = strong("The Colorado FQA database is associated with
+                                 multiple wetland indicator status regions. This
+                                 package defaults to the Western Mountains,
+                                 Valleys, and Coasts indicator region when calculating
+                                 Colorado metrics."), type = "warning", html = T)
+      }
+    })
+
     observeEvent(input$confirm_cover_change, {
       #store confirmation in reactive value
       confirm_cover(input$confirm_cover_change)
@@ -746,7 +768,7 @@ coverServer <- function(id) {
     observe({shinyjs::hide("next_condition",)})
     outputOptions(output, "next_condition", suspendWhenHidden=FALSE)
 
-##second screen-----------------------------------------------------------------
+    ##second screen-----------------------------------------------------------------
 
     #initializing reactives for outputs
     metrics <- reactiveVal()
@@ -832,74 +854,77 @@ coverServer <- function(id) {
         zip( file, c("FQI_metrics.csv", "binned_hist.png", "c_value_hist.png"))
       })
 
+
+
     #updating reactive values
     observe({
       #requiring second screen to update reactive values
       req(cover_glide() == 1)
 
-      metrics(fqacalc::transect_summary(x = accepted(),
-                                        key = "name",
-                                        db = input$db,
-                                        cover_class = "percent_cover",
-                                        allow_no_c = TRUE))
+      withProgress(message = "Calculating FQA metrics..", {
+        incProgress(1)
+        metrics(suppressMessages(fqacalc::transect_summary(x = accepted(),
+                                                           key = "name",
+                                                           db = input$db,
+                                                           cover_class = "percent_cover",
+                                                           allow_no_c = TRUE)))
 
-      species_sum(fqacalc::species_summary(x = accepted(),
-                                           key = "name",
-                                           db = input$db,
-                                           cover_class = "percent_cover",
-                                          allow_no_c = TRUE)
-      )
+        incProgress(1)
+        species_sum(suppressMessages(fqacalc::species_summary(x = accepted(),
+                                                              key = "name",
+                                                              db = input$db,
+                                                              cover_class = "percent_cover",
+                                                              allow_no_c = TRUE))
+        )
 
-      physiog_sum(fqacalc::physiog_summary(x = accepted(),
-                                           key = "name",
-                                           db = input$db,
-                                           cover_class = "percent_cover",
-                                           allow_no_c = TRUE))
+        incProgress(1)
+        physiog_sum(suppressMessages(fqacalc::physiog_summary(x = accepted(),
+                                                              key = "name",
+                                                              db = input$db,
+                                                              cover_class = "percent_cover",
+                                                              allow_no_c = TRUE)))
+        incProgress(1)
+        if(input$input_method == "enter") {
+          if(length(unique(data_entered()$plot_id)) == 1) {
+            plot_sum(NULL)} else {
+              plot_sum(suppressMessages(fqacalc::plot_summary(x = data_entered(),
+                                                              key = "name",
+                                                              db = input$db,
+                                                              cover_class = input$cover_method,
+                                                              plot_id = "plot_id",
+                                                              allow_no_c = TRUE))) }
+        }
+        incProgress(1)
+        if (input$input_method == "upload") {
+          if(input$plot_column == "NA") {
+            plot_sum(NULL)} else {
+              plot_sum(suppressMessages(fqacalc::plot_summary(x = file_upload()
+                                                              %>% dplyr::rename(!!as.name(input$key) := input$species_column,
+                                                                                cover = input$cover_column,
+                                                                                plot_id = input$plot_column),
+                                                              key = input$key,
+                                                              db = input$db,
+                                                              cover_class = input$cover_method,
+                                                              plot_id = "plot_id",
+                                                              allow_no_c = TRUE)))
+            }
+        }
 
-      if(input$input_method == "enter") {
-        if(length(unique(data_entered()$plot_id)) == 1) {
-          plot_sum(NULL)} else {
-        plot_sum(fqacalc::plot_summary(x = data_entered(),
-                                       key = "name",
-                                       db = input$db,
-                                       cover_class = input$cover_method,
-                                       plot_id = "plot_id",
-                                       allow_no_c = TRUE)) }
-      }
+        incProgress(1)
+        duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
+                                    number = rep.int(0, 3),
+                                    percent = rep.int(0,3))
 
-      if (input$input_method == "upload") {
-        if(input$plot_column == "NA") {
-        plot_sum(NULL)} else {
-        plot_sum(fqacalc::plot_summary(x = file_upload()
-                                       %>% dplyr::rename(!!as.name(input$key) := input$species_column,
-                                                  cover = input$cover_column,
-                                                  plot_id = input$plot_column),
-                                       key = input$key,
-                                       db = input$db,
-                                       cover_class = input$cover_method,
-                                       plot_id = "plot_id",
-                                       allow_no_c = TRUE))
-      }
-      }
-    })
-
-    #get duration table
-    observe({
-      req(nrow(accepted()) > 0 & cover_glide() == 1)
-
-      duration_cats <- data.frame(duration = c("annual", "perennial", "biennial"),
-                                  number = rep.int(0, 3),
-                                  percent = rep.int(0,3))
-
-      dur <- accepted() %>%
-        group_by(duration) %>%
-        summarise(number = n()) %>%
-        mutate(percent = round((number/sum(number))*100, 2)) %>%
-        rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-        mutate(number = as.integer(number))
-
-      #store in reactive
-      duration_table(dur)
+        dur <- accepted() %>%
+          group_by(duration) %>%
+          summarise(number = n()) %>%
+          mutate(percent = round((number/sum(number))*100, 2)) %>%
+          rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
+          mutate(number = as.integer(number))
+        incProgress(1)
+        #store in reactive
+        duration_table(dur)
+      })
     })
 
     #render title
@@ -909,19 +934,19 @@ coverServer <- function(id) {
     #species richness
     output$species_richness <- renderUI({
       req(cover_glide() == 1)
-      fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)
+      suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE))
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(cover_glide() == 1)
-      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 2)
+      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(cover_glide() == 1)
-      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 2)
+      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
     })
 
     #C metrics table output
@@ -992,16 +1017,21 @@ coverServer <- function(id) {
       #requiring second screen
       req(cover_glide() == 1)
       #call to reactive plot summary
-      datatable(plot_sum(),
-                #options
-                options = list(scrollX=TRUE,
-                               scrollY= TRUE,
-                               paging = TRUE,
-                               pageLength = 20,
-                               searching = TRUE,
-                               fixedColumns = TRUE,
-                               autoWidth = TRUE,
-                               ordering = TRUE))
+      datatable(
+        if( is.null(plot_sum()) ) {NULL}
+        else{
+          plot_sum() %>%
+            mutate(across(where(is.numeric), round, digits = 2))
+        },
+        #options
+        options = list(scrollX=TRUE,
+                       scrollY= TRUE,
+                       paging = TRUE,
+                       pageLength = 20,
+                       searching = TRUE,
+                       fixedColumns = TRUE,
+                       autoWidth = TRUE,
+                       ordering = TRUE))
     })
 
     #species summary
@@ -1009,7 +1039,8 @@ coverServer <- function(id) {
       #requiring second screen
       req(cover_glide() == 1)
       #call to reactive species summary
-      datatable(species_sum(),
+      datatable(species_sum() %>%
+                  mutate(across(where(is.numeric), round, digits = 2)),
                 #options
                 options = list(scrollX=TRUE,
                                scrollY= TRUE,

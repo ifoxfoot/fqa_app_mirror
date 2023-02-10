@@ -252,6 +252,7 @@ fqiServer <- function(id) {
       file_upload(new_file)
     })
 
+
     #drop-down list (for species column) based on the file uploaded
     observeEvent(input$upload,{
       output$species_colname <- renderUI({
@@ -351,7 +352,8 @@ fqiServer <- function(id) {
         fqacalc::accepted_entries(x = data_entered(),
                                   key = input$key,
                                   db = input$db,
-                                  native = FALSE),
+                                  native = FALSE,
+                                  wetland_warning = FALSE),
         #add to list
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
@@ -406,13 +408,13 @@ fqiServer <- function(id) {
     #if input method is enter, accepted is from data_entered
     observe({
       req(input_method() == "enter" & nrow(data_entered()) > 0)
-      accepted(fqacalc::accepted_entries(x = data_entered(),
+      accepted(suppressMessages(fqacalc::accepted_entries(x = data_entered(),
                                          key = input$key,
                                          db = input$db,
                                          native = FALSE,
                                          allow_duplicates = FALSE,
                                          allow_non_veg = FALSE,
-                                         allow_no_c = TRUE))
+                                         allow_no_c = TRUE)))
     })
 
     #if input method is upload, accepted is from file upload
@@ -421,14 +423,14 @@ fqiServer <- function(id) {
       accepted(data.frame())
 
       req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column)
-      accepted(fqacalc::accepted_entries(x = file_upload() %>%
+      accepted(suppressMessages(fqacalc::accepted_entries(x = file_upload() %>%
                                            rename(!!as.name(input$key) := input$species_column),
                                          key = input$key,
                                          db = input$db,
                                          native = FALSE,
                                          allow_duplicates = FALSE,
                                          allow_non_veg = FALSE,
-                                         allow_no_c = TRUE))
+                                         allow_no_c = TRUE)))
     })
 
     #if db is changed and there is already data entered, show popup
@@ -464,6 +466,27 @@ fqiServer <- function(id) {
       if (confirm_db() == FALSE) {
         updateSelectInput(session, inputId = "db",
                           selected = previous_dbs$prev[1])}
+    })
+
+    #wetland warnings
+    observeEvent(input$db, {
+      if( all(is.na(view_db(input$db)$w)) ) {
+        shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
+                                       wetland metrics cannot be calculated.")), type = "warning", html = T)
+      }
+      if( input$db == "wyoming_2017") {
+        shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+                                 wetland indicator status regions. This package defaults
+                                 to the Arid West wetland indicator region when
+                                 calculating Wyoming metrics."), type = "warning", html = T)
+      }
+      if ( input$db == "colorado_2020" ){
+        shinyalert(text = strong("The Colorado FQA database is associated with
+                                 multiple wetland indicator status regions. This
+                                 package defaults to the Western Mountains,
+                                 Valleys, and Coasts indicator region when calculating
+                                 Colorado metrics."), type = "warning", html = T)
+      }
     })
 
     #create boolean that shows if data is entered or not for next condition
@@ -541,7 +564,7 @@ fqiServer <- function(id) {
     #get all metrics
     observe({
       req(fqi_glide() == 1)
-      metrics(fqacalc::all_metrics(x = accepted(), db = input$db, allow_no_c = TRUE))
+      metrics(suppressMessages(fqacalc::all_metrics(x = accepted(), db = input$db, allow_no_c = TRUE)))
     })
 
     #get pysiog and duration table
@@ -586,20 +609,20 @@ fqiServer <- function(id) {
     output$species_richness <- renderUI({
       req(fqi_glide() == 1)
       round(
-        fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE),
+        suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
         2)
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(fqi_glide() == 1)
-      round(fqacalc::mean_c(x = accepted(), db = input$db, native = F), 2)
+      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(fqi_glide() == 1)
-      round(fqacalc::FQI(x = accepted(), db = input$db, native = F), 2)
+      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
     })
 
     #metrics table output
