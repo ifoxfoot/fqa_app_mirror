@@ -27,7 +27,7 @@ fqiUI <- function(id) {
 
             #input regional data base
             selectInput(NS(id, "db"), label = "Select Regional FQAI Database",
-                        choices = fqacalc::db_names()$name,
+                        choices = fqacalc::db_names()$fqa_db,
                         selected = "michigan_2014"),
 
             #when db has incomplete acronyms hide acronym option
@@ -314,6 +314,7 @@ fqiServer <- function(id) {
 
     #species drop-down list based on regional database selected
     observe({
+      req(input$db)
       #create list names based on regional database selected
       names <- if(input$key == "name")
       {c("", unique(fqacalc::view_db(input$db)$name))}

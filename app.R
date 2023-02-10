@@ -49,6 +49,22 @@ ui <- fluidPage(
   #sets min width of sidebar panel
   tags$head(tags$style(".well { min-width: 280px; }")),
 
+  tags$head(
+    tags$style(HTML(" .shiny-text-output.shiny-bound-output {
+                display:block;
+                padding:9.5px;
+                margin:0 0 10px;
+                margin-top:10px;
+                font-size:16px;
+                line-height:20px;
+                word-break:break-all;
+                word-wrap:break-word;
+                white-space:pre-wrap;
+                background-color:#F5F5F5;
+                border:1px solid rgba(0,0,0,0.15);
+                border-radius:4px;
+            }"))),
+
   #force shiny alerts to load
   useShinyalert(force = TRUE),
 
