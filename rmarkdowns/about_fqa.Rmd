@@ -4,7 +4,7 @@ output: html_document
 
 ## Floristic Quality Assessment Index
 
-Floristic Quality Assessment Index (FQA) provides a standardized way to rapidly assess the condition of a vegetated area based on the plant species that are present. FQA works by assigning each plant species a value from 0 to 10. This value is called a Coefficient of Conservatism or C Value. Values of 0 indicates species that are highly tolerant of human activities and have general environmental needs, while higher values represent higher fidelity to a specific habitat and less tolerance to anthropogenic disturbances. Generally, C values are assigned by a group of expert regional botanists, resulting in numerous regional FQA lists of flora and their associated C Values covering various geographic areas, such as states, biomes or geologic features.
+Floristic Quality Assessment (FQA) provides a standardized way to rapidly assess the condition of a vegetated area based on the plant species that are present. FQA works by assigning each plant species a value from 0 to 10. This value is called a Coefficient of Conservatism or C Value. Values of 0 indicate species that are highly tolerant of human activities and have general environmental needs, while higher values represent higher fidelity to a specific habitat and less tolerance to anthropogenic disturbances. Generally, C values are assigned by a group of expert regional botanists, resulting in numerous regional FQA lists of flora and their associated C Values covering various geographic areas, such as states, biomes or geologic features.
 
 ## FQA Databases
 
@@ -12,6 +12,6 @@ As of 2022, regional FQAs have been reviewed, and those deemed sufficient, recom
 
 Common floristic quality metrics include Mean C (the mean of C Values for all species present in an inventory or along a transect) and the Floristic Quality Assessment Index (FQAI, the Mean C multiplied by the square root of the total number of species).
 
-There are 51 regional FQAs that are currently certified or approved with reservations for use by the U.S. Army Corps of Engineers in their planning process.
+There are 44 regional FQAs that are currently certified or approved with reservations for use by the U.S. Army Corps of Engineers in their planning process.
 
 Take a look at what regional FQAs might be applicable in your area:
