@@ -1,6 +1,7 @@
 #load packages
 library(shiny) #for app
-library(fqacalc) #for fqai metrics
+library(fqacalc) #for fqa metrics
+library(fqadata) #for fqa data
 library(dplyr) #for data wrangling/piping
 library(stringr) #for string manipulation
 library(ggplot2) #for graphics

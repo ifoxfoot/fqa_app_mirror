@@ -330,14 +330,15 @@ fqiServer <- function(id) {
     #When add species is clicked, add row
     observeEvent(input$add_species, {
       #list species
-      if(input$key == "name"){
-        new_entry <- data.frame(name = c(input$select_species))}
-      else {new_entry <- data.frame(acronym = c(input$select_species))}
+      new_entry <-  c(input$select_species)
       #bind new entry to table
-      if(nrow(accepted() > 0))
-      {new_entry <- rbind(new_entry, accepted() %>% dplyr::select(input$key))}
+      new_row <- fqadata::fqa_db %>%
+        dplyr::filter(fqa_db == input$db) %>%
+        dplyr::filter(!!as.name(input$key) %in% c(new_entry))
       #update reactive to new table
-      data_entered(new_entry)
+      if (nrow(data_entered() > 0)) {
+        data_entered( rbind(new_row, accepted()) )
+      } else data_entered(new_row)
       #reset drop down menu of latin names
       shinyjs::reset("select_species")
     })
@@ -436,6 +437,7 @@ fqiServer <- function(id) {
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
       req(nrow(data_entered()) > 0 || nrow(file_upload()) > 0)
+      shinyjs::reset("key")
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -637,7 +639,9 @@ fqiServer <- function(id) {
     output$wetness <- renderTable({
       req(fqi_glide() == 1)
       metrics() %>%
-        dplyr::filter(metrics %in% c("Mean Wetness", "Native Mean Wetness", "% Hydrophytes"))
+        dplyr::filter(metrics %in% c("Mean Wetness",
+                                     "Native Mean Wetness",
+                                     "% Hydrophytes"))
     })
 
     #nativity table output

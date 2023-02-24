@@ -501,16 +501,18 @@ coverServer <- function(id) {
       #create df with data entered
       if(input$key == "name") {
         new_entry <- data.frame(plot_id = c(input$plot_id),
+                                acronym = c(NA),
                                 name = c(input$select_species),
                                 cover = c(input$cover_val))
       } else {
         new_entry <- data.frame(plot_id = c(input$plot_id),
                                 acronym = c(input$select_species),
+                                name = c(NA),
                                 cover = c(input$cover_val))
       }
       #bind new entry to table
       if(nrow(accepted() > 0)) {
-        new_entry<- rbind(new_entry, accepted() %>% dplyr::select(plot_id, input$key, cover))
+        new_entry<- rbind(new_entry, accepted() %>% dplyr::select(plot_id, acronym, name, cover))
       }
       #make it reactive
       data_entered(new_entry)
