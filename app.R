@@ -1,6 +1,6 @@
 #load packages
 library(shiny) #for app
-library(fqacalc) #for fqa metrics
+library(fqacalc) #for fqametrics
 library(fqadata) #for fqa data
 library(dplyr) #for data wrangling/piping
 library(stringr) #for string manipulation

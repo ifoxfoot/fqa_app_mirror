@@ -18,7 +18,7 @@ c_score_plot <- function(input_data) {
 binned_c_score_plot <- function(input_data) {
 
   dat <- input_data %>%
-    filter(str_detect(metrics, "%")) %>%
+    filter(str_detect(metrics, "% of Species")) %>%
     mutate(metrics = str_remove(metrics, "% of Species with "))
 
   c_plot <- ggplot(data = dat) +

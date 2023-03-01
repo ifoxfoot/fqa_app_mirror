@@ -398,6 +398,7 @@ fqiServer <- function(id) {
 
     #initialize reactives
     accepted <- reactiveVal(data.frame())
+    accepted_gtg <- reactiveVal("TRUE")
     confirm_db <- reactiveVal("empty")
     previous_dbs <- reactiveValues(prev = "michigan_2014")
 
@@ -408,7 +409,7 @@ fqiServer <- function(id) {
 
     #if input method is enter, accepted is from data_entered
     observe({
-      req(input_method() == "enter" & nrow(data_entered()) > 0)
+      req(input_method() == "enter", nrow(data_entered()) > 0, accepted_gtg() == "TRUE")
       accepted(suppressMessages(fqacalc::accepted_entries(x = data_entered(),
                                          key = input$key,
                                          db = input$db,
@@ -420,10 +421,10 @@ fqiServer <- function(id) {
 
     #if input method is upload, accepted is from file upload
     observe({
-      req(input_method() == "upload")
+      req(input_method() == "upload", accepted_gtg() == "TRUE")
       accepted(data.frame())
 
-      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column)
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, accepted_gtg() == "TRUE")
       accepted(suppressMessages(fqacalc::accepted_entries(x = file_upload() %>%
                                            rename(!!as.name(input$key) := input$species_column),
                                          key = input$key,
@@ -437,7 +438,7 @@ fqiServer <- function(id) {
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
       req(nrow(data_entered()) > 0 || nrow(file_upload()) > 0)
-      shinyjs::reset("key")
+      accepted_gtg("FALSE")
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -463,15 +464,22 @@ fqiServer <- function(id) {
         accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
-        confirm_db("empty")}
-      #if confirm db is false, reset db to previous value
+        shinyjs::reset("key")
+        confirm_db("empty")
+        #convert accepted_GTG back to good
+        accepted_gtg("TRUE")}
+        #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
         updateSelectInput(session, inputId = "db",
-                          selected = previous_dbs$prev[1])}
+                          selected = previous_dbs$prev[1])
+        #convert accepted_GTG back to good
+        accepted_gtg("TRUE")
+        }
     })
 
     #wetland warnings
     observeEvent(input$db, {
+      req(accepted_gtg() == "TRUE")
       if( all(is.na(view_db(input$db)$w)) ) {
         shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")), type = "warning", html = T)
