@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Codecov test coverage](https://codecov.io/gh/ifoxfoot/fqashiny/branch/master/graph/badge.svg)](https://app.codecov.io/gh/ifoxfoot/fqashiny?branch=master)
 <!-- badges: end -->
 
 The goal of fqashiny is to ...
@@ -34,7 +35,7 @@ You can install the development version of fqashiny like so:
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
-library(fqashiny)
+#library(fqashiny)
 ## basic example code
 ```
 

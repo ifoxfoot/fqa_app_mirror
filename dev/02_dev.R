@@ -16,7 +16,7 @@
 ## Dependencies ----
 ## Amend DESCRIPTION with dependencies read from package code parsing
 ## install.package('attachment') # if needed.
-attachment::att_amend_desc()
+#attachment::att_amend_desc()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -51,7 +51,7 @@ devtools::build_vignettes()
 
 ## Code Coverage----
 ## Set the code coverage service ("codecov" or "coveralls")
-usethis::use_coverage()
+#usethis::use_coverage()
 
 # Create a summary readme for the testthat subdirectory
 covrpage::covrpage()
@@ -61,7 +61,7 @@ covrpage::covrpage()
 ## service for your application
 ##
 ## (You'll need GitHub there)
-usethis::use_github()
+#usethis::use_github()
 
 # GitHub Actions
 usethis::use_github_action()
