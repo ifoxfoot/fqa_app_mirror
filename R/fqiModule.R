@@ -479,9 +479,8 @@ fqiServer <- function(id) {
       if (confirm_db() == FALSE) {
         updateSelectInput(session, inputId = "db",
                           selected = previous_dbs$prev[1])
-
         #convert accepted_GTG back to good
-        accepted_gtg(TRUE)
+        delay(2, accepted_gtg(TRUE))
         }
     })
 
