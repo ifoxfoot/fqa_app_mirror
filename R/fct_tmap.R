@@ -1,20 +1,17 @@
-#' tmap
+#' tmap_function
 #'
-#' @description A fct function
+#' @description A function to generate the tmap of regional FQA databases
 #'
-#' @return The return value, if any, from executing the function.
+#' @return A map
 #'
 #' @noRd
-tmap_function <- function(file_path){
-
-  #read in data
-  regional_fqa_map <- read_sf(file_path)
+tmap_function <- function(){
 
   #set tmap to interactive
   suppressMessages(tmap_mode("view"))
 
   #make map
-  tmap <- tm_shape(regional_fqa_map) +
+  tmap <- tm_shape(fqa_map) +
     tm_polygons("FQA_database", legend.show = F,
                 popup.vars = c("notes",
                                "total_species",
