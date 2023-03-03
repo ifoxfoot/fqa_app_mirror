@@ -10,7 +10,7 @@
 mod_inventory_ui <- function(id){
   ns <- NS(id)
   tagList(
-    glide(
+    shinyglide::glide(
       id = ns("glide"),
       next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
@@ -19,7 +19,7 @@ mod_inventory_ui <- function(id){
       keyboard = FALSE,
 
       screen(
-        next_condition = "output['fqi-next_condition'] == 'TRUE'",
+        next_condition = "output['inventory_1-next_condition'] == 'TRUE'",
 
         fluidRow(
           sidebarPanel(

@@ -11,7 +11,7 @@ mod_cover_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    glide(
+    shinyglide::glide(
       id = ns( "glide"),
       next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
       previous_label = paste(icon("arrow-left"), "Go Back to Data Entry"),
