@@ -148,7 +148,7 @@ app_ui <- function(request) {
 
                tabPanel("Caclulate Cover-Weighted FQA Metrics",
 
-                        coverUI("cover")
+                        mod_cover_ui("cover_1")
 
                ),#tab panel parenthesis
 

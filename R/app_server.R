@@ -54,6 +54,6 @@ app_server <- function(input, output, session) {
 # COVER SERVER------------------------------------------------------------------
 
   #call to cover Module server function
-  coverServer("cover")
+  mod_cover_server("cover_1")
 
 }
