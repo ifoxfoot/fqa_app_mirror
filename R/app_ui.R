@@ -127,7 +127,7 @@ app_ui <- function(request) {
                tabPanel("View Regional FQA Databases",
 
                         #vall to view UI module
-                        mod_view_db_ui("view_db_1"),
+                        mod_view_db_ui("view_db"),
 
                         #some spacing at the bottom of the page
                         br(),
@@ -140,7 +140,7 @@ app_ui <- function(request) {
 
                tabPanel("Calculate Inventory Metrics",
 
-                        mod_inventory_ui("inventory_1")
+                        mod_inventory_ui("inventory")
 
                ),#tab panel parenthesis
 
@@ -148,7 +148,7 @@ app_ui <- function(request) {
 
                tabPanel("Caclulate Cover-Weighted FQA Metrics",
 
-                        mod_cover_ui("cover_1")
+                        mod_cover_ui("cover")
 
                ),#tab panel parenthesis
 

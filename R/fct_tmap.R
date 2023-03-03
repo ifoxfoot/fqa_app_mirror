@@ -5,6 +5,7 @@
 #' @return A map
 #'
 #' @noRd
+#' @import tmap
 tmap_function <- function(){
 
   #set tmap to interactive

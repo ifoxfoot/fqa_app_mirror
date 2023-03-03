@@ -37,23 +37,23 @@ app_server <- function(input, output, session) {
 # ABOUT SERVER------------------------------------------------------------------
 
   #interactive map output
-  output$tmap <- renderTmap({
-    tmap_function("spatial_data/regional_fqa_simple.gpkg")
+  output$tmap <- tmap::renderTmap({
+    tmap_function()
   })
 
 # VIEW SERVER-------------------------------------------------------------------
 
   #call to view Module server function
-  mod_view_db_server("view_db_1")
+  mod_view_db_server("view_db")
 
 # INVENTORY SERVER -------------------------------------------------------------------
 
   #call to inventory Module server
-  mod_inventory_server("inventory_1")
+  mod_inventory_server("inventory")
 
 # COVER SERVER------------------------------------------------------------------
 
   #call to cover Module server function
-  mod_cover_server("cover_1")
+  mod_cover_server("cover")
 
 }

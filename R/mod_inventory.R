@@ -18,8 +18,8 @@ mod_inventory_ui <- function(id){
       height = "100%",
       keyboard = FALSE,
 
-      screen(
-        next_condition = "output['inventory_1-next_condition'] == 'TRUE'",
+      shinyglide::screen(
+        next_condition = "output['inventory-next_condition'] == 'TRUE'",
 
         fluidRow(
           sidebarPanel(
@@ -27,7 +27,7 @@ mod_inventory_ui <- function(id){
             titlePanel("Enter Data"),
 
             #help button
-            circleButton(ns("help"), icon = icon("question"),
+            shinyWidgets::circleButton(ns("help"), icon = icon("question"),
                          style = "position:absolute; top:5px; right:5px;",
                          status = "primary"),
 
@@ -39,9 +39,9 @@ mod_inventory_ui <- function(id){
             #when db has incomplete acronyms hide acronym option
             conditionalPanel(
 
-              condition = "output['fqi-complete_acronym'] == 'TRUE'",
+              condition = "output['inventory-complete_acronym'] == 'TRUE'",
               #input key argument
-              radioGroupButtons(ns("key"), label = "Enter Species Using: ",
+              shinyWidgets::radioGroupButtons(ns("key"), label = "Enter Species Using: ",
                                 choices = c("Scientific Names" = "name",
                                             "Acronyms" = "acronym"),
                                 selected = "name",
@@ -51,7 +51,7 @@ mod_inventory_ui <- function(id){
             ),
 
             #input data entry method
-            prettyRadioButtons(ns("input_method"), label = "Select Data Entry Method",
+            shinyWidgets::prettyRadioButtons(ns("input_method"), label = "Select Data Entry Method",
                                choices = c( "Enter Species Manually" = "enter",
                                             "Upload a File" = "upload")),
 
@@ -60,7 +60,7 @@ mod_inventory_ui <- function(id){
             #when data entry method is upload, allow user to upload files
             conditionalPanel(
 
-              condition = "input['fqi-input_method'] == 'upload'",
+              condition = "input['inventory-input_method'] == 'upload'",
 
               #input file upload widget
               fileInput(ns("upload"), NULL, buttonLabel = "Upload...", multiple = F),
@@ -76,7 +76,7 @@ mod_inventory_ui <- function(id){
             #when data entry method is enter, allow user to enter data manually
             conditionalPanel(
 
-              condition = "input['fqi-input_method'] == 'enter'",
+              condition = "input['inventory-input_method'] == 'enter'",
 
               #input latin name
               selectizeInput(ns("select_species"), label = "Select Species",
@@ -105,20 +105,20 @@ mod_inventory_ui <- function(id){
             textOutput(ns("complete_acronym")),
 
             #when user wants to upload a file but hasn't yet, show instructions
-            conditionalPanel("input['fqi-input_method'] == 'upload' && output['fqi-file_is_uploaded'] != true",
+            conditionalPanel("input['inventory-input_method'] == 'upload' && output['inventory-file_is_uploaded'] != true",
                              br(),
                              h3("File uploads must have one column containing either scientific names
                               or acronyms. The columns must go to the top of the file such that row 1
                               is the column name.")),
 
             #when user uploads file, show uploaded table
-            conditionalPanel("input['fqi-input_method'] == 'upload'",
+            conditionalPanel("input['inventory-input_method'] == 'upload'",
                              br(),
                              br(),
                              dataTableOutput(NS(id, "upload_table"))),
 
             #when user enters species manually, show what they enter
-            conditionalPanel("input['fqi-input_method'] == 'enter'",
+            conditionalPanel("input['inventory-input_method'] == 'enter'",
                              br(),
                              br(),
                              dataTableOutput(NS(id, "manual_table")))
@@ -129,7 +129,7 @@ mod_inventory_ui <- function(id){
 
       ),#screen 1 parenthesis
 
-      screen(
+      shinyglide::screen(
 
         #download button
         downloadButton(ns("download"),
@@ -143,16 +143,16 @@ mod_inventory_ui <- function(id){
 
         #boxes with key values
         fluidRow(
-          valueBox(
+          shinydashboard::valueBox(
             htmlOutput(ns("species_richness")),
             "Species Richness", color = "navy"
           ),
-          valueBox(
+          shinydashboard::valueBox(
             htmlOutput(ns("mean_c")),
             "Mean C",
             icon = icon("seedling"), color = "olive"
           ),
-          valueBox(
+          shinydashboard::valueBox(
             htmlOutput(ns("fqi")),
             "Total FQI",
             icon = icon("pagelines"), color = "green"
@@ -161,24 +161,24 @@ mod_inventory_ui <- function(id){
 
         #all mets and graph
         fluidRow(
-          box(plotOutput(ns("binned_c_score_plot")),
+          shinydashboard::box(plotOutput(ns("binned_c_score_plot")),
               title = "Binned Histogram of C Values"),
-          box(plotOutput(ns("c_hist")),
+          shinydashboard::box(plotOutput(ns("c_hist")),
               title = "Histogram of C Values")
         ),
 
         fluidRow(
           column(4,
-                 box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
-                 box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL,
+                 shinydashboard::box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
+                 shinydashboard::box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL,
                      style = "overflow-x: scroll")),
           column(4,
-                 box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL),
-                 box(tableOutput(ns("pysiog_table")), title = "Physiognomy Metrics", width = NULL,
+                 shinydashboard::box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL),
+                 shinydashboard::box(tableOutput(ns("pysiog_table")), title = "Physiognomy Metrics", width = NULL,
                      style = "overflow-x: scroll")),
           column(4,
-                 box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
-                 box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
+                 shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
+                 shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
         )
 
       )#screen 2 parenthesis
@@ -216,7 +216,7 @@ mod_inventory_server <- function(id){
 
     #test if db contains complete acronyms (T/F), store in reactive
     observeEvent(input$db, {
-      regional_fqai <- view_db(input$db)
+      regional_fqai <- fqacalc::view_db(input$db)
       acronym <- if( any(is.na(regional_fqai$acronym)
                          & regional_fqai$name_origin == "accepted_scientific_name") )
       {FALSE} else {TRUE}
@@ -495,7 +495,7 @@ mod_inventory_server <- function(id){
     #wetland warnings
     observeEvent(input$db, {
       req(accepted_gtg() == "TRUE")
-      if( all(is.na(view_db(input$db)$w)) ) {
+      if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
         shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")), type = "warning", html = T)
       }

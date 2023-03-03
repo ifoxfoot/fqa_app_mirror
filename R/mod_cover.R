@@ -19,7 +19,7 @@ mod_cover_ui <- function(id){
       height = "100%",
       keyboard = FALSE,
 
-      screen(
+      shinyglide::screen(
         next_condition = "output['cover-next_condition'] == 'TRUE'",
 
         fluidRow(
@@ -28,7 +28,7 @@ mod_cover_ui <- function(id){
             titlePanel("Enter Data"),
 
             #help button
-            circleButton(ns( "help"), icon = icon("question"),
+            shinyWidgets::circleButton(ns( "help"), icon = icon("question"),
                          style = "position:absolute; top:5px; right:5px;",
                          status = "primary"),
 
@@ -51,7 +51,7 @@ mod_cover_ui <- function(id){
 
               condition = "output['cover-complete_acronym'] == 'TRUE'",
               #input key argument
-              radioGroupButtons(ns( "key"), label = "Enter Species Using: ",
+              shinyWidgets::radioGroupButtons(ns( "key"), label = "Enter Species Using: ",
                                 choices = c("Scientific Names" = "name",
                                             "Acronyms" = "acronym"),
                                 justified = TRUE,
@@ -60,7 +60,7 @@ mod_cover_ui <- function(id){
             ),
 
             #input data entry method
-            prettyRadioButtons(ns( "input_method"), label = "Select Data Entry Method",
+            shinyWidgets::prettyRadioButtons(ns( "input_method"), label = "Select Data Entry Method",
                                choices = c( "Enter Species Manually" = "enter",
                                             "Upload a File" = "upload")),
 
@@ -133,7 +133,7 @@ mod_cover_ui <- function(id){
                 column(4, selectizeInput(ns( "select_species"), label = "Select Species",
                                          choices = NULL, selected = NULL)),
                 column(3, uiOutput(ns("cover_value"))),
-                column(3, disabled(actionButton(ns( "add_species"), "Add Species",
+                column(3, shinyjs::disabled(actionButton(ns( "add_species"), "Add Species",
                                                 style = "margin-top: 30px; height: 40px;")))),
               #table of data entered
               fluidRow(
@@ -147,7 +147,7 @@ mod_cover_ui <- function(id){
 
       ),#screen 1 parenthesis
 
-      screen(
+      shinyglide::screen(
 
         #download button
         downloadButton(ns( "download"),
@@ -161,16 +161,16 @@ mod_cover_ui <- function(id){
 
         #boxes with key values
         fluidRow(
-          valueBox(
+          shinydashboard::valueBox(
             htmlOutput(ns("species_richness")),
             "Species Richness", color = "navy"
           ),
-          valueBox(
+          shinydashboard::valueBox(
             htmlOutput(ns("mean_c")),
             "Mean C",
             icon = icon("seedling"), color = "olive"
           ),
-          valueBox(
+          shinydashboard::valueBox(
             htmlOutput(ns("fqi")),
             "Total FQI",
             icon = icon("pagelines"), color = "green"
@@ -179,43 +179,43 @@ mod_cover_ui <- function(id){
 
         #all mets and graph
         fluidRow(
-          box(plotOutput(ns("binned_c_score_plot")),
+          shinydashboard::box(plotOutput(ns("binned_c_score_plot")),
               title = "Binned Histogram of C Values"),
-          box(plotOutput(ns("c_hist")),
+          shinydashboard::box(plotOutput(ns("c_hist")),
               title = "Histogram of C Values")
         ),
 
         #small tables
         fluidRow(
           column(4,
-                 box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
-                 box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL)),
+                 shinydashboard::box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
+                 shinydashboard::box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL)),
           column(4,
-                 box(tableOutput(ns("cover_classs")), title = "Cover-Weighted Metrics", width = NULL),
-                 box(tableOutput(ns("duration_table")), title = "Duration Metrics", width = NULL,
+                 shinydashboard::box(tableOutput(ns("cover_classs")), title = "Cover-Weighted Metrics", width = NULL),
+                 shinydashboard::box(tableOutput(ns("duration_table")), title = "Duration Metrics", width = NULL,
                      style = "overflow-x: scroll")),
           column(4,
-                 box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
-                 box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
+                 shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
+                 shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
         ),
 
         #output of terms
-        fluidRow(box(title = "Relative Cover Terms", status = "primary",
+        fluidRow(shinydashboard::box(title = "Relative Cover Terms", status = "primary",
                      includeMarkdown("rmarkdowns/rel_terms.Rmd"), width = 12,
                      style = "overflow-x: scroll")),
 
         #output of physiog summary
-        fluidRow(box(title = "Physiognomy Summary", status = "primary",
+        fluidRow(shinydashboard::box(title = "Physiognomy Summary", status = "primary",
                      tableOutput(ns( "cover_physiog_manual")), width = 12,
                      style = "overflow-x: scroll")),
 
         #output of plot summary
-        fluidRow(box(title = "Plot Summary", status = "primary", width = 12,
+        fluidRow(shinydashboard::box(title = "Plot Summary", status = "primary", width = 12,
                      style = "overflow-x: auto;",
                      DT::dataTableOutput(ns( "cover_plot_manual")))),
 
         #output of species summary
-        fluidRow(box(title = "Species Summary", status = "primary",
+        fluidRow(shinydashboard::box(title = "Species Summary", status = "primary",
                      DT::dataTableOutput(ns( "cover_species_manual")), width = 12,
                      style = "overflow-x: auto;l"))
 
@@ -231,7 +231,8 @@ mod_cover_ui <- function(id){
 #' @noRd
 mod_cover_server <- function(id){
   moduleServer( id, function(input, output, session){
-    ns <- ns
+
+    ns <- session$ns
 
     #creating a reactive value for glide page, used as input to server fun
     cover_glide <- reactive({input$shinyglide_index_glide})
@@ -282,7 +283,7 @@ mod_cover_server <- function(id){
 
     #test if db contains complete acronyms (T/F), store in reactive
     observeEvent(input$db, {
-      regional_fqai <- view_db(input$db)
+      regional_fqai <- fqacalc::view_db(input$db)
       acronym <- if( any(is.na(regional_fqai$acronym)
                          & regional_fqai$name_origin == "accepted_scientific_name") )
       {FALSE} else {TRUE}
@@ -493,13 +494,13 @@ mod_cover_server <- function(id){
     observe({
       vals <- c(input$transect_id, input$cover_val, input$select_species, input$plot_id)
       if (input$cover_method != "percent_cover") {
-        toggleState("add_species", !"" %in% vals) }
-      else { toggleState("add_species", input$cover_val > 0 & input$cover_val <= 100)}
+        shinyjs::toggleState("add_species", !"" %in% vals) }
+      else { shinyjs::toggleState("add_species", input$cover_val > 0 & input$cover_val <= 100)}
     })
 
     #make it so transect cant be changed after the fact
     observe({
-      toggleState("transect_id", nrow(data_entered()) == 0)
+      shinyjs::toggleState("transect_id", nrow(data_entered()) == 0)
     })
 
     #When add species is clicked, add row
@@ -727,7 +728,7 @@ mod_cover_server <- function(id){
 
     #wetland warnings
     observeEvent(input$db, {
-      if( all(is.na(view_db(input$db)$w)) ) {
+      if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
         shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")), type = "warning", html = T)
       }
