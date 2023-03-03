@@ -46,10 +46,10 @@ app_server <- function(input, output, session) {
   #call to view Module server function
   mod_view_db_server("view_db_1")
 
-# FQI SERVER -------------------------------------------------------------------
+# INVENTORY SERVER -------------------------------------------------------------------
 
-  #call to fqi Module server
-  fqiServer("fqi")
+  #call to inventory Module server
+  mod_inventory_server("inventory_1")
 
 # COVER SERVER------------------------------------------------------------------
 

@@ -136,11 +136,11 @@ app_ui <- function(request) {
 
                ),#tabPanel parenthesis
 
-#FQI TAB------------------------------------------------------------------------
+#INVENTORY TAB------------------------------------------------------------------------
 
-               tabPanel("Calculate FQA Metrics",
+               tabPanel("Calculate Inventory Metrics",
 
-                        fqiUI("fqi")
+                        mod_inventory_ui("inventory_1")
 
                ),#tab panel parenthesis
 
