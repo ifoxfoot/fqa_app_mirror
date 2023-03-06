@@ -10,7 +10,8 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    #testing theme
+
+     #testing theme
     theme = bslib::bs_theme(
       version = 4,
       # bootswatch = "yeti",
@@ -18,73 +19,8 @@ app_ui <- function(request) {
       # font_scale = 1.2
     ),
 
-    #changing color of download button
-    tags$head(tags$style(
-      ".downloadButton{background:#3c8dbc;}
-    .downloadButton{color: #fff;}")),
-
-    #changing width of navbar
-    tags$head(tags$style(".container-fluid {padding-right:0px; padding-left: 0px}")),
-
-    #changing width of tab contents
-    tags$head(tags$style(".tab-content {padding-right:30px;padding-left:30px;}")),
-
-    #sets min width of sidebar panel
-    tags$head(tags$style(".well { min-width: 280px; }")),
-
-    tags$head(
-      tags$style(HTML(".view-citations.shiny-text-output.shiny-bound-output {
-                display:block;
-                padding:9.5px;
-                margin:0 0 10px;
-                margin-top:10px;
-                font-size:16px;
-                line-height:20px;
-                word-break:break-all;
-                word-wrap:break-word;
-                white-space:pre-wrap;
-                background-color:#F5F5F5;
-                border:1px solid rgba(0,0,0,0.15);
-                border-radius:4px;
-            }"))),
-
     #force shiny alerts to load
     shinyalert::useShinyalert(force = TRUE),
-
-    #css to change shinyalert text
-    tags$head(
-      tags$style(
-        HTML(".sweet-alert p {
-          color: #000000;
-          font-size: 16px;
-          font-weight: 300;}"
-        )
-      )
-    ),
-
-    #css to change shinyalert text
-    tags$head(
-      tags$style(
-        HTML(".help.sweet-alert p {
-          text-align: left;}"
-        )
-      )
-    ),
-
-    #css to place shinyglide buttons
-    tags$style(
-      ".next-screen {
-    position: absolute;
-    top: 0px; right: 0px;
-    }"
-    ),
-
-    tags$style(
-      ".prev-screen {
-    position: absolute;
-    top: 0px; left: 0px;
-    }"
-    ),
 
     #set background color
     shinyWidgets::setBackgroundColor(color = "#F2F4F4"),

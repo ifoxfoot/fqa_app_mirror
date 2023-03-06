@@ -34,7 +34,7 @@ mod_view_db_ui <- function(id){
 
            fluidRow(
              #table of db output
-             dataTableOutput(ns("regional_database_table")))
+             DT::dataTableOutput(ns("regional_database_table")))
 
     )
   )
@@ -59,13 +59,13 @@ mod_view_db_server <- function(id){
     #citation text output
     output$citation <- renderText({
       req(input$db)
-      filter(fqadata::fqa_citations, fqa_db == input$db)$citation
+      dplyr::filter(fqadata::fqa_citations, fqa_db == input$db)$citation
     })
 
     #fqa datatable output
-    output$regional_database_table <- renderDataTable({
+    output$regional_database_table <- DT::renderDataTable({
       req(input$db)
-      datatable(fqacalc::view_db(input$db),
+      DT::datatable(fqacalc::view_db(input$db),
                 options = list(scrollX=TRUE,
                                scrollY= TRUE,
                                paging = FALSE, searching = TRUE,

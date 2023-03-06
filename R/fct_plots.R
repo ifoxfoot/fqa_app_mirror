@@ -5,6 +5,7 @@
 #' @return A plot
 #'
 #' @noRd
+#' @import ggplot2
 c_score_plot <- function(input_data) {
 
   c_plot <- suppressWarnings(ggplot(data = input_data,
@@ -14,7 +15,7 @@ c_score_plot <- function(input_data) {
                                scale_x_continuous(breaks = seq(0,10, by = 1), limits = c(-1, 11)) +
                                labs(x = "Coefficient of Conservatism Value",
                                     y = "Number of Species",
-                                    fill = "Native or Non-native") +
+                                    fill = "Native or Introduced") +
                                theme(text = element_text(size = 15)))
 
   return(c_plot)
@@ -28,11 +29,12 @@ c_score_plot <- function(input_data) {
 #' @return A plot
 #'
 #' @noRd
+#' @import ggplot2
 binned_c_score_plot <- function(input_data) {
 
   dat <- input_data %>%
-    filter(str_detect(metrics, "% of Species")) %>%
-    mutate(metrics = str_remove(metrics, "% of Species with "))
+    dplyr::filter(stringr::str_detect(metrics, "% of Species")) %>%
+    dplyr::mutate(metrics = stringr::str_remove(metrics, "% of Species with "))
 
   c_plot <- ggplot(data = dat) +
     geom_col(col = "black", aes(y = values, x = metrics, fill = values)) +

@@ -10,13 +10,13 @@ app_server <- function(input, output, session) {
 # HELP POPUPS ------------------------------------------------------------------
 
   #reactives to store tab clicks
-  fqi_tab <- reactiveVal(0)
+  inventory_tab <- reactiveVal(0)
   cover_tab <- reactiveVal(0)
 
   #if click on tab, add one to reactive
   observeEvent(input$navbar, {
-    if(input$navbar == "Calculate FQA Metrics") {
-      fqi_tab(fqi_tab() + 1)
+    if(input$navbar == "Calculate Inventory Metrics") {
+      inventory_tab(inventory_tab() + 1)
     }
     if(input$navbar == "Caclulate Cover-Weighted FQA Metrics") {
       cover_tab(cover_tab() + 1)
@@ -25,8 +25,8 @@ app_server <- function(input, output, session) {
 
   #help popup only on first click
   observe({
-    if(fqi_tab() == 1 & input$navbar == "Calculate FQA Metrics")
-    {fqi_help()}
+    if(inventory_tab() == 1 & input$navbar == "Calculate Inventory Metrics")
+    {inventory_help()}
     if(cover_tab() == 1 & input$navbar == "Caclulate Cover-Weighted FQA Metrics")
     {cover_help()}
   })

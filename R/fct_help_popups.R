@@ -1,12 +1,12 @@
-#' fqi_help
+#' inventory_help
 #'
 #' @description A fct function that produces a help pop-up
 #'
 #' @return A shiny alert
 #'
 #' @noRd
-fqi_help <- function(){
-  alert <- shinyalert(title = "FQI Instructions", html = T, className = "help",
+inventory_help <- function(){
+  alert <- shinyalert::shinyalert(title = "FQI Instructions", html = T, className = "help",
                       text = tagList(strong("Step 1."),
                                      "Select your regional FQA of interest. If you are unsure
                             about which regional FQA to use, consult the map on the
@@ -74,7 +74,7 @@ fqi_help <- function(){
 #'
 #' @noRd
 cover_help <- function(){
-  alert <- shinyalert(title = "Cover Weighted FQA Instructions", html = T, className = "help",
+  alert <- shinyalert::shinyalert(title = "Cover Weighted FQA Instructions", html = T, className = "help",
                       text = tagList(strong("Step 1."),
                                      "Select your regional FQA of interest. If you are unsure
                                      about which regional FQA to use, consult the map on the

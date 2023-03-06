@@ -115,13 +115,13 @@ mod_inventory_ui <- function(id){
             conditionalPanel("input['inventory-input_method'] == 'upload'",
                              br(),
                              br(),
-                             dataTableOutput(NS(id, "upload_table"))),
+                             DT::dataTableOutput(NS(id, "upload_table"))),
 
             #when user enters species manually, show what they enter
             conditionalPanel("input['inventory-input_method'] == 'enter'",
                              br(),
                              br(),
-                             dataTableOutput(NS(id, "manual_table")))
+                             DT::dataTableOutput(NS(id, "manual_table")))
 
           )#main panel parenthesis
 
@@ -253,7 +253,7 @@ mod_inventory_server <- function(id){
                          xlsx = readxl::read_excel(input$upload$datapath),
                          validate("Invalid file; Please upload a .csv, .tsv, or .xlsx file")) %>%
         #drop empty data
-        filter(., rowSums(is.na(.)) != ncol(.)) %>%
+        dplyr::filter(., rowSums(is.na(.)) != ncol(.)) %>%
         as.data.frame(.)
       #store upload in reactive object
       file_upload(new_file)
@@ -283,8 +283,8 @@ mod_inventory_server <- function(id){
       warning_list <- list()
       #catch warnings
       withCallingHandlers(
-        accepted_file <- accepted_entries(file_upload() %>%
-                                            rename(!!as.name(input$key) := input$species_column),
+        accepted_file <- fqacalc::accepted_entries(file_upload() %>%
+                                            dplyr::rename(!!as.name(input$key) := input$species_column),
                                           key = input$key,
                                           db = input$db,
                                           native = FALSE),
@@ -292,12 +292,12 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert(text = strong(i), type = "warning", html = T) }
+        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
     })
 
     #render output table from uploaded file
     output$upload_table <- DT::renderDT({
-      datatable(file_upload(),
+      DT::datatable(file_upload(),
                 selection = 'single',
                 options = list(autoWidth = TRUE,
                                scrollX = TRUE,
@@ -366,12 +366,12 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert(text = strong(i), type = "warning", html = T) }
+        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
     })
 
     #render output table from manually entered species on data entry page
     output$manual_table <- DT::renderDT({
-      datatable(accepted(),
+      DT::datatable(accepted(),
                 selection = 'single',
                 options = list(autoWidth = TRUE,
                                scrollX = TRUE,
@@ -433,7 +433,7 @@ mod_inventory_server <- function(id){
 
       req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, accepted_gtg())
       accepted(suppressMessages(fqacalc::accepted_entries(x = file_upload() %>%
-                                                            rename(!!as.name(input$key) := input$species_column),
+                                                            dplyr::rename(!!as.name(input$key) := input$species_column),
                                                           key = input$key,
                                                           db = input$db,
                                                           native = FALSE,
@@ -450,7 +450,7 @@ mod_inventory_server <- function(id){
       if(confirm_db() != "empty") {
         confirm_db("empty") }
       else{
-        shinyalert(text = strong(
+        shinyalert::shinyalert(text = strong(
           "Changing the regional database will delete your current data entries.
         Are you sure you want to proceed?"),
           showCancelButton = T,
@@ -471,7 +471,7 @@ mod_inventory_server <- function(id){
         accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
-        updateRadioGroupButtons(session, inputId = "key",
+        shinyWidgets::updateRadioGroupButtons(session, inputId = "key",
                                 label = "Enter Species Using: ",
                                 choices = c("Scientific Names" = "name",
                                             "Acronyms" = "acronym"),
@@ -496,17 +496,17 @@ mod_inventory_server <- function(id){
     observeEvent(input$db, {
       req(accepted_gtg() == "TRUE")
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
-        shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
+        shinyalert::shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")), type = "warning", html = T)
       }
       if( input$db == "wyoming_2017") {
-        shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+        shinyalert::shinyalert(text = strong("The Wyoming FQA database is associated with multiple
                                  wetland indicator status regions. This package defaults
                                  to the Arid West wetland indicator region when
                                  calculating Wyoming metrics."), type = "warning", html = T)
       }
       if ( input$db == "colorado_2020" ){
-        shinyalert(text = strong("The Colorado FQA database is associated with
+        shinyalert::shinyalert(text = strong("The Colorado FQA database is associated with
                                  multiple wetland indicator status regions. This
                                  package defaults to the Western Mountains,
                                  Valleys, and Coasts indicator region when calculating
@@ -551,21 +551,21 @@ mod_inventory_server <- function(id){
 
         # Write metrics dataframe to the same sink
         write.csv(metrics() %>%
-                    mutate(values = round(values, digits = 2)), row.names = F)
+                    dplyr::mutate(values = round(values, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         cat("Physiognomy Metrics")
         cat('\n')
         write.csv(physiog_table() %>%
-                    mutate(percent = round(percent, digits = 2)), row.names = F)
+                    dplyr::mutate(percent = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
         cat("Duration Metrics")
         cat('\n')
         write.csv(duration_table() %>%
-                    mutate(percent = round(percent, digits = 2)), row.names = F)
+                    dplyr::mutate(percent = round(percent, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
@@ -577,9 +577,9 @@ mod_inventory_server <- function(id){
         sink()
 
         #now add two ggplots as pngs
-        ggsave( "binned_hist.png", plot = binned_c_score_plot(metrics()),
+        ggplot2::ggsave( "binned_hist.png", plot = binned_c_score_plot(metrics()),
                 device = "png", bg = 'white')
-        ggsave( "c_value_hist.png", plot = c_score_plot(accepted()), bg='#ffffff',
+        ggplot2::ggsave( "c_value_hist.png", plot = c_score_plot(accepted()), bg='#ffffff',
                 device = "png")
 
         # Zip them up
@@ -608,18 +608,18 @@ mod_inventory_server <- function(id){
 
       #count observations in accepted data
       phys <- accepted() %>%
-        group_by(physiognomy) %>%
-        summarise(number = n()) %>%
-        mutate(percent = round((number/sum(number))*100, 2)) %>%
-        rbind(physiog_cats %>% filter(!physiognomy %in% accepted()$physiognomy)) %>%
-        mutate(number = as.integer(number))
+        dplyr::group_by(physiognomy) %>%
+        dplyr::summarise(number = dplyr::n()) %>%
+        dplyr::mutate(percent = round((number/sum(number))*100, 2)) %>%
+        rbind(physiog_cats %>% dplyr::filter(!physiognomy %in% accepted()$physiognomy)) %>%
+        dplyr::mutate(number = as.integer(number))
 
       dur <- accepted() %>%
-        group_by(duration) %>%
-        summarise(number = n()) %>%
-        mutate(percent = round((number/sum(number))*100, 2)) %>%
-        rbind(duration_cats %>% filter(!duration %in% accepted()$duration)) %>%
-        mutate(number = as.integer(number))
+        dplyr::group_by(duration) %>%
+        dplyr::summarise(number = dplyr::n()) %>%
+        dplyr::mutate(percent = round((number/sum(number))*100, 2)) %>%
+        rbind(duration_cats %>% dplyr::filter(!duration %in% accepted()$duration)) %>%
+        dplyr::mutate(number = as.integer(number))
 
       #store in reactive
       physiog_table(phys)
@@ -674,7 +674,7 @@ mod_inventory_server <- function(id){
         dplyr::filter(metrics %in% c("Total Species Richness",
                                      "Native Species Richness",
                                      "Exotic Species Richness")) %>%
-        mutate(values = as.integer(values))
+        dplyr::mutate(values = as.integer(values))
     })
 
     #proportion table output
