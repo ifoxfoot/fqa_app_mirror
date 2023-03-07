@@ -9,15 +9,14 @@ app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
-    # Your application UI logic
 
-     #testing theme
-    theme = bslib::bs_theme(
-      version = 4,
-      # bootswatch = "yeti",
-      # primary = "#5988B2", secondary = "#5988B2",
-      # font_scale = 1.2
-    ),
+    #  #testing theme
+    # theme = bslib::bs_theme(
+    #   version = 4,
+    #   # bootswatch = "yeti",
+    #   # primary = "#5988B2", secondary = "#5988B2",
+    #   # font_scale = 1.2
+    # ),
 
     #force shiny alerts to load
     shinyalert::useShinyalert(force = TRUE),
