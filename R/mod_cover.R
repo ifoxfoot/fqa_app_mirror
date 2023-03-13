@@ -137,7 +137,7 @@ mod_cover_ui <- function(id){
                                                 style = "margin-top: 30px; height: 40px;")))),
               #table of data entered
               fluidRow(
-                column(12,DT::dataTableOutput(ns( "cover_DT_manual"))))
+                column(12,DT::dataTableOutput(ns( "cover_DT_manual")))),
 
             )#conditional panel parenthesis
 
@@ -217,7 +217,13 @@ mod_cover_ui <- function(id){
         #output of species summary
         fluidRow(shinydashboard::box(title = "Species Summary", status = "primary",
                      DT::dataTableOutput(ns( "cover_species_manual")), width = 12,
-                     style = "overflow-x: auto;l"))
+                     style = "overflow-x: auto;l")),
+
+        #output of accepted entries
+        fluidRow(shinydashboard::box(title = "Data Entered", status = "primary",
+                                     DT::dataTableOutput(ns( "accepted")), width = 12,
+                                     style = "overflow-x: auto;l"))
+
 
       )#screen two parenthesis
 
@@ -1067,6 +1073,23 @@ mod_cover_server <- function(id){
       req(cover_glide() == 1)
       #call to reactive species summary
       physiog_sum()
+    })
+
+    #accepted summary
+    output$accepted <- DT::renderDataTable({
+      #requiring second screen
+      req(cover_glide() == 1)
+      #call to reactive species summary
+      DT::datatable(accepted(),
+                    #options
+                    options = list(scrollX=TRUE,
+                                   scrollY= TRUE,
+                                   paging = TRUE,
+                                   pageLength = 20,
+                                   searching = TRUE,
+                                   fixedColumns = TRUE,
+                                   autoWidth = TRUE,
+                                   ordering = TRUE))
     })
 
   })

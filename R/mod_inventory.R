@@ -179,7 +179,13 @@ mod_inventory_ui <- function(id){
           column(4,
                  shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
                  shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
-        )
+        ),
+
+        #output of accepted entries
+        fluidRow(shinydashboard::box(title = "Data Entered", status = "primary",
+                                     DT::dataTableOutput(ns( "accepted")), width = 12,
+                                     style = "overflow-x: auto;l"))
+
 
       )#screen 2 parenthesis
 
@@ -711,6 +717,24 @@ mod_inventory_server <- function(id){
       req(fqi_glide() == 1)
       duration_table()
     })
+
+    #accepted summary
+    output$accepted <- DT::renderDataTable({
+      #requiring second screen
+      req(fqi_glide() == 1)
+      #call to reactive species summary
+      DT::datatable(accepted(),
+                    #options
+                    options = list(scrollX=TRUE,
+                                   scrollY= TRUE,
+                                   paging = TRUE,
+                                   pageLength = 20,
+                                   searching = TRUE,
+                                   fixedColumns = TRUE,
+                                   autoWidth = TRUE,
+                                   ordering = TRUE))
+    })
+
 
   })
 }
