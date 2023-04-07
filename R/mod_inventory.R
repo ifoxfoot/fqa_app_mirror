@@ -32,7 +32,7 @@ mod_inventory_ui <- function(id){
                          status = "primary"),
 
             #input regional data base
-            selectInput(ns("db"), label = "Select Regional FQAI Database",
+            selectInput(ns("db"), label = "Select Regional FQA Database",
                         choices = fqacalc::db_names()$fqa_db,
                         selected = "michigan_2014"),
 
@@ -411,7 +411,6 @@ mod_inventory_server <- function(id){
 
     #initialize reactives
     accepted <- reactiveVal(data.frame())
-    accepted_gtg <- reactiveVal(TRUE)
     confirm_db <- reactiveVal("empty")
     previous_dbs <- reactiveValues(prev = "michigan_2014")
 
@@ -422,7 +421,7 @@ mod_inventory_server <- function(id){
 
     #if input method is enter, accepted is from data_entered
     observe({
-      req(input_method() == "enter", nrow(data_entered()) > 0, accepted_gtg())
+      req(input_method() == "enter", nrow(data_entered()) > 0)
       accepted(suppressMessages(fqacalc::accepted_entries(x = data_entered(),
                                                           key = input$key,
                                                           db = input$db,
@@ -434,10 +433,10 @@ mod_inventory_server <- function(id){
 
     #if input method is upload, accepted is from file upload
     observe({
-      req(input_method() == "upload", accepted_gtg())
+      req(input_method() == "upload")
       accepted(data.frame())
 
-      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column, accepted_gtg())
+      req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column)
       accepted(suppressMessages(fqacalc::accepted_entries(x = file_upload() %>%
                                                             dplyr::rename(!!as.name(input$key) := input$species_column),
                                                           key = input$key,
@@ -451,7 +450,6 @@ mod_inventory_server <- function(id){
     #if db is changed and there is already data entered, show popup
     observeEvent(input$db, {
       req(nrow(data_entered()) > 0 || nrow(file_upload()) > 0)
-      accepted_gtg(FALSE)
       #code for popup
       if(confirm_db() != "empty") {
         confirm_db("empty") }
@@ -484,23 +482,18 @@ mod_inventory_server <- function(id){
                                 justified = TRUE,
                                 checkIcon = list(yes = icon("ok",
                                                             lib = "glyphicon")))
-        confirm_db("empty")
-        #convert accepted_GTG back to good
-        accepted_gtg(TRUE)}
+        confirm_db("empty")}
       #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
         updateSelectInput(session, inputId = "db",
-                          label = "Select Regional FQAI Database",
+                          label = "Select Regional FQA Database",
                           choices = fqacalc::db_names()$fqa_db,
                           selected = previous_dbs$prev[1])
-        #convert accepted_GTG back to good
-        accepted_gtg(TRUE)
       }
     })
 
     #wetland warnings
     observeEvent(input$db, {
-      req(accepted_gtg() == "TRUE")
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
         shinyalert::shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")), type = "warning", html = T)
