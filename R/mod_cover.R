@@ -492,7 +492,6 @@ mod_cover_server <- function(id){
                            server = TRUE)
     })
 
-
     #make it so add species button can't be clicked until all fields full
     observe({
       vals <- c(input$transect_id, input$cover_val, input$select_species, input$plot_id)

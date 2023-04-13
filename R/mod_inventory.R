@@ -214,7 +214,7 @@ mod_inventory_server <- function(id){
 
     #help popup
     observeEvent(input$help, {
-      fqi_help()
+      inventory_help()
     })
 
     #create reactive for complete acronym test
