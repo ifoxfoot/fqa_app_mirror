@@ -249,6 +249,17 @@ mod_cover_server <- function(id){
     #create reactive for complete acronym test
     complete_acronym <- reactiveVal({})
 
+    #reactive key
+    key <- reactiveVal()
+
+    #update key
+    observe({
+      if(any(is.na(fqacalc::view_db(input$db)$acronym) &
+             fqacalc::view_db(input$db)$name_origin == "accepted_scientific_name"))
+        key("name")
+      else(key(input$key))
+    })
+
     #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
     data_entered <- reactiveVal({data.frame()})
@@ -350,7 +361,7 @@ mod_cover_server <- function(id){
     observeEvent(input$upload,{
       output$species_colname <- renderUI({
         #create key variable
-        key_var <- if(input$key == "name") {"Scientific Names"} else {"Acronyms"}
+        key_var <- if(key() == "name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
         selectizeInput(ns("species_column"),
                        paste0("Which Column Contains ", key_var, "?"),
@@ -440,11 +451,11 @@ mod_cover_server <- function(id){
       #file upload renames
       upload_renamed <- file_upload() %>%
         dplyr::rename("cover" = input$cover_column,
-               !!input$key := !!input$species_column)
+               !!key() := !!input$species_column)
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = upload_renamed,
-                                  key = input$key,
+                                  key = key(),
                                   db = input$db,
                                   native = FALSE,
                                   cover = TRUE,
@@ -482,7 +493,7 @@ mod_cover_server <- function(id){
     observe({
       req(input$db)
       #create list names based on regional database selected
-      names <- if(input$key == "name")
+      names <- if(key() == "name")
       {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$name))}
       else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
@@ -508,7 +519,7 @@ mod_cover_server <- function(id){
     #When add species is clicked, add row
     observeEvent(input$add_species, {
       #create df with data entered
-      if(input$key == "name") {
+      if(key() == "name") {
         new_entry <- data.frame(plot_id = c(input$plot_id),
                                 acronym = c(NA),
                                 name = c(input$select_species),
@@ -526,7 +537,7 @@ mod_cover_server <- function(id){
       #make it reactive
       data_entered(new_entry)
       #reset species drop down from scratch
-      names <- if(input$key == "name")
+      names <- if(key() == "name")
       {c("", "UNVEGETATED GROUND", "UNVEGETATED WATER", unique(fqacalc::view_db(input$db)$name))}
       else {c("", "GROUND", "WATER", unique(fqacalc::view_db(input$db)$acronym))}
 
@@ -549,7 +560,7 @@ mod_cover_server <- function(id){
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = data_entered(),
-                                  key = input$key,
+                                  key = key(),
                                   db = input$db,
                                   native = FALSE,
                                   cover = TRUE,
@@ -622,7 +633,7 @@ mod_cover_server <- function(id){
       req(nrow(data_entered()) > 0)
 
       suppressMessages(accepted(fqacalc::accepted_entries(x = data_entered(),
-                                                          key = input$key,
+                                                          key = key(),
                                                           db = input$db,
                                                           native = FALSE,
                                                           cover = TRUE,
@@ -646,10 +657,10 @@ mod_cover_server <- function(id){
       if( !input$plot_column %in% c("NA")) {
 
         suppressMessages(accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                                              dplyr::rename(!!input$key := !!input$species_column,
+                                                              dplyr::rename(!!key() := !!input$species_column,
                                                                             cover = input$cover_column,
                                                                             plot_id = input$plot_column),
-                                                            key = input$key,
+                                                            key = key(),
                                                             db = input$db,
                                                             native = FALSE,
                                                             cover = TRUE,
@@ -662,9 +673,9 @@ mod_cover_server <- function(id){
 
         #if plot column is not set, do not include in accepted entries
         suppressMessages(accepted(fqacalc::accepted_entries(x = file_upload() %>%
-                                                              dplyr::rename(!!input$key := !!input$species_column,
+                                                              dplyr::rename(!!key() := !!input$species_column,
                                                                             cover = input$cover_column),
-                                                            key = input$key,
+                                                            key = key(),
                                                             db = input$db,
                                                             native = FALSE,
                                                             cover = TRUE,
@@ -910,10 +921,10 @@ mod_cover_server <- function(id){
           if(input$plot_column == "NA") {
             plot_sum(NULL)} else {
               plot_sum(suppressMessages(fqacalc::plot_summary(x = file_upload()
-                                                              %>% dplyr::rename(!!as.name(input$key) := input$species_column,
+                                                              %>% dplyr::rename(!!as.name(key()) := input$species_column,
                                                                                 cover = input$cover_column,
                                                                                 plot_id = input$plot_column),
-                                                              key = input$key,
+                                                              key = key(),
                                                               db = input$db,
                                                               cover_class = input$cover_method,
                                                               plot_id = "plot_id",

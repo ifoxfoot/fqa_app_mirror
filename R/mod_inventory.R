@@ -205,6 +205,17 @@ mod_inventory_server <- function(id){
     #creating a reactive value for glide page, used as input to server fun
     fqi_glide <- reactive({input$shinyglide_index_glide})
 
+    #reactive key
+    key <- reactiveVal()
+
+    #update key
+    observe({
+      if(any(is.na(fqacalc::view_db(input$db)$acronym) &
+             fqacalc::view_db(input$db)$name_origin == "accepted_scientific_name"))
+        key("name")
+      else(key(input$key))
+    })
+
     #making input method reactive
     input_method <- reactive({input$input_method})
 
@@ -272,7 +283,7 @@ mod_inventory_server <- function(id){
         #create list cols
         colnames <- c("", colnames(file_upload()))
         #create var for key
-        key_var <- if(input$key == "name") {"Scientific Names"} else {"Acronyms"}
+        key_var <- if(key() == "name") {"Scientific Names"} else {"Acronyms"}
         #create a dropdown option
         selectizeInput(ns("species_column"),
                        paste0("Which Column Contains ", key_var, "?"),
@@ -290,8 +301,8 @@ mod_inventory_server <- function(id){
       #catch warnings
       withCallingHandlers(
         accepted_file <- fqacalc::accepted_entries(file_upload() %>%
-                                            dplyr::rename(!!as.name(input$key) := input$species_column),
-                                          key = input$key,
+                                            dplyr::rename(!!as.name(key()) := input$species_column),
+                                          key = key(),
                                           db = input$db,
                                           native = FALSE),
         #add to list
@@ -330,7 +341,7 @@ mod_inventory_server <- function(id){
     observe({
       req(input$db)
       #create list names based on regional database selected
-      names <- if(input$key == "name")
+      names <- if(key() == "name")
       {c("", unique(fqacalc::view_db(input$db)$name))}
       else {c("", unique(fqacalc::view_db(input$db)$acronym))}
       #create a dropdown option
@@ -347,7 +358,7 @@ mod_inventory_server <- function(id){
       #bind new entry to table
       new_row <- fqadata::fqa_db %>%
         dplyr::filter(fqa_db == input$db) %>%
-        dplyr::filter(!!as.name(input$key) %in% c(new_entry))
+        dplyr::filter(!!as.name(key()) %in% c(new_entry))
       #update reactive to new table
       if (nrow(data_entered() > 0)) {
         data_entered( rbind(new_row, accepted()) )
@@ -364,7 +375,7 @@ mod_inventory_server <- function(id){
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = data_entered(),
-                                  key = input$key,
+                                  key = key(),
                                   db = input$db,
                                   native = FALSE,
                                   wetland_warning = FALSE),
@@ -423,7 +434,7 @@ mod_inventory_server <- function(id){
     observe({
       req(input_method() == "enter", nrow(data_entered()) > 0)
       accepted(suppressMessages(fqacalc::accepted_entries(x = data_entered(),
-                                                          key = input$key,
+                                                          key = key(),
                                                           db = input$db,
                                                           native = FALSE,
                                                           allow_duplicates = FALSE,
@@ -438,8 +449,8 @@ mod_inventory_server <- function(id){
 
       req(input_method() == "upload", nrow(file_upload()) > 0, input$species_column)
       accepted(suppressMessages(fqacalc::accepted_entries(x = file_upload() %>%
-                                                            dplyr::rename(!!as.name(input$key) := input$species_column),
-                                                          key = input$key,
+                                                            dplyr::rename(!!as.name(key()) := input$species_column),
+                                                          key = key(),
                                                           db = input$db,
                                                           native = FALSE,
                                                           allow_duplicates = FALSE,
