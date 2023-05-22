@@ -1,12 +1,12 @@
 ---
 output: html_document
 ---
-This app was created to be a convenient user-interface for the R package 'fqacalc'. The app and package are hosted by the US Army Corps of Engineers, Engineer Research and Development Center (ERDC). 
+This app was created to be a convenient user-interface for the R package ‘fqacalc’. The app and package are hosted by the US Army Corps of Engineers, Engineer Research and Development Center (ERDC).
 
-This app was created with funding from...
+This app was created with funding from the Aquatic Nuisance Species Research Program under the Next Generation Ecological Model Development congressional add .
 
-To report a mistake or unexpected issue on this webpage, contact - brook.d.herman@usace.army.mil
+To report a mistake or unexpected issue on this webpage, contact - ecomodteam@usace.army.mil
 
-Last updated on November 1st, 2022
+Last updated on May 22nd, 2023
 
 License...

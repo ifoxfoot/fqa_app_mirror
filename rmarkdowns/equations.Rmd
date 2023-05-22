@@ -25,7 +25,7 @@ $$
 
 #### Mean Wetness
 
-The mean wetness coefficient for all species in the site assessment. The wetness coefficient is based on USFWS Wetland Indicator Status. Negative wetness coefficients indicate a stronger affinity for wetlands, while positive wetland coefficients indicate an affinity for upland.
+The mean wetness coefficient for all species in the site assessment. The wetness coefficient is based on Wetland Indicator Status ratings. Negative wetness coefficients indicate a stronger affinity for wetlands, while positive wetland coefficients indicate an affinity for upland.
 
 $$
 \overline{W_{t}} = \sum_{i=0}^{t} W_{i}\bigg/N_{t}
