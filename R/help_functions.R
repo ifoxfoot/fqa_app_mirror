@@ -57,7 +57,6 @@ fqi_help <- function(){
                             ))
 
 return(alert)
-
 }
 
 cover_help <- function(){

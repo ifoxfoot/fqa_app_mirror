@@ -478,9 +478,11 @@ fqiServer <- function(id) {
         #if confirm db is false, reset db to previous value
       if (confirm_db() == FALSE) {
         updateSelectInput(session, inputId = "db",
+                          label = "Select Regional FQAI Database",
+                          choices = fqacalc::db_names()$fqa_db,
                           selected = previous_dbs$prev[1])
         #convert accepted_GTG back to good
-        delay(2, accepted_gtg(TRUE))
+        accepted_gtg(TRUE)
         }
     })
 
