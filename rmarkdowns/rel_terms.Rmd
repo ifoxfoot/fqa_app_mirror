@@ -1,0 +1,9 @@
+---
+output: html_document
+---
+
+**Relative Frequency:** The frequency of a species, family, or physiognomic group multiplied by 100 and then multiplied by the frequency of all species, families, or physiognomic groups.
+
+**Relative Cover:** The total cover per group of interest (species, taxonomic family, or physiognomic group) multiplied by 100 and divided by the total cover for all observations.
+
+**Relative Importance:** Relative Frequency added to Relative Coverage, over two.

@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 spatial_data
+.httr-oauth
+.DS_Store
+

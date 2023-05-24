@@ -1,0 +1,158 @@
+---
+output:
+  html_document
+---
+
+## Non Cover-Weighted Equations
+
+In this set of equations, species $i$ has been assigned a coefficient of conservatism $C_{i}$ and a wetness coefficient $W_{i}$.
+
+#### Species Richness
+
+The total number of unique species in the site assessment.
+
+$$
+N_{t}
+$$
+
+#### Native Species Richness
+
+The total number of unique native species in the site assessment.
+
+$$
+N_{n}
+$$
+
+#### Mean Wetness
+
+The mean wetness coefficient for all species in the site assessment. The wetness coefficient is based on Wetland Indicator Status ratings. Negative wetness coefficients indicate a stronger affinity for wetlands, while positive wetland coefficients indicate an affinity for upland.
+
+$$
+\overline{W_{t}} = \sum_{i=0}^{t} W_{i}\bigg/N_{t}
+$$
+
+#### Native Mean Wetness
+
+The mean wetness coefficient for native species in the site assessment. 
+
+$$
+\overline{W_{n}} = \sum_{i=0}^{n} W_{i}\bigg/N_{n}
+$$
+
+#### Mean C
+
+The mean coefficient of conservatism of all species in the site assessment.
+
+$$
+\overline{C_{t}} = \sum_{i=0}^{t} C_{i} \bigg/ N_{t}
+$$
+
+#### Native Mean C
+
+The mean coefficient of conservatism of native species in the site assessment.
+
+$$
+\overline{C_{n}} = \sum_{i=0}^{n} C_{i}\bigg/N_{n}
+$$
+
+#### FQI
+
+Mean C multiplied by the square root of Species Richness.
+
+$$
+I_{t} = \overline{C_{t}} \sqrt{N_{t}}
+$$
+
+#### Native FQI
+
+Native Mean C multiplied by the square root of Native Species Richness.
+
+$$
+I_{n} = \overline{C_{n}} \sqrt{N_{n}}
+$$
+
+#### Adjusted FQI
+
+100 multiplied by the Native Mean C over 10, multiplied by the square root of Native Species Richness over Total Species Richness.
+
+$$
+I' = 100\bigg(\frac{\overline{C_{n}}}{10}\bigg)\bigg(\frac{\sqrt{N_{n}}}{\sqrt{N_{t}}}\bigg)
+$$
+
+## Cover-Weighted Equations
+
+In this set of equations, species $i$ has been assigned a coefficient of conservatism $C_{i}$. Species $i$ also has a percent cover $\gamma_i$.
+
+#### Plot-Level Cover-Weighted Mean C
+
+The sum of percent cover multiplied by the C value per each species, divided by the sum of cover values for all species.
+
+$$
+\overline{C_{t\gamma}} = \sum_{i=0}^{t} C_{i}\gamma_{i} \bigg/ \sum_{i=0}^{t}\gamma_{i}
+$$
+
+#### Plot-Level Native Cover-Weighted Mean C
+
+The sum of percent cover multiplied by the C value per each native species, divided by the sum of cover values for all native species.
+
+$$
+\overline{C_{n\gamma}} = \sum_{i=0}^{n} C_{i}\gamma_{i} \bigg/ \sum_{i=0}^{n}\gamma_{i}
+$$
+
+#### Transect-Level Cover-Weighted Mean C
+
+The sum of each species' C value multiplied by the species' mean cover and divided by the sum of each species' mean cover. 
+
+$$
+\overline{C_{t\gamma}} = \sum_{i=0}^{t} C_{i}\overline{\gamma_{i}} \bigg/ \sum_{i=0}^{t}\overline{\gamma_{i}}
+$$
+
+#### Transect-Level Native Cover-Weighted Mean C
+
+The sum of each native species' C value multiplied by the species' mean cover and divided by the sum of each native species' mean cover. 
+
+$$
+\overline{C_{n\gamma}} = \sum_{i=0}^{n} C_{i}\overline{\gamma_{i}} \bigg/ \sum_{i=0}^{n}\overline{\gamma_{i}}
+$$
+
+#### Cover-Weighted FQI
+
+Cover-Weighted Mean C multiplied by the square root of Species Richness.
+
+$$
+I_{t\gamma} = \overline{C_{t\gamma}}\sqrt{N_{t}}
+$$
+
+#### Native Cover-Weighted FQI
+
+Cover-Weighted Native Mean C multiplied by the square root of Native Species Richness.
+
+$$
+I_{n\gamma} = \overline{C_{n\gamma}}\sqrt{N_{n}}
+$$
+
+#### Relative Frequency
+
+The frequency of a species, family, or physiognomic group multiplied by 100 and then multiplied by the frequency of all species, families, or physiognomic groups. 
+
+$$
+\mu_{r} = \bigg(\mu_{i}\bigg/\sum_{i =0}^{t}\mu_{i}\bigg)
+$$
+
+#### Relative Coverage
+
+The total cover per group of interest (species, taxonomic family, or physiognomic group) multiplied by 100 and divided by the total cover for all observations.
+
+$$
+\mu_{r} = \bigg(\gamma_{i}\bigg/\sum_{i =0}^{t}\gamma_{i}\bigg)
+$$
+
+#### Relative Importance
+
+Relative Frequency added to Relative Coverage, over two.
+
+$$
+RIV = \bigg(\mu_{r} + \gamma_{r}\bigg)\bigg/2
+$$
+
+

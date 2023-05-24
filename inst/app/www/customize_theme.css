@@ -1,0 +1,65 @@
+/*This doc contains small changes to theme */
+
+/* changing color of download button */
+.downloadButton{
+  background:#3c8dbc;
+  color: #fff;
+},
+
+/* changing width of navbar */
+.container-fluid {
+  padding-right:0px;
+  padding-left: 0px;
+}
+
+/* changing width of tab contents */
+.tab-content {
+  padding-right:30px;
+  padding-left:30px;
+}
+
+/* changing min width of sidebar panel */
+.well {
+  min-width: 280px;
+}
+
+/* changing look of citation text box */
+.view-citations.shiny-text-output.shiny-bound-output {
+                display:block;
+                padding:9.5px;
+                margin:0 0 10px;
+                margin-top:10px;
+                font-size:16px;
+                line-height:20px;
+                word-break:break-all;
+                word-wrap:break-word;
+                white-space:pre-wrap;
+                background-color:#F5F5F5;
+                border:1px solid rgba(0,0,0,0.15);
+                border-radius:4px;
+            }
+
+/* css to change shinyalert text */
+.sweet-alert p {
+          color: #000000;
+          font-size: 16px;
+          font-weight: 300;
+}
+
+/* change shinyalert text */
+.help.sweet-alert p {
+          text-align: left;
+}
+
+/* place shinyglide next buttons */
+.next-screen {
+    position: absolute;
+    top: 0px; right: 0px;
+}
+
+/* place shinyglide prev buttons */
+.prev-screen {
+    position: absolute;
+    top: 0px; left: 0px;
+}
+
