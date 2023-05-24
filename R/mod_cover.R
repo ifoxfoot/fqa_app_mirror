@@ -324,7 +324,6 @@ mod_cover_server <- function(id){
     #init reactive to produce list of column names of file upload
     column_names <- reactiveVal()
 
-
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {
       #require that a file be uploaded
@@ -414,7 +413,8 @@ mod_cover_server <- function(id){
         else if(input$cover_method == "carolina_veg_survey" &
                 !any(!cover_vals %in% c(1:10))) {TRUE}
         else if(input$cover_method == "usfs_ecodata" &
-                !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50", "60", "70", "80", "90", "98"))) {TRUE}
+                !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50",
+                                        "60", "70", "80", "90", "98"))) {TRUE}
         else {FALSE})
     })
 
@@ -445,13 +445,18 @@ mod_cover_server <- function(id){
     #warnings for bad data in file upload
     observe({
       req(columns_are_good() == TRUE)
+      req(input$species_column != "")
+      req(input$plot_column != "")
+      req(input$cover_column != "")
       plot_col <- if(input$plot_column == "NA"){NULL} else {input$plot_column}
       #list to store warnings
       warning_list <- list()
       #file upload renames
       upload_renamed <- file_upload() %>%
-        dplyr::rename("cover" = input$cover_column,
-               !!key() := !!input$species_column)
+        dplyr::rename(
+          "cover" = input$cover_column,
+          !!as.name(key()) := !!input$species_column
+          )
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = upload_renamed,
@@ -647,10 +652,11 @@ mod_cover_server <- function(id){
     #if input method is upload, accepted is from file_uploaded
     observe({
       #require file to be uploaded
-      req(input_method() == "upload", input$species_column, input$cover_column, input$plot_column)
-      #make sure accepted is empty
+      req(input_method() == "upload", input$species_column != "",
+          input$cover_column != "", input$plot_column != "")
+      #set accepted to be empty
       accepted(data.frame())
-      #require upload to have data, species column to be set, and cover column to have no NAS
+      #require columns to be good
       req( columns_are_good() )
 
       #if plot column is set, include plot column
@@ -739,6 +745,27 @@ mod_cover_server <- function(id){
           html = T, inputId = "confirm_cover_change", className = "alert")}
     })
 
+    observeEvent(input$confirm_cover_change, {
+      #store confirmation in reactive value
+      confirm_cover(input$confirm_cover_change)
+      #create an empty df
+      empty_df <- data.frame()
+      #if confirm cover is true reset entered data
+      if(confirm_cover() == TRUE) {
+        data_entered(empty_df)
+        file_upload(NULL)
+        accepted(empty_df)
+        shinyjs::reset("upload")
+        shinyjs::reset("species_column")
+        shinyjs::reset("cover_column")
+        shinyjs::reset("plot_column")
+        confirm_cover("empty")}
+      #if confirm db is false, reset db to previous value
+      if (confirm_cover() == FALSE) {
+        updateSelectInput(session, inputId = "cover_method",
+                          selected = previous_covers$prev[1])}
+    })
+
     #wetland warnings
     observeEvent(input$db, {
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
@@ -760,26 +787,7 @@ mod_cover_server <- function(id){
       }
     })
 
-    observeEvent(input$confirm_cover_change, {
-      #store confirmation in reactive value
-      confirm_cover(input$confirm_cover_change)
-      #create an empty df
-      empty_df <- data.frame()
-      #if confirm cover is true reset entered data
-      if(confirm_cover() == TRUE) {
-        data_entered(empty_df)
-        file_upload(NULL)
-        accepted(empty_df)
-        shinyjs::reset("upload")
-        shinyjs::reset("species_column")
-        shinyjs::reset("cover_column")
-        shinyjs::reset("plot_column")
-        confirm_cover("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_cover() == FALSE) {
-        updateSelectInput(session, inputId = "cover_method",
-                          selected = previous_covers$prev[1])}
-    })
+
 
     #create boolean that shows if data is entered or not for next condition
     output$next_condition <- renderText(
