@@ -140,24 +140,23 @@ mod_inventory_ui <- function(id){
         column(12, align = "center",
                h3(textOutput(ns("title")))),
 
+        uiOutput("value_boxes"),
 
-        #boxes with key values
-        fluidRow(
-          shinydashboard::valueBox(
-            htmlOutput(ns("species_richness")),
-            "Species Richness", color = "navy"
-          ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("mean_c")),
-            "Mean C",
-            icon = icon("seedling"), color = "olive"
-          ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("fqi")),
-            "Total FQI",
-            icon = icon("pagelines"), color = "green"
-          )
-        ),#fluidRow parenthesis
+        # #boxes with key values
+        # bslib::layout_column_wrap(
+        #   bslib::value_box(
+        #     title = "Species Richness",
+        #     value = htmlOutput(ns("species_richness"))
+        #   ),
+        #   bslib::value_box(
+        #     title = "Mean C",
+        #     value = htmlOutput(ns("mean_c"))
+        #   ),
+        #   bslib::value_box(
+        #     title = "Total FQI",
+        #     value = htmlOutput(ns("fqi"))
+        #   )
+        # ),#fluidRow parenthesis
 
         #all mets and graph
         fluidRow(
@@ -640,25 +639,63 @@ mod_inventory_server <- function(id){
     output$title <-
       renderText({paste("Calculating metrics based on ", input$db)})
 
-    #species richness
-    output$species_richness <- renderUI({
+    output$value_boxes <- renderUI({
       req(fqi_glide() == 1)
-      round(
-        suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
-        2)
-    })
 
-    #mean C
-    output$mean_c <- renderUI({
-      req(fqi_glide() == 1)
-      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
-    })
+      species_richness_b <- value_box(
+        "SPECIES RICHNESS",
+        round(
+              suppressMessages(fqacalc::species_richness(x = accepted(),
+                                                         db = input$db,
+                                                         native = F,
+                                                         allow_no_c = TRUE)),
+             2),
+        #showcase = bsicons::bs_icon("airplane")
+      )
 
-    #total fqi
-    output$fqi <- renderUI({
-      req(fqi_glide() == 1)
-      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
-    })
+      mean_c_b <- value_box(
+        "MEAN C",
+        round(
+          suppressMessages(fqacalc::mean_c(x = accepted(),
+                                           db = input$db,
+                                           native = F)),
+          2),
+        #showcase = bsicons::bs_icon("hourglass-split")
+      )
+
+      fqi_b <- value_box(
+        "FQI",
+        round(
+          suppressMessages(fqacalc::FQI(x = accepted(),
+                                        db = input$db,
+                                        native = F)),
+          2),
+        #showcase = bsicons::bs_icon("hourglass-bottom")
+      )
+
+      layout_column_wrap(width = 1/3, species_richness_b, mean_c_b, fqi_b)
+    })%>%
+      bindCache(accepted())
+
+    # #species richness
+    # output$species_richness <- renderUI({
+    #   req(fqi_glide() == 1)
+    #   round(
+    #     suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
+    #     2)
+    # })
+    #
+    # #mean C
+    # output$mean_c <- renderUI({
+    #   req(fqi_glide() == 1)
+    #   round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
+    # })
+    #
+    # #total fqi
+    # output$fqi <- renderUI({
+    #   req(fqi_glide() == 1)
+    #   round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
+    # })
 
     #metrics table output
     output$c_metrics <- renderTable({
