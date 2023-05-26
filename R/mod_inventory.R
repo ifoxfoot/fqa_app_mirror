@@ -140,6 +140,7 @@ mod_inventory_ui <- function(id){
         column(12, align = "center",
                h3(textOutput(ns("title")))),
 
+        #value box output
         uiOutput("value_boxes"),
 
         # #boxes with key values
