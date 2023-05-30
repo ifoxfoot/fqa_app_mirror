@@ -82,13 +82,14 @@ mod_inventory_ui <- function(id){
               selectizeInput(ns("select_species"), label = "Select Species",
                              choices = NULL, selected = NULL, multiple = TRUE),
 
-              fluidRow(
+
+              bslib::layout_column_wrap(
+                width = 1/2,
                 #input add species button
-                actionButton(ns("add_species"), "Add Species",
-                             style = "margin-left: 15px;"),
+                actionButton(ns("add_species"), "Add Species"),
                 #input delete speces button
-                actionButton(ns("delete_species"), "Delete Species",
-                             style = "margin-left: 10px;")),
+                actionButton(ns("delete_species"), "Delete Species")
+                ),
 
               br(),
 
@@ -134,57 +135,91 @@ mod_inventory_ui <- function(id){
         #download button
         downloadButton(ns("download"),
                        label = "Download", class = "downloadButton",
-                       style = "position: absolute; top: 0px; right: 0px;"),
+                       style = "position: absolute; top: 0px; right: 10px;"),
         br(),
         #title
         column(12, align = "center",
                h3(textOutput(ns("title")))),
 
-        #value box output
-        uiOutput("value_boxes"),
-
-        # #boxes with key values
-        # bslib::layout_column_wrap(
-        #   bslib::value_box(
-        #     title = "Species Richness",
-        #     value = htmlOutput(ns("species_richness"))
-        #   ),
-        #   bslib::value_box(
-        #     title = "Mean C",
-        #     value = htmlOutput(ns("mean_c"))
-        #   ),
-        #   bslib::value_box(
-        #     title = "Total FQI",
-        #     value = htmlOutput(ns("fqi"))
-        #   )
-        # ),#fluidRow parenthesis
+        #boxes with key values
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::value_box(
+            title = "Species Richness",
+            value = htmlOutput(ns("species_richness"))
+          ),
+          bslib::value_box(
+            title = "Mean C",
+            value = htmlOutput(ns("mean_c"))
+          ),
+          bslib::value_box(
+            title = "Total FQI",
+            value = htmlOutput(ns("fqi"))
+          )
+          ),
+        br(),
 
         #all mets and graph
-        fluidRow(
-          shinydashboard::box(plotOutput(ns("binned_c_score_plot")),
-              title = "Binned Histogram of C Values"),
-          shinydashboard::box(plotOutput(ns("c_hist")),
-              title = "Histogram of C Values")
+        bslib::layout_column_wrap(
+          width = 1/2,
+          bslib::card(
+            bslib::card_header("Binned Histogram of C Values"),
+            bslib::card_body(plotOutput(ns("binned_c_score_plot")))
+          ),
+         bslib::card(
+           bslib::card_header("Histogram of C Values"),
+           bslib::card_body(plotOutput(ns("c_hist")))
+              )
         ),
+        br(),
 
-        fluidRow(
-          column(4,
-                 shinydashboard::box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL,
-                     style = "overflow-x: scroll")),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("pysiog_table")), title = "Physiognomy Metrics", width = NULL,
-                     style = "overflow-x: scroll")),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("FQI Metrics"),
+            bslib::card_body(tableOutput(ns("c_metrics")))
+          ),
+          bslib::card(
+            bslib::card_header("Wetness Metrics"),
+            bslib::card_body(tableOutput(ns("wetness")))
+          ),
+          bslib::card(
+            bslib::card_header("Species Richness Metrics"),
+            bslib::card_body(tableOutput(ns("species_mets")))
+          )
         ),
+        br(),
+
+
+        bslib::layout_column_wrap(
+          width = 1/3,
+                 bslib::card(
+                   bslib::card_header("Physiognomy Metrics"),
+                   bslib::card_body(tableOutput(ns("pysiog_table"))),
+                   style = "overflow-x: scroll"
+                   ),
+                 bslib::card(
+                   bslib::card_header("Duration Metrics"),
+                   bslib::card_body(tableOutput(NS(id,"duration_table"))),
+                   style = "overflow-x: scroll"
+                   ),
+                 bslib::card(
+                   bslib::card_header("C Value Percentages"),
+                   bslib::card_body(tableOutput(ns("proportion")))
+                   )
+                 ),
+        br(),
 
         #output of accepted entries
-        fluidRow(shinydashboard::box(title = "Data Entered", status = "primary",
-                                     DT::dataTableOutput(ns( "accepted")), width = 12,
-                                     style = "overflow-x: auto;l"))
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+          bslib::card_header("Data Entered"),
+          status = "primary",
+          bslib::card_body(DT::dataTableOutput(ns( "accepted"))),
+          style = "overflow-x: auto;l")),
+
+        br(),
 
 
       )#screen 2 parenthesis
@@ -640,63 +675,25 @@ mod_inventory_server <- function(id){
     output$title <-
       renderText({paste("Calculating metrics based on ", input$db)})
 
-    output$value_boxes <- renderUI({
+    #species richness
+    output$species_richness <- renderUI({
       req(fqi_glide() == 1)
+      round(
+        suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
+        2)
+    })
 
-      species_richness_b <- value_box(
-        "SPECIES RICHNESS",
-        round(
-              suppressMessages(fqacalc::species_richness(x = accepted(),
-                                                         db = input$db,
-                                                         native = F,
-                                                         allow_no_c = TRUE)),
-             2),
-        #showcase = bsicons::bs_icon("airplane")
-      )
+    #mean C
+    output$mean_c <- renderUI({
+      req(fqi_glide() == 1)
+      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
+    })
 
-      mean_c_b <- value_box(
-        "MEAN C",
-        round(
-          suppressMessages(fqacalc::mean_c(x = accepted(),
-                                           db = input$db,
-                                           native = F)),
-          2),
-        #showcase = bsicons::bs_icon("hourglass-split")
-      )
-
-      fqi_b <- value_box(
-        "FQI",
-        round(
-          suppressMessages(fqacalc::FQI(x = accepted(),
-                                        db = input$db,
-                                        native = F)),
-          2),
-        #showcase = bsicons::bs_icon("hourglass-bottom")
-      )
-
-      layout_column_wrap(width = 1/3, species_richness_b, mean_c_b, fqi_b)
-    })%>%
-      bindCache(accepted())
-
-    # #species richness
-    # output$species_richness <- renderUI({
-    #   req(fqi_glide() == 1)
-    #   round(
-    #     suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
-    #     2)
-    # })
-    #
-    # #mean C
-    # output$mean_c <- renderUI({
-    #   req(fqi_glide() == 1)
-    #   round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
-    # })
-    #
-    # #total fqi
-    # output$fqi <- renderUI({
-    #   req(fqi_glide() == 1)
-    #   round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
-    # })
+    #total fqi
+    output$fqi <- renderUI({
+      req(fqi_glide() == 1)
+      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
+    })
 
     #metrics table output
     output$c_metrics <- renderTable({
