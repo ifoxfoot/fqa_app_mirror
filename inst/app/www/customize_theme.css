@@ -1,10 +1,6 @@
 /*This doc contains small changes to theme */
 
-/* changing color of download button */
-.downloadButton{
-  background:#3c8dbc;
-  color: #fff;
-},
+
 
 /* changing width of navbar */
 .container-fluid {
