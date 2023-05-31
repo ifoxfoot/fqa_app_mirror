@@ -22,7 +22,6 @@ Imports:
     sf,
     shiny (>= 1.7.4),
     shinyalert,
-    shinydashboard,
     shinyglide,
     shinyjs,
     shinyWidgets,

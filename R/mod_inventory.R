@@ -10,6 +10,7 @@
 mod_inventory_ui <- function(id){
   ns <- NS(id)
   tagList(
+
     shinyglide::glide(
       id = ns("glide"),
       next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
@@ -146,20 +147,23 @@ mod_inventory_ui <- function(id){
           width = 1/3,
           bslib::value_box(
             title = "Species Richness",
-            value = htmlOutput(ns("species_richness"))
+            value = htmlOutput(ns("species_richness")),
+            showcase = icon("seedling")
           ),
           bslib::value_box(
             title = "Mean C",
-            value = htmlOutput(ns("mean_c"))
+            value = htmlOutput(ns("mean_c")),
+            showcase = icon("pagelines")
           ),
           bslib::value_box(
             title = "Total FQI",
-            value = htmlOutput(ns("fqi"))
+            value = htmlOutput(ns("fqi")),
+            showcase = icon(name = "trillium", class = "regular")
           )
           ),
         br(),
 
-        #all mets and graph
+        #histograms
         bslib::layout_column_wrap(
           width = 1/2,
           bslib::card(
@@ -173,6 +177,7 @@ mod_inventory_ui <- function(id){
         ),
         br(),
 
+        #1st row of small tables
         bslib::layout_column_wrap(
           width = 1/3,
           bslib::card(
@@ -191,26 +196,25 @@ mod_inventory_ui <- function(id){
         br(),
 
 
+        #2nd row of small tables
         bslib::layout_column_wrap(
           width = 1/3,
-                 bslib::card(
-                   bslib::card_header("Physiognomy Metrics"),
-                   bslib::card_body(tableOutput(ns("pysiog_table"))),
-                   style = "overflow-x: scroll"
-                   ),
-                 bslib::card(
-                   bslib::card_header("Duration Metrics"),
-                   bslib::card_body(tableOutput(NS(id,"duration_table"))),
-                   style = "overflow-x: scroll"
-                   ),
-                 bslib::card(
-                   bslib::card_header("C Value Percentages"),
-                   bslib::card_body(tableOutput(ns("proportion")))
-                   )
-                 ),
+          bslib::card(
+            bslib::card_header("Physiognomy Metrics"),
+            bslib::card_body(tableOutput(ns("pysiog_table")))
+          ),
+          bslib::card(
+            bslib::card_header("Duration Metrics"),
+            bslib::card_body(tableOutput(NS(id,"duration_table")))
+          ),
+          bslib::card(
+            bslib::card_header("C Value Percentages"),
+            bslib::card_body(tableOutput(ns("proportion")))
+          )
+        ),
         br(),
 
-        #output of accepted entries
+        #big table (accepted entries)
         bslib::layout_column_wrap(
           width = 1,
           bslib::card(
@@ -218,8 +222,7 @@ mod_inventory_ui <- function(id){
           status = "primary",
           bslib::card_body(DT::dataTableOutput(ns( "accepted"))),
           style = "overflow-x: auto;l")),
-
-        br(),
+        br()
 
 
       )#screen 2 parenthesis

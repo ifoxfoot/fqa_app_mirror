@@ -152,7 +152,7 @@ mod_cover_ui <- function(id){
         #download button
         downloadButton(ns( "download"),
                        label = "Download", class = "downloadButton",
-                       style = "position: absolute; top: 0px; right: 0px;"),
+                       style = "position: absolute; top: 0px; right: 10px;"),
         br(),
         #title
         column(12, align = "center",
@@ -160,70 +160,125 @@ mod_cover_ui <- function(id){
 
 
         #boxes with key values
-        fluidRow(
-          shinydashboard::valueBox(
-            htmlOutput(ns("species_richness")),
-            "Species Richness", color = "navy"
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::value_box(
+            title = "Species Richness",
+            value = htmlOutput(ns("species_richness")),
+            showcase = icon("seedling")
           ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("mean_c")),
-            "Mean C",
-            icon = icon("seedling"), color = "olive"
+          bslib::value_box(
+            title = "Mean C",
+            value = htmlOutput(ns("mean_c")),
+            showcase = icon("pagelines")
           ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("fqi")),
-            "Total FQI",
-            icon = icon("pagelines"), color = "green"
+          bslib::value_box(
+            title = "Total FQI",
+            value = htmlOutput(ns("fqi")),
+            showcase = icon(name = "trillium", class = "regular")
           )
-        ),#fluidRow parenthesis
-
-        #all mets and graph
-        fluidRow(
-          shinydashboard::box(plotOutput(ns("binned_c_score_plot")),
-              title = "Binned Histogram of C Values"),
-          shinydashboard::box(plotOutput(ns("c_hist")),
-              title = "Histogram of C Values")
         ),
+        br(),
 
-        #small tables
-        fluidRow(
-          column(4,
-                 shinydashboard::box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL)),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("cover_classs")), title = "Cover-Weighted Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("duration_table")), title = "Duration Metrics", width = NULL,
-                     style = "overflow-x: scroll")),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
+        #histograms
+        bslib::layout_column_wrap(
+          width = 1/2,
+          bslib::card(
+            bslib::card_header("Binned Histogram of C Values"),
+            bslib::card_body(plotOutput(ns("binned_c_score_plot")))
+          ),
+          bslib::card(
+            bslib::card_header("Histogram of C Values"),
+            bslib::card_body(plotOutput(ns("c_hist")))
+          )
         ),
+        br(),
+
+        #1st row of small tables
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("FQI Metrics"),
+            bslib::card_body(tableOutput(ns("c_metrics")))
+          ),
+          bslib::card(
+            bslib::card_header("Cover-Weighted Metrics"),
+            bslib::card_body(tableOutput(ns("cover_classs")))
+          ),
+          bslib::card(
+            bslib::card_header("Species Richness Metrics"),
+            bslib::card_body(tableOutput(ns("species_mets")))
+          )
+        ),
+        br(),
+
+        #2nd row of small tables
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("Wetness Metrics"),
+            bslib::card_body(tableOutput(ns("wetness")))
+          ),
+          bslib::card(
+            bslib::card_header("Duration Metrics"),
+            bslib::card_body(tableOutput(ns("duration_table")))
+          ),
+          bslib::card(
+            bslib::card_header("C Value Percentages"),
+            bslib::card_body(tableOutput(ns("proportion")))
+          )
+        ),
+        br(),
 
         #output of terms
-        fluidRow(shinydashboard::box(title = "Relative Cover Terms", status = "primary",
-                     includeMarkdown("rmarkdowns/rel_terms.Rmd"), width = 12,
-                     style = "overflow-x: scroll")),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Relative Cover Terms"),
+            bslib::card_body(includeMarkdown("rmarkdowns/rel_terms.Rmd"))
+            )
+          ),
+        br(),
 
         #output of physiog summary
-        fluidRow(shinydashboard::box(title = "Physiognomy Summary", status = "primary",
-                     tableOutput(ns( "cover_physiog_manual")), width = 12,
-                     style = "overflow-x: scroll")),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Physiognomy Summary"),
+            bslib::card_body(tableOutput(ns( "cover_physiog_manual")))
+          )
+        ),
+        br(),
 
         #output of plot summary
-        fluidRow(shinydashboard::box(title = "Plot Summary", status = "primary", width = 12,
-                     style = "overflow-x: auto;",
-                     DT::dataTableOutput(ns( "cover_plot_manual")))),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Plot Summary"),
+            bslib::card_body(DT::dataTableOutput(ns( "cover_plot_manual")))
+          )
+        ),
+        br(),
 
         #output of species summary
-        fluidRow(shinydashboard::box(title = "Species Summary", status = "primary",
-                     DT::dataTableOutput(ns( "cover_species_manual")), width = 12,
-                     style = "overflow-x: auto;l")),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Species Summary"),
+            bslib::card_body(DT::dataTableOutput(ns("cover_species_manual")))
+          )
+        ),
+        br(),
 
         #output of accepted entries
-        fluidRow(shinydashboard::box(title = "Data Entered", status = "primary",
-                                     DT::dataTableOutput(ns( "accepted")), width = 12,
-                                     style = "overflow-x: auto;l"))
-
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Data Entered"),
+            bslib::card_body(DT::dataTableOutput(ns("accepted")))
+          )
+        ),
+        br()
 
       )#screen two parenthesis
 
