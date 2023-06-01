@@ -175,7 +175,7 @@ mod_cover_ui <- function(id){
           bslib::value_box(
             title = "Total FQI",
             value = htmlOutput(ns("fqi")),
-            showcase = icon(name = "trillium", class = "regular")
+            showcase = icon("spa")
           )
         ),
         br(),
