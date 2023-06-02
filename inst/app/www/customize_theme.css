@@ -1,5 +1,9 @@
 /*This doc contains small changes to theme */
 
+/* center exclamation icon in modal */
+.h4 {
+  text-align: center;
+}
 
 /* css to change shinyalert text */
 .sweet-alert p {

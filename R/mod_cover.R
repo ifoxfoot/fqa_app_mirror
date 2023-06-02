@@ -486,14 +486,13 @@ mod_cover_server <- function(id){
 
       #send alert if columns need fixing
       if(columns_are_good() == FALSE) {
-        shinyalert::shinyalert(text = strong(paste("The columns selected for species,
-                                       cover, or plot ID must be unique.
-                                       Additionally, the species column cannot
-                                       be set to 'cover' or 'plot_id', the cover column
-                                       cannot be set to 'plot_id', 'name' or 'acronym',
-                                       and the plot ID column cannot be set to 'cover',
-                                       'name' or 'acronym'")),
-                   type = "warning",  html = T, className = "alert")
+        showModal(modalDialog("The columns selected for species,
+                               cover, or plot ID must be unique.
+                               Additionally, the species column cannot
+                               be set to 'cover' or 'plot_id', the cover column
+                               cannot be set to 'plot_id', 'name' or 'acronym',
+                               and the plot ID column cannot be set to 'cover',
+                               'name' or 'acronym'"))
       }
     })
 
@@ -528,7 +527,7 @@ mod_cover_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #when delete all is clicked, clear all entries
@@ -592,7 +591,8 @@ mod_cover_server <- function(id){
       }
       #bind new entry to table
       if(nrow(accepted() > 0)) {
-        new_entry<- rbind(new_entry, accepted() %>% dplyr::select(plot_id, acronym, name, cover))
+        new_entry<- rbind(new_entry, accepted() %>%
+                            dplyr::select(plot_id, acronym, name, cover))
       }
       #make it reactive
       data_entered(new_entry)
@@ -634,7 +634,7 @@ mod_cover_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #render output table from manually entered species on data entry page
@@ -754,34 +754,37 @@ mod_cover_server <- function(id){
       if(confirm_db() != "empty") {
         confirm_db("empty") }
       else{
-        shinyalert::shinyalert(text = strong(
+        showModal(modalDialog(
           "Changing the regional database will delete your current data entries.
-        Are you sure you want to proceed?"),
-          showCancelButton = T,
-          showConfirmButton = T, confirmButtonText = "Proceed",
-          confirmButtonCol = "red", type = "warning",
-          html = T, inputId = "confirm_db_change")}
+          Are you sure you want to proceed?",
+          footer = tagList(actionButton(ns("confirm_db_change"), "Proceed",
+                                        class = "btn-danger"),
+                           actionButton(ns("cancel_db_change"), "Cancel"))
+          ))
+          }
     })
 
     observeEvent(input$confirm_db_change, {
       #store confirmation in reactive value
-      confirm_db(input$confirm_db_change)
-      #create an empty df
+      confirm_db(TRUE)
       empty_df <- data.frame()
-      #if confirm db is true reset entered data
-      if(confirm_db() == TRUE) {
-        data_entered(empty_df)
-        file_upload(NULL)
-        accepted(empty_df)
-        shinyjs::reset("upload")
-        shinyjs::reset("species_column")
-        shinyjs::reset("cover_column")
-        shinyjs::reset("plot_column")
-        confirm_db("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_db() == FALSE) {
-        updateSelectInput(session, inputId = "db",
-                          selected = previous_dbs$prev[1])}
+      data_entered(empty_df)
+      file_upload(NULL)
+      accepted(empty_df)
+      shinyjs::reset("upload")
+      shinyjs::reset("species_column")
+      shinyjs::reset("cover_column")
+      shinyjs::reset("plot_column")
+      removeModal()
+      confirm_db("empty")
+    })
+
+    #if confirm db is false, reset db to previous value
+    observeEvent(input$cancel_db_change, {
+      confirm_db(FALSE)
+      updateSelectInput(session, inputId = "db",
+                        selected = previous_dbs$prev[1])
+      removeModal()
     })
 
     #if cover method is changed and there is already data entered, show popup
@@ -823,22 +826,24 @@ mod_cover_server <- function(id){
 
     #wetland warnings
     observeEvent(input$db, {
+      req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
-        shinyalert::shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
-                                       wetland metrics cannot be calculated.")), type = "warning", html = T)
+        showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
+                                       wetland metrics cannot be calculated.")))
       }
       if( input$db == "wyoming_2017") {
-        shinyalert::shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+        showModal(modalDialog("The Wyoming FQA database is associated with multiple
                                  wetland indicator status regions. This package defaults
                                  to the Arid West wetland indicator region when
-                                 calculating Wyoming metrics."), type = "warning", html = T)
+                                 calculating Wyoming metrics."))
       }
       if ( input$db == "colorado_2020" ){
-        shinyalert::shinyalert(text = strong("The Colorado FQA database is associated with
-                                 multiple wetland indicator status regions. This
-                                 package defaults to the Western Mountains,
-                                 Valleys, and Coasts indicator region when calculating
-                                 Colorado metrics."), type = "warning", html = T)
+        showModal(modalDialog(title = icon("circle-exclamation"),
+        "The Colorado FQA database is associated with
+                               multiple wetland indicator status regions. This
+                               package defaults to the Western Mountains,
+                               Valleys, and Coasts indicator region when calculating
+                               Colorado metrics."))
       }
     })
 
