@@ -794,34 +794,37 @@ mod_cover_server <- function(id){
       if(confirm_cover() != "empty") {
         confirm_cover("empty") }
       else{
-        shinyalert::shinyalert(text = strong(
+        showModal(modalDialog(
           "Changing the cover method will delete your current data entries.
-        Are you sure you want to proceed?"),
-          showCancelButton = T,
-          showConfirmButton = T, confirmButtonText = "Proceed",
-          confirmButtonCol = "red", type = "warning",
-          html = T, inputId = "confirm_cover_change", className = "alert")}
+        Are you sure you want to proceed?",
+          footer = tagList(actionButton(ns("confirm_cover_change"), "Proceed",
+                                        class = "btn-danger"),
+                           actionButton(ns("cancel_cover_change"), "Cancel"))
+        ))
+        }
     })
 
     observeEvent(input$confirm_cover_change, {
       #store confirmation in reactive value
-      confirm_cover(input$confirm_cover_change)
-      #create an empty df
+      confirm_cover(TRUE)
       empty_df <- data.frame()
-      #if confirm cover is true reset entered data
-      if(confirm_cover() == TRUE) {
-        data_entered(empty_df)
-        file_upload(NULL)
-        accepted(empty_df)
-        shinyjs::reset("upload")
-        shinyjs::reset("species_column")
-        shinyjs::reset("cover_column")
-        shinyjs::reset("plot_column")
-        confirm_cover("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_cover() == FALSE) {
-        updateSelectInput(session, inputId = "cover_method",
-                          selected = previous_covers$prev[1])}
+      data_entered(empty_df)
+      file_upload(NULL)
+      accepted(empty_df)
+      shinyjs::reset("upload")
+      shinyjs::reset("species_column")
+      shinyjs::reset("cover_column")
+      shinyjs::reset("plot_column")
+      removeModal()
+      confirm_cover("empty")
+    })
+
+    #if confirm cover is false, reset cover to previous value
+    observeEvent(input$cancel_cover_change, {
+      confirm_cover(FALSE)
+      updateSelectInput(session, inputId = "cover_method",
+                        selected = previous_covers$prev[1])
+      removeModal()
     })
 
     #wetland warnings
@@ -846,8 +849,6 @@ mod_cover_server <- function(id){
                                Colorado metrics."))
       }
     })
-
-
 
     #create boolean that shows if data is entered or not for next condition
     output$next_condition <- renderText(
