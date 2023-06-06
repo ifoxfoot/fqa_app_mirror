@@ -165,17 +165,17 @@ mod_cover_ui <- function(id){
           bslib::value_box(
             title = "Species Richness",
             value = htmlOutput(ns("species_richness")),
-            showcase = icon("seedling")
+            showcase = icon("seedling", class = "fa-3x")
           ),
           bslib::value_box(
             title = "Mean C",
             value = htmlOutput(ns("mean_c")),
-            showcase = icon("pagelines")
+            showcase = icon("pagelines", class = "fa-3x")
           ),
           bslib::value_box(
             title = "Total FQI",
             value = htmlOutput(ns("fqi")),
-            showcase = icon("spa")
+            showcase = icon("spa", class = "fa-3x")
           )
         ),
         br(),
@@ -825,7 +825,7 @@ mod_cover_server <- function(id){
     })
 
     #wetland warnings
-    observeEvent(input$db, {
+    observeEvent(list(input$db,input$confirm_db_change), ignoreInit = TRUE, {
       req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
         showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
@@ -1024,19 +1024,35 @@ mod_cover_server <- function(id){
     #species richness
     output$species_richness <- renderUI({
       req(cover_glide() == 1)
-      suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE))
+      shiny::p(
+        suppressMessages(fqacalc::species_richness(x = accepted(),
+                                                   db = input$db,
+                                                   native = F,
+                                                   allow_no_c = TRUE)),
+        style = "font-size: 40px;"
+      )
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(cover_glide() == 1)
-      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::mean_c(x = accepted(),
+                                               db = input$db,
+                                               native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(cover_glide() == 1)
-      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::FQI(x = accepted(),
+                                            db = input$db,
+                                            native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #C metrics table output

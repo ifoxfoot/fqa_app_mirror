@@ -148,17 +148,17 @@ mod_inventory_ui <- function(id){
           bslib::value_box(
             title = "Species Richness",
             value = htmlOutput(ns("species_richness")),
-            showcase = icon("seedling")
+            showcase = icon("seedling", class = "fa-3x")
           ),
           bslib::value_box(
             title = "Mean C",
             value = htmlOutput(ns("mean_c")),
-            showcase = icon("pagelines")
+            showcase = icon("pagelines", class = "fa-3x")
           ),
           bslib::value_box(
             title = "Total FQI",
             value = htmlOutput(ns("fqi")),
-            showcase = icon("spa")
+            showcase = icon("spa", class = "fa-3x")
           )
           ),
         br(),
@@ -681,21 +681,35 @@ mod_inventory_server <- function(id){
     #species richness
     output$species_richness <- renderUI({
       req(fqi_glide() == 1)
-      round(
-        suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
-        2)
+      shiny::p(
+        round(suppressMessages(fqacalc::species_richness(x = accepted(),
+                                                         db = input$db,
+                                                         native = F,
+                                                         allow_no_c = TRUE)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(fqi_glide() == 1)
-      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::mean_c(x = accepted(),
+                                               db = input$db,
+                                               native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(fqi_glide() == 1)
-      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::FQI(x = accepted(),
+                                            db = input$db,
+                                            native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #metrics table output

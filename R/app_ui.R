@@ -25,8 +25,8 @@ app_ui <- function(request) {
 
                #setting bootstrap to version 5
                theme = bslib::bs_theme(version = 5,
-                                       bootswatch = "yeti",
-                                       base_font = c("Courier", "monospace"),
+                                       #bootswatch = "yeti",
+                                       #base_font = c("Courier", "monospace"),
                                        #primary = "#5988B2", secondary = "#5988B2",
                                        #font_scale = 1.2
                                        ),
