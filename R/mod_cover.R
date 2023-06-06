@@ -301,9 +301,6 @@ mod_cover_server <- function(id){
     #making input method reactive
     input_method <- reactive({input$input_method})
 
-    #create reactive for complete acronym test
-    complete_acronym <- reactiveVal({})
-
     #reactive key
     key <- reactiveVal()
 
@@ -349,6 +346,9 @@ mod_cover_server <- function(id){
       else { numericInput(ns("cover_val"), "Cover Value",
                           value = 0, min = 0, max = 100)}
     })
+
+    #create reactive for complete acronym test
+    complete_acronym <- reactiveVal({})
 
     #test if db contains complete acronyms (T/F), store in reactive
     observeEvent(input$db, {

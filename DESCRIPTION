@@ -21,7 +21,6 @@ Imports:
     rlang,
     sf,
     shiny (>= 1.7.4),
-    shinyalert,
     shinyglide,
     shinyjs,
     shinyWidgets,

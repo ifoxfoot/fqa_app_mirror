@@ -243,6 +243,10 @@ mod_inventory_server <- function(id){
     #creating a reactive value for glide page, used as input to server fun
     fqi_glide <- reactive({input$shinyglide_index_glide})
 
+    #making input method reactive
+    input_method <- reactive({input$input_method})
+
+
     #reactive key
     key <- reactiveVal()
 
@@ -253,9 +257,6 @@ mod_inventory_server <- function(id){
         key("name")
       else(key(input$key))
     })
-
-    #making input method reactive
-    input_method <- reactive({input$input_method})
 
     #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
@@ -347,7 +348,7 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #render output table from uploaded file
@@ -421,7 +422,7 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #render output table from manually entered species on data entry page
@@ -503,22 +504,20 @@ mod_inventory_server <- function(id){
       if(confirm_db() != "empty") {
         confirm_db("empty") }
       else{
-        shinyalert::shinyalert(text = strong(
+        showModal(modalDialog(
           "Changing the regional database will delete your current data entries.
-        Are you sure you want to proceed?"),
-          showCancelButton = T,
-          showConfirmButton = T, confirmButtonText = "Proceed",
-          confirmButtonCol = "red", type = "warning",
-          html = T, inputId = "confirm_db_change")}
+        Are you sure you want to proceed?",
+          footer = tagList(actionButton(ns("confirm_db_change"), "Proceed",
+                                        class = "btn-danger"),
+                           actionButton(ns("cancel_db_change"), "Cancel"))
+        ))
+          }
     })
 
     observeEvent(input$confirm_db_change, {
       #store confirmation in reactive value
-      confirm_db(input$confirm_db_change)
-      #create an empty df
+      confirm_db(TRUE)
       empty_df <- data.frame()
-      #if confirm db is true and method is enter, reset entered data
-      if(confirm_db() == TRUE) {
         data_entered(empty_df)
         file_upload(NULL)
         accepted(empty_df)
@@ -531,34 +530,39 @@ mod_inventory_server <- function(id){
                                 justified = TRUE,
                                 checkIcon = list(yes = icon("ok",
                                                             lib = "glyphicon")))
-        confirm_db("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_db() == FALSE) {
-        updateSelectInput(session, inputId = "db",
-                          label = "Select Regional FQA Database",
-                          choices = fqacalc::db_names()$fqa_db,
-                          selected = previous_dbs$prev[1])
-      }
+        removeModal()
+        confirm_db("empty")
+    })
+
+    #if confirm db is false, reset db to previous value
+    observeEvent(input$cancel_db_change, {
+      confirm_db(FALSE)
+      updateSelectInput(session, inputId = "db",
+                        label = "Select Regional FQA Database",
+                        choices = fqacalc::db_names()$fqa_db,
+                        selected = previous_dbs$prev[1])
+      removeModal()
     })
 
     #wetland warnings
-    observeEvent(input$db, {
+    observeEvent(list(input$db, input$confirm_db_change), ignoreInit = TRUE, {
+      req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
-        shinyalert::shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
-                                       wetland metrics cannot be calculated.")), type = "warning", html = T)
+        showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
+                                       wetland metrics cannot be calculated.")))
       }
       if( input$db == "wyoming_2017") {
-        shinyalert::shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+        showModal(modalDialog("The Wyoming FQA database is associated with multiple
                                  wetland indicator status regions. This package defaults
                                  to the Arid West wetland indicator region when
-                                 calculating Wyoming metrics."), type = "warning", html = T)
+                                 calculating Wyoming metrics."))
       }
       if ( input$db == "colorado_2020" ){
-        shinyalert::shinyalert(text = strong("The Colorado FQA database is associated with
+        showModal(modalDialog("The Colorado FQA database is associated with
                                  multiple wetland indicator status regions. This
                                  package defaults to the Western Mountains,
                                  Valleys, and Coasts indicator region when calculating
-                                 Colorado metrics."), type = "warning", html = T)
+                                 Colorado metrics."))
       }
     })
 

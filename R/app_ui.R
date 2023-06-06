@@ -10,9 +10,6 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
 
-    #force shiny alerts to load
-    shinyalert::useShinyalert(force = TRUE),
-
     #call this package for reset function
     shinyjs::useShinyjs(),
 
