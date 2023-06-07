@@ -469,6 +469,9 @@ mod_inventory_server <- function(id){
 
     #if input method is enter, accepted is from data_entered
     observe({
+      req(input_method() == "enter")
+      accepted(data.frame())
+
       req(input_method() == "enter", nrow(data_entered()) > 0)
       accepted(suppressMessages(fqacalc::accepted_entries(x = data_entered(),
                                                           key = key(),

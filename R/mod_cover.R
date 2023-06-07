@@ -689,9 +689,11 @@ mod_cover_server <- function(id){
 
     #if input method is enter, accepted is from data_entered
     observe({
+      #set accepted to be empty
       req(input_method() == "enter")
-      req(nrow(data_entered()) > 0)
+      accepted(data.frame())
 
+      req(input_method() == "enter" & nrow(data_entered()) > 0)
       suppressMessages(accepted(fqacalc::accepted_entries(x = data_entered(),
                                                           key = key(),
                                                           db = input$db,
