@@ -332,9 +332,7 @@ mod_inventory_server <- function(id){
 
     #warnings for bad data in file upload
     observeEvent(input$species_column, {
-      req(nrow(file_upload()) >= 1)
-      req(input$species_column != "")
-
+      req(nrow(file_upload()) >= 1 & input$species_column != "")
       #list to store warnings
       warning_list <- list()
       #catch warnings
@@ -408,7 +406,7 @@ mod_inventory_server <- function(id){
 
     #this allows popups for warnings about duplicates/non-matching species
     observeEvent(input$add_species,{
-      nrow(data_entered()) > 0
+      req(nrow(data_entered()) > 0)
       #list to store warnings
       warning_list <- list()
       #catch warnings
