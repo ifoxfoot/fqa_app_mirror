@@ -10,6 +10,7 @@
 mod_inventory_ui <- function(id){
   ns <- NS(id)
   tagList(
+
     shinyglide::glide(
       id = ns("glide"),
       next_label = paste("Calculate FQA Metrics ", icon("arrow-right")),
@@ -82,13 +83,14 @@ mod_inventory_ui <- function(id){
               selectizeInput(ns("select_species"), label = "Select Species",
                              choices = NULL, selected = NULL, multiple = TRUE),
 
-              fluidRow(
+
+              bslib::layout_column_wrap(
+                width = 1/2,
                 #input add species button
-                actionButton(ns("add_species"), "Add Species",
-                             style = "margin-left: 15px;"),
+                actionButton(ns("add_species"), "Add Species"),
                 #input delete speces button
-                actionButton(ns("delete_species"), "Delete Species",
-                             style = "margin-left: 10px;")),
+                actionButton(ns("delete_species"), "Delete Species")
+                ),
 
               br(),
 
@@ -134,57 +136,93 @@ mod_inventory_ui <- function(id){
         #download button
         downloadButton(ns("download"),
                        label = "Download", class = "downloadButton",
-                       style = "position: absolute; top: 0px; right: 0px;"),
+                       style = "position: absolute; top: 0px; right: 10px;"),
         br(),
         #title
         column(12, align = "center",
                h3(textOutput(ns("title")))),
 
-
         #boxes with key values
-        fluidRow(
-          shinydashboard::valueBox(
-            htmlOutput(ns("species_richness")),
-            "Species Richness", color = "navy"
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::value_box(
+            title = "Species Richness",
+            value = htmlOutput(ns("species_richness")),
+            showcase = icon("seedling", class = "fa-3x")
           ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("mean_c")),
-            "Mean C",
-            icon = icon("seedling"), color = "olive"
+          bslib::value_box(
+            title = "Mean C",
+            value = htmlOutput(ns("mean_c")),
+            showcase = icon("pagelines", class = "fa-3x")
           ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("fqi")),
-            "Total FQI",
-            icon = icon("pagelines"), color = "green"
+          bslib::value_box(
+            title = "Total FQI",
+            value = htmlOutput(ns("fqi")),
+            showcase = icon("spa", class = "fa-3x")
           )
-        ),#fluidRow parenthesis
+          ),
+        br(),
 
-        #all mets and graph
-        fluidRow(
-          shinydashboard::box(plotOutput(ns("binned_c_score_plot")),
-              title = "Binned Histogram of C Values"),
-          shinydashboard::box(plotOutput(ns("c_hist")),
-              title = "Histogram of C Values")
+        #histograms
+        bslib::layout_column_wrap(
+          width = 1/2,
+          bslib::card(
+            bslib::card_header("Binned Histogram of C Values"),
+            bslib::card_body(plotOutput(ns("binned_c_score_plot")))
+          ),
+         bslib::card(
+           bslib::card_header("Histogram of C Values"),
+           bslib::card_body(plotOutput(ns("c_hist")))
+              )
         ),
+        br(),
 
-        fluidRow(
-          column(4,
-                 shinydashboard::box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(NS(id,"duration_table")), title = "Duration Metrics", width = NULL,
-                     style = "overflow-x: scroll")),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("pysiog_table")), title = "Physiognomy Metrics", width = NULL,
-                     style = "overflow-x: scroll")),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
+        #1st row of small tables
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("FQI Metrics"),
+            bslib::card_body(tableOutput(ns("c_metrics")))
+          ),
+          bslib::card(
+            bslib::card_header("Wetness Metrics"),
+            bslib::card_body(tableOutput(ns("wetness")))
+          ),
+          bslib::card(
+            bslib::card_header("Species Richness Metrics"),
+            bslib::card_body(tableOutput(ns("species_mets")))
+          )
         ),
+        br(),
 
-        #output of accepted entries
-        fluidRow(shinydashboard::box(title = "Data Entered", status = "primary",
-                                     DT::dataTableOutput(ns( "accepted")), width = 12,
-                                     style = "overflow-x: auto;l"))
+
+        #2nd row of small tables
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("Physiognomy Metrics"),
+            bslib::card_body(tableOutput(ns("pysiog_table")))
+          ),
+          bslib::card(
+            bslib::card_header("Duration Metrics"),
+            bslib::card_body(tableOutput(NS(id,"duration_table")))
+          ),
+          bslib::card(
+            bslib::card_header("C Value Percentages"),
+            bslib::card_body(tableOutput(ns("proportion")))
+          )
+        ),
+        br(),
+
+        #big table (accepted entries)
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+          bslib::card_header("Data Entered"),
+          status = "primary",
+          bslib::card_body(DT::dataTableOutput(ns( "accepted"))),
+          style = "overflow-x: auto;l")),
+        br()
 
 
       )#screen 2 parenthesis
@@ -205,6 +243,10 @@ mod_inventory_server <- function(id){
     #creating a reactive value for glide page, used as input to server fun
     fqi_glide <- reactive({input$shinyglide_index_glide})
 
+    #making input method reactive
+    input_method <- reactive({input$input_method})
+
+
     #reactive key
     key <- reactiveVal()
 
@@ -215,9 +257,6 @@ mod_inventory_server <- function(id){
         key("name")
       else(key(input$key))
     })
-
-    #making input method reactive
-    input_method <- reactive({input$input_method})
 
     #initialize reactives to hold data entered/uploaded
     file_upload <- reactiveVal()
@@ -293,9 +332,7 @@ mod_inventory_server <- function(id){
 
     #warnings for bad data in file upload
     observeEvent(input$species_column, {
-      req(nrow(file_upload()) >= 1)
-      req(input$species_column != "")
-
+      req(nrow(file_upload()) >= 1 & input$species_column != "")
       #list to store warnings
       warning_list <- list()
       #catch warnings
@@ -309,7 +346,7 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #render output table from uploaded file
@@ -369,7 +406,7 @@ mod_inventory_server <- function(id){
 
     #this allows popups for warnings about duplicates/non-matching species
     observeEvent(input$add_species,{
-      nrow(data_entered()) > 0
+      req(nrow(data_entered()) > 0)
       #list to store warnings
       warning_list <- list()
       #catch warnings
@@ -383,7 +420,7 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #render output table from manually entered species on data entry page
@@ -432,6 +469,9 @@ mod_inventory_server <- function(id){
 
     #if input method is enter, accepted is from data_entered
     observe({
+      req(input_method() == "enter")
+      accepted(data.frame())
+
       req(input_method() == "enter", nrow(data_entered()) > 0)
       accepted(suppressMessages(fqacalc::accepted_entries(x = data_entered(),
                                                           key = key(),
@@ -465,22 +505,20 @@ mod_inventory_server <- function(id){
       if(confirm_db() != "empty") {
         confirm_db("empty") }
       else{
-        shinyalert::shinyalert(text = strong(
+        showModal(modalDialog(
           "Changing the regional database will delete your current data entries.
-        Are you sure you want to proceed?"),
-          showCancelButton = T,
-          showConfirmButton = T, confirmButtonText = "Proceed",
-          confirmButtonCol = "red", type = "warning",
-          html = T, inputId = "confirm_db_change")}
+        Are you sure you want to proceed?",
+          footer = tagList(actionButton(ns("confirm_db_change"), "Proceed",
+                                        class = "btn-danger"),
+                           actionButton(ns("cancel_db_change"), "Cancel"))
+        ))
+          }
     })
 
     observeEvent(input$confirm_db_change, {
       #store confirmation in reactive value
-      confirm_db(input$confirm_db_change)
-      #create an empty df
+      confirm_db(TRUE)
       empty_df <- data.frame()
-      #if confirm db is true and method is enter, reset entered data
-      if(confirm_db() == TRUE) {
         data_entered(empty_df)
         file_upload(NULL)
         accepted(empty_df)
@@ -493,34 +531,39 @@ mod_inventory_server <- function(id){
                                 justified = TRUE,
                                 checkIcon = list(yes = icon("ok",
                                                             lib = "glyphicon")))
-        confirm_db("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_db() == FALSE) {
-        updateSelectInput(session, inputId = "db",
-                          label = "Select Regional FQA Database",
-                          choices = fqacalc::db_names()$fqa_db,
-                          selected = previous_dbs$prev[1])
-      }
+        removeModal()
+        confirm_db("empty")
+    })
+
+    #if confirm db is false, reset db to previous value
+    observeEvent(input$cancel_db_change, {
+      confirm_db(FALSE)
+      updateSelectInput(session, inputId = "db",
+                        label = "Select Regional FQA Database",
+                        choices = fqacalc::db_names()$fqa_db,
+                        selected = previous_dbs$prev[1])
+      removeModal()
     })
 
     #wetland warnings
-    observeEvent(input$db, {
+    observeEvent(list(input$db, input$confirm_db_change), ignoreInit = TRUE, {
+      req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
-        shinyalert::shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
-                                       wetland metrics cannot be calculated.")), type = "warning", html = T)
+        showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
+                                       wetland metrics cannot be calculated.")))
       }
       if( input$db == "wyoming_2017") {
-        shinyalert::shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+        showModal(modalDialog("The Wyoming FQA database is associated with multiple
                                  wetland indicator status regions. This package defaults
                                  to the Arid West wetland indicator region when
-                                 calculating Wyoming metrics."), type = "warning", html = T)
+                                 calculating Wyoming metrics."))
       }
       if ( input$db == "colorado_2020" ){
-        shinyalert::shinyalert(text = strong("The Colorado FQA database is associated with
+        showModal(modalDialog("The Colorado FQA database is associated with
                                  multiple wetland indicator status regions. This
                                  package defaults to the Western Mountains,
                                  Valleys, and Coasts indicator region when calculating
-                                 Colorado metrics."), type = "warning", html = T)
+                                 Colorado metrics."))
       }
     })
 
@@ -643,21 +686,35 @@ mod_inventory_server <- function(id){
     #species richness
     output$species_richness <- renderUI({
       req(fqi_glide() == 1)
-      round(
-        suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE)),
-        2)
+      shiny::p(
+        round(suppressMessages(fqacalc::species_richness(x = accepted(),
+                                                         db = input$db,
+                                                         native = F,
+                                                         allow_no_c = TRUE)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(fqi_glide() == 1)
-      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::mean_c(x = accepted(),
+                                               db = input$db,
+                                               native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(fqi_glide() == 1)
-      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::FQI(x = accepted(),
+                                            db = input$db,
+                                            native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #metrics table output

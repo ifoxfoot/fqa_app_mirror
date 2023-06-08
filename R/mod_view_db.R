@@ -14,17 +14,22 @@ mod_view_db_ui <- function(id){
     column(12,
 
            fluidRow(
+             div(
+               class = "d-flex",
+               style = "margin-top: 32px;",
 
-             #select database to view/download
-             selectInput(ns("db"), label = "Select Regional FQA Database",
-                         choices = fqacalc::db_names()$fqa_db,
-                         selected = "michigan_2014"),
+               #select database to view/download
+               selectInput(ns("db"), label = "Select Regional FQA Database",
+                           choices = fqacalc::db_names()$fqa_db,
+                           selected = "michigan_2014"),
 
-             #download button
-             downloadButton(ns("download"),
-                            label = "Download",
-                            class = "downloadButton",
-                            style = "margin-top: 32px; height: 38px; margin-left: 10px;")
+               #download button
+               downloadButton(ns("download"),
+                              label = "Download",
+                              class = "downloadButton",
+                              style = "margin-top: 32px; height: 38px; margin-left: 10px;"
+               )
+             )
            ),
 
            fluidRow(
@@ -66,11 +71,11 @@ mod_view_db_server <- function(id){
     output$regional_database_table <- DT::renderDataTable({
       req(input$db)
       DT::datatable(fqacalc::view_db(input$db),
-                options = list(scrollX=TRUE,
-                               scrollY= TRUE,
-                               paging = FALSE, searching = TRUE,
-                               fixedColumns = TRUE, autoWidth = TRUE,
-                               ordering = TRUE))
+                    options = list(scrollX=TRUE,
+                                   scrollY= TRUE,
+                                   paging = FALSE, searching = TRUE,
+                                   fixedColumns = TRUE, autoWidth = TRUE,
+                                   ordering = TRUE))
     })
 
   })

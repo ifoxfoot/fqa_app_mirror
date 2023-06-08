@@ -10,15 +10,6 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
 
-    #force shiny alerts to load
-    shinyalert::useShinyalert(force = TRUE),
-
-    #set background color
-    shinyWidgets::setBackgroundColor(color = "#F2F4F4"),
-
-    #call this package for boxes
-    #shinyWidgets::useShinydashboard(),
-
     #call this package for reset function
     shinyjs::useShinyjs(),
 
@@ -29,12 +20,13 @@ app_ui <- function(request) {
     navbarPage("FQA",
                id = "navbar",
 
-               #setting bootstrap to version 4
-               theme = bslib::bs_theme(version = 4,
-                                       bootswatch = "yeti",
-                                       base_font = "roboto",
-                                       primary = "#5988B2", secondary = "#5988B2",
-                                       font_scale = 1.2),
+               #setting bootstrap to version 5
+               theme = bslib::bs_theme(version = 5,
+                                       #bootswatch = "yeti",
+                                       #base_font = c("Courier", "monospace"),
+                                       #primary = "#5988B2", secondary = "#5988B2",
+                                       #font_scale = 1.2
+                                       ),
 
 # ABOUT TAB---------------------------------------------------------------------
 

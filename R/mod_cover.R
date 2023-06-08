@@ -152,7 +152,7 @@ mod_cover_ui <- function(id){
         #download button
         downloadButton(ns( "download"),
                        label = "Download", class = "downloadButton",
-                       style = "position: absolute; top: 0px; right: 0px;"),
+                       style = "position: absolute; top: 0px; right: 10px;"),
         br(),
         #title
         column(12, align = "center",
@@ -160,70 +160,125 @@ mod_cover_ui <- function(id){
 
 
         #boxes with key values
-        fluidRow(
-          shinydashboard::valueBox(
-            htmlOutput(ns("species_richness")),
-            "Species Richness", color = "navy"
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::value_box(
+            title = "Species Richness",
+            value = htmlOutput(ns("species_richness")),
+            showcase = icon("seedling", class = "fa-3x")
           ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("mean_c")),
-            "Mean C",
-            icon = icon("seedling"), color = "olive"
+          bslib::value_box(
+            title = "Mean C",
+            value = htmlOutput(ns("mean_c")),
+            showcase = icon("pagelines", class = "fa-3x")
           ),
-          shinydashboard::valueBox(
-            htmlOutput(ns("fqi")),
-            "Total FQI",
-            icon = icon("pagelines"), color = "green"
+          bslib::value_box(
+            title = "Total FQI",
+            value = htmlOutput(ns("fqi")),
+            showcase = icon("spa", class = "fa-3x")
           )
-        ),#fluidRow parenthesis
-
-        #all mets and graph
-        fluidRow(
-          shinydashboard::box(plotOutput(ns("binned_c_score_plot")),
-              title = "Binned Histogram of C Values"),
-          shinydashboard::box(plotOutput(ns("c_hist")),
-              title = "Histogram of C Values")
         ),
+        br(),
 
-        #small tables
-        fluidRow(
-          column(4,
-                 shinydashboard::box(tableOutput(ns("c_metrics")), title = "FQI Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("wetness")), title = "Wetness Metrics", width = NULL)),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("cover_classs")), title = "Cover-Weighted Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("duration_table")), title = "Duration Metrics", width = NULL,
-                     style = "overflow-x: scroll")),
-          column(4,
-                 shinydashboard::box(tableOutput(ns("species_mets")), title = "Species Richness Metrics", width = NULL),
-                 shinydashboard::box(tableOutput(ns("proportion")), title = "C Value Percentages", width = NULL))
+        #histograms
+        bslib::layout_column_wrap(
+          width = 1/2,
+          bslib::card(
+            bslib::card_header("Binned Histogram of C Values"),
+            bslib::card_body(plotOutput(ns("binned_c_score_plot")))
+          ),
+          bslib::card(
+            bslib::card_header("Histogram of C Values"),
+            bslib::card_body(plotOutput(ns("c_hist")))
+          )
         ),
+        br(),
+
+        #1st row of small tables
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("FQI Metrics"),
+            bslib::card_body(tableOutput(ns("c_metrics")))
+          ),
+          bslib::card(
+            bslib::card_header("Cover-Weighted Metrics"),
+            bslib::card_body(tableOutput(ns("cover_classs")))
+          ),
+          bslib::card(
+            bslib::card_header("Species Richness Metrics"),
+            bslib::card_body(tableOutput(ns("species_mets")))
+          )
+        ),
+        br(),
+
+        #2nd row of small tables
+        bslib::layout_column_wrap(
+          width = 1/3,
+          bslib::card(
+            bslib::card_header("Wetness Metrics"),
+            bslib::card_body(tableOutput(ns("wetness")))
+          ),
+          bslib::card(
+            bslib::card_header("Duration Metrics"),
+            bslib::card_body(tableOutput(ns("duration_table")))
+          ),
+          bslib::card(
+            bslib::card_header("C Value Percentages"),
+            bslib::card_body(tableOutput(ns("proportion")))
+          )
+        ),
+        br(),
 
         #output of terms
-        fluidRow(shinydashboard::box(title = "Relative Cover Terms", status = "primary",
-                     includeMarkdown("rmarkdowns/rel_terms.Rmd"), width = 12,
-                     style = "overflow-x: scroll")),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Relative Cover Terms"),
+            bslib::card_body(includeMarkdown("rmarkdowns/rel_terms.Rmd"))
+            )
+          ),
+        br(),
 
         #output of physiog summary
-        fluidRow(shinydashboard::box(title = "Physiognomy Summary", status = "primary",
-                     tableOutput(ns( "cover_physiog_manual")), width = 12,
-                     style = "overflow-x: scroll")),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Physiognomy Summary"),
+            bslib::card_body(tableOutput(ns( "cover_physiog_manual")))
+          )
+        ),
+        br(),
 
         #output of plot summary
-        fluidRow(shinydashboard::box(title = "Plot Summary", status = "primary", width = 12,
-                     style = "overflow-x: auto;",
-                     DT::dataTableOutput(ns( "cover_plot_manual")))),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Plot Summary"),
+            bslib::card_body(DT::dataTableOutput(ns( "cover_plot_manual")))
+          )
+        ),
+        br(),
 
         #output of species summary
-        fluidRow(shinydashboard::box(title = "Species Summary", status = "primary",
-                     DT::dataTableOutput(ns( "cover_species_manual")), width = 12,
-                     style = "overflow-x: auto;l")),
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Species Summary"),
+            bslib::card_body(DT::dataTableOutput(ns("cover_species_manual")))
+          )
+        ),
+        br(),
 
         #output of accepted entries
-        fluidRow(shinydashboard::box(title = "Data Entered", status = "primary",
-                                     DT::dataTableOutput(ns( "accepted")), width = 12,
-                                     style = "overflow-x: auto;l"))
-
+        bslib::layout_column_wrap(
+          width = 1,
+          bslib::card(
+            bslib::card_header("Data Entered"),
+            bslib::card_body(DT::dataTableOutput(ns("accepted")))
+          )
+        ),
+        br()
 
       )#screen two parenthesis
 
@@ -245,9 +300,6 @@ mod_cover_server <- function(id){
 
     #making input method reactive
     input_method <- reactive({input$input_method})
-
-    #create reactive for complete acronym test
-    complete_acronym <- reactiveVal({})
 
     #reactive key
     key <- reactiveVal()
@@ -294,6 +346,9 @@ mod_cover_server <- function(id){
       else { numericInput(ns("cover_val"), "Cover Value",
                           value = 0, min = 0, max = 100)}
     })
+
+    #create reactive for complete acronym test
+    complete_acronym <- reactiveVal({})
 
     #test if db contains complete acronyms (T/F), store in reactive
     observeEvent(input$db, {
@@ -431,14 +486,13 @@ mod_cover_server <- function(id){
 
       #send alert if columns need fixing
       if(columns_are_good() == FALSE) {
-        shinyalert::shinyalert(text = strong(paste("The columns selected for species,
-                                       cover, or plot ID must be unique.
-                                       Additionally, the species column cannot
-                                       be set to 'cover' or 'plot_id', the cover column
-                                       cannot be set to 'plot_id', 'name' or 'acronym',
-                                       and the plot ID column cannot be set to 'cover',
-                                       'name' or 'acronym'")),
-                   type = "warning",  html = T, className = "alert")
+        showModal(modalDialog("The columns selected for species,
+                               cover, or plot ID must be unique.
+                               Additionally, the species column cannot
+                               be set to 'cover' or 'plot_id', the cover column
+                               cannot be set to 'plot_id', 'name' or 'acronym',
+                               and the plot ID column cannot be set to 'cover',
+                               'name' or 'acronym'"))
       }
     })
 
@@ -473,7 +527,7 @@ mod_cover_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #when delete all is clicked, clear all entries
@@ -537,7 +591,8 @@ mod_cover_server <- function(id){
       }
       #bind new entry to table
       if(nrow(accepted() > 0)) {
-        new_entry<- rbind(new_entry, accepted() %>% dplyr::select(plot_id, acronym, name, cover))
+        new_entry<- rbind(new_entry, accepted() %>%
+                            dplyr::select(plot_id, acronym, name, cover))
       }
       #make it reactive
       data_entered(new_entry)
@@ -579,7 +634,7 @@ mod_cover_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        shinyalert::shinyalert(text = strong(i), type = "warning", html = T) }
+        showModal(modalDialog(i)) }
     })
 
     #render output table from manually entered species on data entry page
@@ -634,9 +689,11 @@ mod_cover_server <- function(id){
 
     #if input method is enter, accepted is from data_entered
     observe({
+      #set accepted to be empty
       req(input_method() == "enter")
-      req(nrow(data_entered()) > 0)
+      accepted(data.frame())
 
+      req(input_method() == "enter" & nrow(data_entered()) > 0)
       suppressMessages(accepted(fqacalc::accepted_entries(x = data_entered(),
                                                           key = key(),
                                                           db = input$db,
@@ -699,34 +756,37 @@ mod_cover_server <- function(id){
       if(confirm_db() != "empty") {
         confirm_db("empty") }
       else{
-        shinyalert::shinyalert(text = strong(
+        showModal(modalDialog(
           "Changing the regional database will delete your current data entries.
-        Are you sure you want to proceed?"),
-          showCancelButton = T,
-          showConfirmButton = T, confirmButtonText = "Proceed",
-          confirmButtonCol = "red", type = "warning",
-          html = T, inputId = "confirm_db_change")}
+          Are you sure you want to proceed?",
+          footer = tagList(actionButton(ns("confirm_db_change"), "Proceed",
+                                        class = "btn-danger"),
+                           actionButton(ns("cancel_db_change"), "Cancel"))
+          ))
+          }
     })
 
     observeEvent(input$confirm_db_change, {
       #store confirmation in reactive value
-      confirm_db(input$confirm_db_change)
-      #create an empty df
+      confirm_db(TRUE)
       empty_df <- data.frame()
-      #if confirm db is true reset entered data
-      if(confirm_db() == TRUE) {
-        data_entered(empty_df)
-        file_upload(NULL)
-        accepted(empty_df)
-        shinyjs::reset("upload")
-        shinyjs::reset("species_column")
-        shinyjs::reset("cover_column")
-        shinyjs::reset("plot_column")
-        confirm_db("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_db() == FALSE) {
-        updateSelectInput(session, inputId = "db",
-                          selected = previous_dbs$prev[1])}
+      data_entered(empty_df)
+      file_upload(NULL)
+      accepted(empty_df)
+      shinyjs::reset("upload")
+      shinyjs::reset("species_column")
+      shinyjs::reset("cover_column")
+      shinyjs::reset("plot_column")
+      removeModal()
+      confirm_db("empty")
+    })
+
+    #if confirm db is false, reset db to previous value
+    observeEvent(input$cancel_db_change, {
+      confirm_db(FALSE)
+      updateSelectInput(session, inputId = "db",
+                        selected = previous_dbs$prev[1])
+      removeModal()
     })
 
     #if cover method is changed and there is already data entered, show popup
@@ -736,58 +796,61 @@ mod_cover_server <- function(id){
       if(confirm_cover() != "empty") {
         confirm_cover("empty") }
       else{
-        shinyalert::shinyalert(text = strong(
+        showModal(modalDialog(
           "Changing the cover method will delete your current data entries.
-        Are you sure you want to proceed?"),
-          showCancelButton = T,
-          showConfirmButton = T, confirmButtonText = "Proceed",
-          confirmButtonCol = "red", type = "warning",
-          html = T, inputId = "confirm_cover_change", className = "alert")}
+        Are you sure you want to proceed?",
+          footer = tagList(actionButton(ns("confirm_cover_change"), "Proceed",
+                                        class = "btn-danger"),
+                           actionButton(ns("cancel_cover_change"), "Cancel"))
+        ))
+        }
     })
 
     observeEvent(input$confirm_cover_change, {
       #store confirmation in reactive value
-      confirm_cover(input$confirm_cover_change)
-      #create an empty df
+      confirm_cover(TRUE)
       empty_df <- data.frame()
-      #if confirm cover is true reset entered data
-      if(confirm_cover() == TRUE) {
-        data_entered(empty_df)
-        file_upload(NULL)
-        accepted(empty_df)
-        shinyjs::reset("upload")
-        shinyjs::reset("species_column")
-        shinyjs::reset("cover_column")
-        shinyjs::reset("plot_column")
-        confirm_cover("empty")}
-      #if confirm db is false, reset db to previous value
-      if (confirm_cover() == FALSE) {
-        updateSelectInput(session, inputId = "cover_method",
-                          selected = previous_covers$prev[1])}
+      data_entered(empty_df)
+      file_upload(NULL)
+      accepted(empty_df)
+      shinyjs::reset("upload")
+      shinyjs::reset("species_column")
+      shinyjs::reset("cover_column")
+      shinyjs::reset("plot_column")
+      removeModal()
+      confirm_cover("empty")
+    })
+
+    #if confirm cover is false, reset cover to previous value
+    observeEvent(input$cancel_cover_change, {
+      confirm_cover(FALSE)
+      updateSelectInput(session, inputId = "cover_method",
+                        selected = previous_covers$prev[1])
+      removeModal()
     })
 
     #wetland warnings
-    observeEvent(input$db, {
+    observeEvent(list(input$db,input$confirm_db_change), ignoreInit = TRUE, {
+      req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
-        shinyalert::shinyalert(text = strong(paste(input$db, "does not have wetland coefficients,
-                                       wetland metrics cannot be calculated.")), type = "warning", html = T)
+        showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
+                                       wetland metrics cannot be calculated.")))
       }
       if( input$db == "wyoming_2017") {
-        shinyalert::shinyalert(text = strong("The Wyoming FQA database is associated with multiple
+        showModal(modalDialog("The Wyoming FQA database is associated with multiple
                                  wetland indicator status regions. This package defaults
                                  to the Arid West wetland indicator region when
-                                 calculating Wyoming metrics."), type = "warning", html = T)
+                                 calculating Wyoming metrics."))
       }
       if ( input$db == "colorado_2020" ){
-        shinyalert::shinyalert(text = strong("The Colorado FQA database is associated with
-                                 multiple wetland indicator status regions. This
-                                 package defaults to the Western Mountains,
-                                 Valleys, and Coasts indicator region when calculating
-                                 Colorado metrics."), type = "warning", html = T)
+        showModal(modalDialog(title = icon("circle-exclamation"),
+        "The Colorado FQA database is associated with
+                               multiple wetland indicator status regions. This
+                               package defaults to the Western Mountains,
+                               Valleys, and Coasts indicator region when calculating
+                               Colorado metrics."))
       }
     })
-
-
 
     #create boolean that shows if data is entered or not for next condition
     output$next_condition <- renderText(
@@ -964,19 +1027,35 @@ mod_cover_server <- function(id){
     #species richness
     output$species_richness <- renderUI({
       req(cover_glide() == 1)
-      suppressMessages(fqacalc::species_richness(x = accepted(), db = input$db, native = F, allow_no_c = TRUE))
+      shiny::p(
+        suppressMessages(fqacalc::species_richness(x = accepted(),
+                                                   db = input$db,
+                                                   native = F,
+                                                   allow_no_c = TRUE)),
+        style = "font-size: 40px;"
+      )
     })
 
     #mean C
     output$mean_c <- renderUI({
       req(cover_glide() == 1)
-      round(suppressMessages(fqacalc::mean_c(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::mean_c(x = accepted(),
+                                               db = input$db,
+                                               native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #total fqi
     output$fqi <- renderUI({
       req(cover_glide() == 1)
-      round(suppressMessages(fqacalc::FQI(x = accepted(), db = input$db, native = F)), 2)
+      shiny::p(
+        round(suppressMessages(fqacalc::FQI(x = accepted(),
+                                            db = input$db,
+                                            native = F)), 2),
+        style = "font-size: 40px;"
+      )
     })
 
     #C metrics table output

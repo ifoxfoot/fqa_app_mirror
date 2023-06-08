@@ -6,8 +6,8 @@
 #'
 #' @noRd
 inventory_help <- function(){
-  alert <- shinyalert::shinyalert(title = "Inventory Instructions", html = T, className = "help",
-                                  text = tagList(strong("Step 1."),
+  alert <- showModal(modalDialog(title = "Inventory Instructions",
+                                  tagList(strong("Step 1."),
                                                  "Select your regional FQA of interest. If you are unsure
                             about which regional FQA database to use, consult the map on the
                             'About FQA' tab.",
@@ -60,7 +60,7 @@ inventory_help <- function(){
                                                  br(),
                                                  br(),
                                                  "To report a mistake or unexpected issue on this webpage,
-                                     contact - ecomodteam@usace.army.mil"))
+                                     contact - ecomodteam@usace.army.mil")))
 
   return(alert)
 }
@@ -73,8 +73,8 @@ inventory_help <- function(){
 #'
 #' @noRd
 cover_help <- function(){
-  alert <- shinyalert::shinyalert(title = "Cover Weighted FQA Instructions", html = T, className = "help",
-                                  text = tagList(strong("Step 1."),
+  alert <- showModal(modalDialog(title = "Cover Weighted FQA Instructions",
+                                  tagList(strong("Step 1."),
                                                  "Select your regional FQA database of interest. If you are unsure
                                      about which regional FQA to use, consult the map on the
                                      'About FQA' tab.",
@@ -152,6 +152,6 @@ cover_help <- function(){
                                                  br(),
                                                  br(),
                                                  "To report a mistake or unexpected issue on this webpage,
-                                     contact – ecomodteam@usace.army.mil"))
+                                     contact – ecomodteam@usace.army.mil")))
   return(alert)
 }
