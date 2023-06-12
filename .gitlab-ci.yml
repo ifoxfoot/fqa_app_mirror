@@ -17,4 +17,4 @@ deploy:
     - find . -type d \( ! -name ".*" \) -exec chmod a+rx {} \;
     - find . -type f \( ! -name ".*" \) -exec chmod g+rw {} \;
     - find . -type f \( ! -name ".*" \) -exec chmod a+r {} \;
-    - find . \( ! -name ".*" ) -exec chgrp -R shiny {} \;
+    - find . \( ! -name ".*" \) -exec chgrp -R shiny {} \;
