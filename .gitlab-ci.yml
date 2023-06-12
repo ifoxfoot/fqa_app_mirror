@@ -1,0 +1,20 @@
+variables:
+  APP_NAME: fqacalc
+  GIT_STRATEGY: clone
+before_script:
+  - whoami
+  - mkdir -p /srv/shiny-server/$APP_NAME
+
+after_script:
+  - echo "Deploy Complete"
+
+deploy:
+  stage: deploy
+  script:
+    - cp -R * /srv/shiny-server/$APP_NAME/
+    - cd /srv/shiny-server/$APP_NAME
+    - find . -type d \( ! -name ".*" \) -exec chmod g+rwx {} \;
+    - find . -type d \( ! -name ".*" \) -exec chmod a+rx {} \;
+    - find . -type f \( ! -name ".*" \) -exec chmod g+rw {} \;
+    - find . -type f \( ! -name ".*" \) -exec chmod a+r {} \;
+    - find . \( ! -name ".*" ) -exec chgrp -R shiny {} \;
