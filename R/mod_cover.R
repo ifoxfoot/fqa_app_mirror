@@ -313,7 +313,7 @@ mod_cover_server <- function(id){
     })
 
     #initialize reactives to hold data entered/uploaded
-    file_upload <- reactiveVal()
+    file_upload <- reactiveVal({data.frame()})
     data_entered <- reactiveVal({data.frame()})
 
     #help popup
@@ -400,7 +400,7 @@ mod_cover_server <- function(id){
 
     #if file is uploaded, show T, else F
     output$file_is_uploaded <- reactive({
-      return(!is.null(input$upload))
+      return(dim(file_upload())[1] != 0)
     })
     #send to UI for conditional panel, but hide it
     outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
@@ -498,10 +498,13 @@ mod_cover_server <- function(id){
 
     #warnings for bad data in file upload
     observe({
-      req(columns_are_good() == TRUE)
-      req(input$species_column != "")
-      req(input$plot_column != "")
-      req(input$cover_column != "")
+      req(columns_are_good() == TRUE,
+          input$species_column != "",
+          input$plot_column != "",
+          input$cover_column != "",
+          nrow(file_upload()) > 0,
+          )
+
       plot_col <- if(input$plot_column == "NA"){NULL} else {input$plot_column}
       #list to store warnings
       warning_list <- list()
@@ -527,13 +530,15 @@ mod_cover_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        showModal(modalDialog(i)) }
+        showNotification(ui = i,
+                         duration = NULL,
+                         type = "error") }
     })
 
     #when delete all is clicked, clear all entries
     observeEvent(input$upload_delete_all, {
       #make an empty df
-      empty_df <- NULL
+      empty_df <- data.frame()
       #replace reactive file upload with empty file
       file_upload(empty_df)
       accepted(empty_df)
@@ -634,7 +639,9 @@ mod_cover_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        showModal(modalDialog(i)) }
+        showNotification(ui = i,
+                         duration = NULL,
+                         type = "error") }
     })
 
     #render output table from manually entered species on data entry page
@@ -709,12 +716,15 @@ mod_cover_server <- function(id){
     #if input method is upload, accepted is from file_uploaded
     observe({
       #require file to be uploaded
-      req(input_method() == "upload", input$species_column != "",
-          input$cover_column != "", input$plot_column != "")
+      req(input_method() == "upload")
       #set accepted to be empty
       accepted(data.frame())
       #require columns to be good
-      req( columns_are_good() )
+      req( columns_are_good(),
+           nrow(file_upload()) > 0,
+           input$species_column != "",
+           input$cover_column != "",
+           input$plot_column != "")
 
       #if plot column is set, include plot column
       if( !input$plot_column %in% c("NA")) {
@@ -771,7 +781,7 @@ mod_cover_server <- function(id){
       confirm_db(TRUE)
       empty_df <- data.frame()
       data_entered(empty_df)
-      file_upload(NULL)
+      file_upload(empty_df)
       accepted(empty_df)
       shinyjs::reset("upload")
       shinyjs::reset("species_column")
@@ -811,7 +821,7 @@ mod_cover_server <- function(id){
       confirm_cover(TRUE)
       empty_df <- data.frame()
       data_entered(empty_df)
-      file_upload(NULL)
+      file_upload(empty_df)
       accepted(empty_df)
       shinyjs::reset("upload")
       shinyjs::reset("species_column")
@@ -830,8 +840,10 @@ mod_cover_server <- function(id){
     })
 
     #wetland warnings
-    observeEvent(list(input$db,input$confirm_db_change), ignoreInit = TRUE, {
-      req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
+    observeEvent(list(input$db,input$confirm_db_change, input$confirm_cover_change),
+                 ignoreInit = TRUE, {
+      req( if(input_method() == "enter") {dim(data_entered())[1] == 0}
+           else {dim(file_upload())[1] == 0})
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
         showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")))

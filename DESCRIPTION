@@ -25,7 +25,8 @@ Imports:
     shinyjs,
     shinyWidgets,
     stringr,
-    tmap
+    tmap,
+    vroom
 Suggests: 
     covr,
     spelling,

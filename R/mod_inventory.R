@@ -259,7 +259,7 @@ mod_inventory_server <- function(id){
     })
 
     #initialize reactives to hold data entered/uploaded
-    file_upload <- reactiveVal()
+    file_upload <- reactiveVal({data.frame()})
     data_entered <- reactiveVal({data.frame()})
 
     #help popup
@@ -290,11 +290,6 @@ mod_inventory_server <- function(id){
 
     #file upload server-------------------------------------------------------------
 
-    #if file is uploaded, show T, else F
-    output$file_is_uploaded <- reactive({
-      return(!is.null(file_upload()))
-    })
-    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #When file is uploaded, upload and store in reactive object above
     observeEvent(input$upload, {
@@ -315,6 +310,11 @@ mod_inventory_server <- function(id){
       file_upload(new_file)
     })
 
+    #if file is uploaded, show T, else F
+    output$file_is_uploaded <- reactive({
+      return(dim(file_upload())[1] != 0)
+    })
+    outputOptions(output, "file_is_uploaded", suspendWhenHidden = FALSE)
 
     #drop-down list (for species column) based on the file uploaded
     observeEvent(input$upload,{
@@ -346,7 +346,9 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        showModal(modalDialog(i)) }
+        showNotification(ui = i,
+                         duration = NULL,
+                         type = "error") }
     })
 
     #render output table from uploaded file
@@ -363,7 +365,7 @@ mod_inventory_server <- function(id){
     #when delete all is clicked, clear all entries
     observeEvent(input$upload_delete_all, {
       #make an empty df
-      empty_df <- NULL
+      empty_df <- data.frame()
       #replace reactive file upload with empty file
       file_upload(empty_df)
       accepted(empty_df)
@@ -420,7 +422,9 @@ mod_inventory_server <- function(id){
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
-        showModal(modalDialog(i)) }
+        showNotification(ui = i,
+                         duration = NULL,
+                         type = "error") }
     })
 
     #render output table from manually entered species on data entry page
@@ -520,7 +524,7 @@ mod_inventory_server <- function(id){
       confirm_db(TRUE)
       empty_df <- data.frame()
         data_entered(empty_df)
-        file_upload(NULL)
+        file_upload(empty_df)
         accepted(empty_df)
         shinyjs::reset("upload")
         shinyjs::reset("species_column")
@@ -547,7 +551,8 @@ mod_inventory_server <- function(id){
 
     #wetland warnings
     observeEvent(list(input$db, input$confirm_db_change), ignoreInit = TRUE, {
-      req(nrow(data_entered()) == 0 || nrow(file_upload()) == 0)
+      req( if(input_method() == "enter") {dim(data_entered())[1] == 0}
+           else {dim(file_upload())[1] == 0})
       if( all(is.na(fqacalc::view_db(input$db)$w)) ) {
         showModal(modalDialog(paste(input$db, "does not have wetland coefficients,
                                        wetland metrics cannot be calculated.")))
