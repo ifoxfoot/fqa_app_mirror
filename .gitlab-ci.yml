@@ -13,8 +13,8 @@ deploy:
   script:
     - cp -R * /srv/shiny-server/$APP_NAME/
     - cd /srv/shiny-server/$APP_NAME
-    - find . -type d \( ! -name ".*" -user "$(whoami)" \) -readable -exec chmod g+rwx {} \; 2>&1 | grep -v "Permission denied";
-    - find . -type d \( ! -name ".*" -user "$(whoami)" \) -readable -exec chmod a+rx {} \; 2>&1 | grep -v "Permission denied";
-    - find . -type f \( ! -name ".*" -user "$(whoami)" \) -readable -exec chmod g+rw {} \; 2>&1 | grep -v "Permission denied";
-    - find . -type f \( ! -name ".*" -user "$(whoami)" \) -readable -exec chmod a+r {} \; 2>&1 | grep -v "Permission denied";
-    - find . \( ! -name ".*" -user "$(whoami)" \) -readable -exec chgrp -R shiny {} \; 2>&1 | grep -v "Permission denied";
+    - find . -type d \! -name ".*" -user "$(whoami)" \! -perm -g+rwx 2>/dev/null | xargs -I '{}' chmod g+rwx '{}'
+    - find . -type d \! -name ".*" -user "$(whoami)" \! -perm -o+rx 2>/dev/null | xargs -I '{}' chmod o+rx '{}'
+    - find . -type f \! -name ".*" -user "$(whoami)" \! -perm -g+rw 2>/dev/null | xargs -I '{}' chmod g+rw '{}'
+    - find . -type f \! -name ".*" -user "$(whoami)" \! -perm -o+r 2>/dev/null | xargs -I '{}' chmod o+r '{}'
+    - find . \! -name ".*" -user "$(whoami)" ! -group shiny 2>/dev/null | xargs -I '{}' chgrp shiny '{}'
