@@ -13,8 +13,8 @@ deploy:
   script:
     - cp -R * /srv/shiny-server/$APP_NAME/
     - cd /srv/shiny-server/$APP_NAME
-    - find . -type d \( ! -name ".*" -user "$(whoami)" \) -exec chmod g+rwx {} \;
-    - find . -type d \( ! -name ".*" -user "$(whoami)" \) -exec chmod a+rx {} \;
-    - find . -type f \( ! -name ".*" -user "$(whoami)" \) -exec chmod g+rw {} \;
-    - find . -type f \( ! -name ".*" -user "$(whoami)" \) -exec chmod a+r {} \;
-    - find . \( ! -name ".*" -user "$(whoami)" \) -exec chgrp -R shiny {} \;
+    - find . -type d \( ! -name ".*" \) -readable -exec chmod g+rwx {} \;
+    - find . -type d \( ! -name ".*" \) -readable -exec chmod a+rx {} \;
+    - find . -type f \( ! -name ".*" \) -readable -exec chmod g+rw {} \;
+    - find . -type f \( ! -name ".*" \) -readable -exec chmod a+r {} \;
+    - find . \( ! -name ".*" \) -readable -exec chgrp -R shiny {} \;
