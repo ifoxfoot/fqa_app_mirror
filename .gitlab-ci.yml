@@ -13,8 +13,8 @@ deploy:
   script:
     - cp -R * /srv/shiny-server/$APP_NAME/
     - cd /srv/shiny-server/$APP_NAME
-    - find . -type d \! -name ".*" -user "$(whoami)" \! -perm -g+rwx 2>/dev/null | xargs -I '{}' chmod g+rwx '{}'
-    - find . -type d \! -name ".*" -user "$(whoami)" \! -perm -o+rx 2>/dev/null | xargs -I '{}' chmod o+rx '{}'
-    - find . -type f \! -name ".*" -user "$(whoami)" \! -perm -g+rw 2>/dev/null | xargs -I '{}' chmod g+rw '{}'
-    - find . -type f \! -name ".*" -user "$(whoami)" \! -perm -o+r 2>/dev/null | xargs -I '{}' chmod o+r '{}'
-    - find . \! -name ".*" -user "$(whoami)" ! -group shiny 2>/dev/null | xargs -I '{}' chgrp shiny '{}'
+    - find . -type d \! -name ".*" -o \! -name "app_cache" -user "$(whoami)" \! -perm -g+rwx | xargs -I '{}' chmod g+rwx '{}'
+    - find . -type d \! -name ".*" -o \! -name "app_cache" -user "$(whoami)" \! -perm -o+rx | xargs -I '{}' chmod o+rx '{}'
+    - find . -type f \! -name ".*" -o \! -name "app_cache" -user "$(whoami)" \! -perm -g+rw | xargs -I '{}' chmod g+rw '{}'
+    - find . -type f \! -name ".*" -o \! -name "app_cache" -user "$(whoami)" \! -perm -o+r | xargs -I '{}' chmod o+r '{}'
+    - find . \! -name ".*" -o \! -name "app_cache" -user "$(whoami)" ! -group shiny | xargs -I '{}' chgrp shiny '{}'
