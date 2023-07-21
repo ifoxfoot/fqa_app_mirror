@@ -1,6 +1,22 @@
+#' integer_breaks
+#'
+#' @description A function that returns integer breaks. Taken from Joshua Cook's website
+#'
+#' @return integer breaks
+#'
+#' @noRd
+integer_breaks <- function(n = 5, ...) {
+  fxn <- function(x) {
+    breaks <- floor(pretty(x, n, ...))
+    names(breaks) <- attr(breaks, "labels")
+    breaks
+  }
+  return(fxn)
+}
+
 #' c_score_plot
 #'
-#' @description A fct function that returns a histogram of c scores
+#' @description A function that returns a histogram of c scores
 #'
 #' @return A plot
 #'
@@ -13,6 +29,7 @@ c_score_plot <- function(input_data) {
                                         fill = nativity)) +
                                geom_histogram(col = "black", binwidth = 1, boundary = -0.5, na.rm = TRUE) +
                                scale_x_continuous(breaks = seq(0,10, by = 1), limits = c(-1, 11)) +
+                               scale_y_continuous(breaks = integer_breaks()) +
                                labs(x = "Coefficient of Conservatism Value",
                                     y = "Number of Species",
                                     fill = "Native or Introduced") +
@@ -24,7 +41,7 @@ c_score_plot <- function(input_data) {
 
 #' binned_c_score_plot
 #'
-#' @description A fct function that returns a binned histogram of c scores
+#' @description A function that returns a binned histogram of c scores
 #'
 #' @return A plot
 #'
