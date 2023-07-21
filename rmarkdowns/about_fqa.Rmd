@@ -10,7 +10,7 @@ Floristic Quality Assessment (FQA) provides a standardized way to rapidly assess
 
 In 2022, published, accessible (e.g., Universal FQA Calculator or via Google search with key terms) regional FQA databases were reviewed by the U.S. Army Engineer Research and Development Center’s Environmental Laboratory for use during the planning phase of water resource projects. FQA databases that had clear documentation of their methodology of assigning and testing/validating their C Values were recommended for planning model certification. Then the U.S. Army Corps of Engineers’ Center of Ecosystem Restoration Expertise certified recommended regional FQA databases for USACE planning purposes. Certified regional FQA databases have been compiled and made available for rapid and consistent calculation of FQA metrics within this web application.
 
-Note that *some* of the certified regional FQA databases have been altered slightly from their initial lists to reduce redundancies, indicate which species names are synonyms, or otherwise clarify the data. For a full description of data alterations, *see xyz page...(Iris will write description)* 
+Note that *some* of the certified regional FQA databases have been altered slightly from their initial lists to reduce redundancies, indicate which species names are synonyms, or otherwise clarify the data. For a full description of data alterations, see Herman et al., 2023 (in review).
 
 Common floristic quality metrics include Mean C (the mean of C Values for all species present in an inventory or along a transect) and the Floristic Quality Index (FQI, the Mean C multiplied by the square root of the total number of species).
 
