@@ -111,7 +111,12 @@ mod_inventory_ui <- function(id){
                              br(),
                              h3("File uploads must have one column containing either scientific names
                               or acronyms. The columns must go to the top of the file such that row 1
-                              is the column name.")),
+                              is the column name."),
+                             br(),
+                             #temporary download file button
+                             a(href="www/crooked_island.xlsx", "ESA 2023 Download Sample Data Here!",
+                               download=NA, target="self"),
+            ),
 
             #when user uploads file, show uploaded table
             conditionalPanel("input['inventory-input_method'] == 'upload'",
