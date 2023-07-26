@@ -5,6 +5,17 @@
   text-align: center;
 }
 
+/* controls location and scrollability of notifications */
+.shiny-notification {
+  position:fixed;
+  top: 10px;
+  bottom: 0px;
+  left: 300px;
+  right: 300px;
+  overflow: auto;
+}
+
+
 /* place shinyglide next buttons */
 .next-screen {
     position: absolute;
