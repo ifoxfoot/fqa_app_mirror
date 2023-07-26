@@ -87,7 +87,7 @@ mod_cover_ui <- function(id){
 
             ), #conditional parenthesis
 
-            #when data entry method is upload, allow user to upload files
+            #when data entry method is enter, allow user to enter data
             conditionalPanel(
 
               condition = "input['cover-input_method'] == 'enter'",
@@ -554,6 +554,8 @@ mod_cover_server <- function(id){
       shinyjs::reset("cover_column")
       shinyjs::reset("plot_column")
     })
+
+
 
 
     #manually enter data------------------------------------------------------------
