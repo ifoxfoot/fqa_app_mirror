@@ -7,7 +7,6 @@
 app_server <- function(input, output, session) {
   # Your application server logic
 
-  #bslib::bs_themer()
 
 # HELP POPUPS ------------------------------------------------------------------
 
@@ -20,7 +19,7 @@ app_server <- function(input, output, session) {
     if(input$navbar == "Calculate Inventory Metrics") {
       inventory_tab(inventory_tab() + 1)
     }
-    if(input$navbar == "Caclulate Cover-Weighted FQA Metrics") {
+    if(input$navbar == "Calculate Cover-Weighted FQA Metrics") {
       cover_tab(cover_tab() + 1)
     }
   })
@@ -29,12 +28,9 @@ app_server <- function(input, output, session) {
   observe({
     if(inventory_tab() == 1 & input$navbar == "Calculate Inventory Metrics")
     {inventory_help()}
-    if(cover_tab() == 1 & input$navbar == "Caclulate Cover-Weighted FQA Metrics")
+    if(cover_tab() == 1 & input$navbar == "Calculate Cover-Weighted FQA Metrics")
     {cover_help()}
   })
-
-  #interactive theme
-  #bs_themer()
 
 # ABOUT SERVER------------------------------------------------------------------
 
