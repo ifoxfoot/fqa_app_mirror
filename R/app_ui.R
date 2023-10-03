@@ -18,9 +18,9 @@ app_ui <- function(request) {
 
     #initiate navbar
     navbarPage(
-      title = img(src='www/USACE_logo2.png',
-                  style="display:right-align;",
+      title = div("", img(src='www/USACE_logo2.png',
                   height = 30),
+                  style="position: relative; margin:0px 0px -25px; display:right-align;"),
 
       id = "navbar",
                #setting bootstrap to version 5
