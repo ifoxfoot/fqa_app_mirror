@@ -1,8 +1,17 @@
 /*This doc contains small changes to theme */
 
-/* center exclamation icon in modal */
-.h4 {
-  text-align: center;
+/*tabset panel*/
+.tabset-panel {
+  width: 10px;
+}
+
+/*footer formating*/
+.footer {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background-color: white;;
+  z-index: 10000;
 }
 
 /* controls location and scrollability of notifications */
@@ -13,8 +22,13 @@
   left: 300px;
   right: 300px;
   overflow: auto;
+  z-index: 10001;
 }
 
+/* increase the z index of popups */
+.modal {
+  z-index: 10001;
+}
 
 /* place shinyglide next buttons */
 .next-screen {
