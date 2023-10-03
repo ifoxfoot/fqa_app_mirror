@@ -17,13 +17,16 @@ app_ui <- function(request) {
     shinyjs::extendShinyjs(text = jscode, functions = "refocus"),
 
     #initiate navbar
-    navbarPage("FQA",
-               id = "navbar",
+    navbarPage(
+      title = img(src='www/USACE_logo2.png',
+                  style="display:right-align;",
+                  height = 30),
 
+      id = "navbar",
                #setting bootstrap to version 5
                theme = bslib::bs_theme(version = 5,
                                        #bootswatch = "yeti",
-                                       #base_font = c("Courier", "monospace"),
+                                       base_font = c("Arial", "monospace"),
                                        #primary = "#5988B2", secondary = "#5988B2",
                                        #font_scale = 1.2
                                        ),
@@ -41,7 +44,7 @@ app_ui <- function(request) {
                         #some spacing at the bottom of the page
                         br(),
                         br(),
-                        br(),
+                        br()
 
                ),#tab panel  parenthesis
 
@@ -55,7 +58,7 @@ app_ui <- function(request) {
                         #some spacing at the bottom of the page
                         br(),
                         br(),
-                        br(),
+                        br()
 
                ),#tabPanel parenthesis
 
@@ -63,33 +66,84 @@ app_ui <- function(request) {
 
                tabPanel("Calculate Inventory Metrics",
 
-                        mod_inventory_ui("inventory")
+                        mod_inventory_ui("inventory"),
+
+                        #some spacing at the bottom of the page
+                        br(),
+                        br(),
+                        br()
 
                ),#tab panel parenthesis
 
 # COVER TAB---------------------------------------------------------------------
 
-               tabPanel("Caclulate Cover-Weighted FQA Metrics",
+               tabPanel("Calculate Cover-Weighted FQA Metrics",
 
-                        mod_cover_ui("cover")
+                        mod_cover_ui("cover"),
+
+                        #some spacing at the bottom of the page
+                        br(),
+                        br(),
+                        br()
 
                ),#tab panel parenthesis
 
-               #footer = img(src = "ERDC.png", style = "hight: 80px; width: 160px")
 
 # Help TAB---------------------------------------------------------------------
 
                navbarMenu("More",
                           tabPanel("About This App",
-                                   includeMarkdown("rmarkdowns/about_app.Rmd")),
+                                   includeMarkdown("rmarkdowns/about_app.Rmd"),
+                                   #some spacing at the bottom of the page
+                                   br(),
+                                   br(),
+                                   br()),
                           tabPanel("Equations",
                                    shiny::withMathJax(),
-                                   includeMarkdown("rmarkdowns/equations.Rmd")),
+                                   includeMarkdown("rmarkdowns/equations.Rmd"),
+                                   #some spacing at the bottom of the page
+                                   br(),
+                                   br(),
+                                   br()),
                           tabPanel("Cover Classes",
-                                   includeMarkdown("rmarkdowns/cover_mets.Rmd"),),
-                          tabPanel("Additional Resources")
+                                   includeMarkdown("rmarkdowns/cover_mets.Rmd"),
+                                   #some spacing at the bottom of the page
+                                   br(),
+                                   br(),
+                                   br()),
+                          tabPanel("Additional Resources",
+                                   includeHTML("rmarkdowns/resources.html"),
+                                   #some spacing at the bottom of the page
+                                   br(),
+                                   br(),
+                                   br())
+
+
 
                ),#tab panel parenthesis
+
+       footer =
+  fluidRow(
+         tags$div(
+           class = "footer",
+           img(src = "www/army_star.png",
+               style="margin-top:10px;
+               padding-right:10px;
+               padding-bottom:10px",
+               height = 60),
+           img(src = "www/USACE_text.png",
+               style="margin-top:10px;
+               padding-right:5px;
+               padding-bottom:8px",
+               height = 60),
+           img(src = "www/ERDC_logo.png",
+               style="margin-top:10px;
+               padding-right:10px;
+               padding-bottom:10px",
+               height = 60)
+         )
+       )
+
 
     )#navbar parenthesis
   )
