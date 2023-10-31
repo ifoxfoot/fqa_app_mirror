@@ -603,7 +603,7 @@ mod_cover_server <- function(id){
       }
       #bind new entry to table
       if(nrow(accepted() > 0)) {
-        new_entry<- rbind(new_entry, accepted() %>%
+        new_entry<- rbind(new_entry, data_entered() %>%
                             dplyr::select(plot_id, acronym, name, cover))
       }
       #make it reactive
