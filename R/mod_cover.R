@@ -1002,7 +1002,7 @@ mod_cover_server <- function(id){
               plot_sum(suppressMessages(fqacalc::plot_summary(x = accepted(),
                                                               key = "name",
                                                               db = input$db,
-                                                              cover_class = input$cover_method,
+                                                              cover_class = "percent_cover",
                                                               plot_id = "plot_id",
                                                               allow_no_c = TRUE))) }
         }
