@@ -155,7 +155,7 @@ mod_cover_ui <- function(id){
       shinyglide::screen(
 
         #download button
-        downloadButton(ns( "download"),
+        downloadButton(ns("download"),
                        label = "Download", class = "downloadButton",
                        style = "position: absolute; top: 0px; right: 10px;"),
         br(),
@@ -467,11 +467,11 @@ mod_cover_server <- function(id){
            & max(cover_vals) <= 100
            & min(cover_vals) > 0) {TRUE}
         else if(input$cover_method == "braun-blanquet" &
-                !any(!cover_vals %in% c("+", 1:5))) {TRUE}
+                !any(!cover_vals %in% c("+", "1":"5"))) {TRUE}
         else if(input$cover_method == "daubenmire" &
-                !any(!cover_vals %in% c(1:6))) {TRUE}
+                !any(!cover_vals %in% c("1":"6"))) {TRUE}
         else if(input$cover_method == "carolina_veg_survey" &
-                !any(!cover_vals %in% c(1:10))) {TRUE}
+                !any(!cover_vals %in% c("1":"10"))) {TRUE}
         else if(input$cover_method == "usfs_ecodata" &
                 !any(!cover_vals %in% c("1", "3", "10", "20", "30", "40", "50",
                                         "60", "70", "80", "90", "98"))) {TRUE}
@@ -594,16 +594,16 @@ mod_cover_server <- function(id){
         new_entry <- data.frame(plot_id = c(input$plot_id),
                                 acronym = c(NA),
                                 name = c(input$select_species),
-                                cover = c(input$cover_val))
+                                cover = c(cover_conversion(input$cover_val, input$cover_method)))
       } else {
         new_entry <- data.frame(plot_id = c(input$plot_id),
                                 acronym = c(input$select_species),
                                 name = c(NA),
-                                cover = c(input$cover_val))
+                                cover = c(cover_conversion(input$cover_val, input$cover_method)))
       }
       #bind new entry to table
       if(nrow(accepted() > 0)) {
-        new_entry<- rbind(new_entry, data_entered() %>%
+        new_entry<- rbind(new_entry, accepted() %>%
                             dplyr::select(plot_id, acronym, name, cover))
       }
       #make it reactive
@@ -638,7 +638,7 @@ mod_cover_server <- function(id){
                                   cover = TRUE,
                                   allow_duplicates = TRUE,
                                   plot_id = "plot_id",
-                                  cover_class = input$cover_method,
+                                  cover_class = "percent_cover",
                                   allow_no_c = FALSE,
                                   allow_non_veg = TRUE,
                                   wetland_warning = FALSE),
@@ -715,7 +715,7 @@ mod_cover_server <- function(id){
                                                           cover = TRUE,
                                                           allow_duplicates = TRUE,
                                                           plot_id = "plot_id",
-                                                          cover_class = input$cover_method,
+                                                          cover_class = "percent_cover",
                                                           allow_no_c = TRUE,
                                                           allow_non_veg = TRUE)))
     })
@@ -889,7 +889,7 @@ mod_cover_server <- function(id){
     species_sum <- reactiveVal()
     plot_sum <- reactiveVal()
     physiog_sum <- reactiveVal()
-    data_download <- reactiveVal()
+    #data_download <- reactiveVal()
 
     #download cover summary server
     output$download <- downloadHandler(
@@ -925,18 +925,20 @@ mod_cover_server <- function(id){
         cat('\n')
 
         # Write metrics dataframe to the same sink
-        cat('Plot Summary Metrics')
-        cat('\n')
-        write.csv(plot_sum() %>%
-                    dplyr::mutate(across(where(is.numeric), round, digits = 2)), row.names = F)
-        cat('\n')
-        cat('\n')
+        if(!is.null(plot_sum())){
+          cat('Plot Summary Metrics')
+          cat('\n')
+          write.csv(plot_sum() %>%
+                      dplyr::mutate(dplyr::across(where(is.numeric), round, digits = 2)), row.names = F)
+          cat('\n')
+          cat('\n')
+        }
 
         # Write metrics dataframe to the same sink
         cat('Species Summary Metrics')
         cat('\n')
         write.csv(species_sum() %>%
-                    dplyr::mutate(across(where(is.numeric), round, digits = 2)), row.names = F)
+                    dplyr::mutate(dplyr::across(where(is.numeric), round, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
@@ -944,7 +946,7 @@ mod_cover_server <- function(id){
         cat('Physiognomy Summary Metrics')
         cat('\n')
         write.csv(physiog_sum() %>%
-                    dplyr::mutate(across(where(is.numeric), round, digits = 2)), row.names = F)
+                    dplyr::mutate(dplyr::across(where(is.numeric), round, digits = 2)), row.names = F)
         cat('\n')
         cat('\n')
 
@@ -965,8 +967,6 @@ mod_cover_server <- function(id){
         # Zip them up
         zip( file, c("FQI_metrics.csv", "binned_hist.png", "c_value_hist.png"))
       })
-
-
 
     #updating reactive values
     observe({
@@ -997,9 +997,9 @@ mod_cover_server <- function(id){
                                                               allow_no_c = TRUE)))
         incProgress(1)
         if(input$input_method == "enter") {
-          if(length(unique(data_entered()$plot_id)) == 1) {
+          if(length(unique(accepted()$plot_id)) == 1) {
             plot_sum(NULL)} else {
-              plot_sum(suppressMessages(fqacalc::plot_summary(x = data_entered(),
+              plot_sum(suppressMessages(fqacalc::plot_summary(x = accepted(),
                                                               key = "name",
                                                               db = input$db,
                                                               cover_class = input$cover_method,
