@@ -906,7 +906,7 @@ mod_cover_server <- function(id){
         # Start a sink file with a CSV extension
         sink("FQI_metrics.csv")
         cat('\n')
-        cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI."))
+        cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI for transect ", input$transect_id))
         cat('\n')
         cat('\n')
 
@@ -1041,7 +1041,8 @@ mod_cover_server <- function(id){
 
     #render title
     output$title <- renderText({paste("Calculating metrics based on",
-                                      input$db)})
+                                      input$db, "for transect",
+                                      input$transect_id)})
 
     #species richness
     output$species_richness <- renderUI({
