@@ -24,6 +24,8 @@ app_ui <- function(request) {
                          display:right-align;",
                   height = 30)),
 
+      windowTitle="Floristic Quality Assessment",
+
       id = "navbar",
                #setting bootstrap to version 5
                theme = bslib::bs_theme(version = 5,
