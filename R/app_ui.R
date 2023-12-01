@@ -18,7 +18,7 @@ app_ui <- function(request) {
 
     #initiate navbar
     navbarPage(
-      title = div(img(src='www/USACE_logo2.png',
+      title = tags$div(img(src='www/usace_logo2.png',
                   style="position: relative;
                          margin:0px 0px -25px;
                          display:right-align;",
