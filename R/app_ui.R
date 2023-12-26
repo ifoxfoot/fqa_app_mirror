@@ -110,7 +110,7 @@ app_ui <- function(request) {
                                    br(),
                                    br()),
                           tabPanel("Cover Classes",
-                                   includeMarkdown("rmarkdowns/cover_mets.Rmd"),
+                                   includeCSS("rmarkdowns/cover_mets.html"),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),
