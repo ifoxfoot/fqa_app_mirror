@@ -906,7 +906,7 @@ mod_cover_server <- function(id){
         # Start a sink file with a CSV extension
         sink("FQI_metrics.csv")
         cat('\n')
-        cat(paste0("Calculating metrics based on the ", input$db, " regional FQAI for transect ", input$transect_id))
+        cat(paste0("Calculating metrics based on the ", input$db, " regional FQA database for transect ", input$transect_id))
         cat('\n')
         cat('\n')
 
