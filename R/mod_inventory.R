@@ -79,23 +79,27 @@ mod_inventory_ui <- function(id){
 
               condition = "input['inventory-input_method'] == 'enter'",
 
-              #input latin name
-              selectizeInput(ns("select_species"), label = "Select Species",
-                             choices = NULL, selected = NULL, multiple = TRUE),
-
-
-              bslib::layout_column_wrap(
-                width = 1/2,
+              fluidRow(
+                column(8,
+                #input latin name
+                selectizeInput(ns("select_species"), label = "Select Species",
+                             choices = NULL, selected = NULL, multiple = TRUE)),
+                column(4,
                 #input add species button
-                actionButton(ns("add_species"), "Add Species"),
-                #input delete speces button
-                actionButton(ns("delete_species"), "Delete Species")
+                actionButton(ns("add_species"), "Add Species",
+                             style = "margin-top: 30px; height: 60px;"))
                 ),
 
               br(),
 
-              #button to delete all entries
-              actionButton(ns("manual_delete_all"), "Delete All Entries", class = "btn-danger")
+              bslib::layout_column_wrap(
+                width = 1/2,
+                #input delete species button
+                actionButton(ns("delete_species"), "Delete Species"),
+                #button to delete all entries
+                actionButton(ns("manual_delete_all"), "Delete All Entries",
+                             class = "btn-danger")
+                )
 
             ) #conditional 2 parenthesis
 
