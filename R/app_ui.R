@@ -40,7 +40,7 @@ app_ui <- function(request) {
                tabPanel("About FQA",
 
                         #rmarkdown output here
-                        includeMarkdown("rmarkdowns/about_fqa.Rmd"),
+                        includeMarkdown("www/rmarkdowns/about_fqa.Rmd"),
 
                         #tmap output here
                         tmap::tmapOutput("tmap"),
@@ -97,26 +97,26 @@ app_ui <- function(request) {
 
                navbarMenu("More",
                           tabPanel("About This App",
-                                   includeMarkdown("rmarkdowns/about_app.Rmd"),
+                                   includeMarkdown("www/rmarkdowns/about_app.Rmd"),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),
                                    br()),
                           tabPanel("Equations",
                                    shiny::withMathJax(),
-                                   includeMarkdown("rmarkdowns/equations.Rmd"),
+                                   includeMarkdown("www/rmarkdowns/equations.Rmd"),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),
                                    br()),
                           tabPanel("Cover Classes",
-                                   includeMarkdown("rmarkdowns/cover_mets.Rmd"),
+                                   includeMarkdown("www/rmarkdowns/cover_mets.Rmd"),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),
                                    br()),
                           tabPanel("Additional Resources",
-                                   includeMarkdown("rmarkdowns/resources.Rmd"),
+                                   includeMarkdown("www/rmarkdowns/resources.Rmd"),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),
