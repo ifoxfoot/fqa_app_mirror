@@ -116,7 +116,7 @@ app_ui <- function(request) {
                                    br(),
                                    br()),
                           tabPanel("Additional Resources",
-                                   includeHTML("rmarkdowns/resources.html"),
+                                   includeMarkdown("rmarkdowns/resources.Rmd"),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),

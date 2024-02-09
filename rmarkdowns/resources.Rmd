@@ -1,0 +1,21 @@
+---
+output: html_document
+---
+
+# Academic Publications
+
+Bauer, Jonathan T, Liz Koziol, and James D Bever. “Ecology of Floristic Quality Assessment: Testing for Correlations between Coefficients of Conservatism, Species Traits and Mycorrhizal Responsiveness.” AoB PLANTS 10, no. 1 (February 1, 2018). https://doi.org/10.1093/aobpla/plx073.
+
+DeBerry, Douglas A., and James E. Perry. “Using the Floristic Quality Concept to Assess Created and Natural Wetlands: Ecological and Management Implications.” Ecological Indicators 53 (June 2015): 247–57. https://doi.org/10.1016/j.ecolind.2015.02.003.
+
+Freyman, William A., Linda A. Masters, and Stephen Packard. “The Universal Floristic Quality Assessment ( FQA ) Calculator: An Online Tool for Ecological Assessment and Monitoring.” Edited by Timothée Poisot. Methods in Ecology and Evolution 7, no. 3 (March 2016): 380–83. https://doi.org/10.1111/2041-210X.12491.
+
+Matthews, Jeffrey W., Greg Spyreas, and Colleen M. Long. “A Null Model Test of Floristic Quality Assessment: Are Plant Species’ Coefficients of Conservatism Valid?” Ecological Indicators 52 (May 2015): 1–7. https://doi.org/10.1016/j.ecolind.2014.11.017.
+
+Spyreas, Greg. “Floristic Quality Assessment: A Critique, a Defense, and a Primer.” Ecosphere 10, no. 8 (August 2019): e02825. https://doi.org/10.1002/ecs2.2825.
+
+Spyreas, Greg, Scott J. Meiners, Jeffrey W. Matthews, and Brenda Molano-Flores. “Successional Trends in Floristic Quality: Successional Trends in Floristic Quality.” Journal of Applied Ecology 49, no. 2 (April 2012): 339–48. https://doi.org/10.1111/j.1365-2664.2011.02100.x.
+
+Swink, Floyd, and Gerould Wilhelm. Plants of the Chicago Region: A Checklist of the Vascular Flora of the Chicago Region, with Keys, Notes on Local Distribution, Ecology, and Taxonomy, a System for the Qualitative Evaluation of Plant Communities, a Natural Divisions Map, and a Description of Natural Plant Communities. 4th ed. Indianapolis: Indiana Academy of Science, 1994.
+
+Zinnen, Jack, Greg Spyreas, David N. Zaya, and Jeffrey W. Matthews. “Niche Ecology in Floristic Quality Assessment: Are Species with Higher Conservatism More Specialized?” Ecological Indicators 121 (February 2021): 107078. https://doi.org/10.1016/j.ecolind.2020.107078.
