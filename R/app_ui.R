@@ -40,7 +40,7 @@ app_ui <- function(request) {
                tabPanel("About FQA",
 
                         #rmarkdown output here
-                        includeMarkdown("rmarkdowns/about_fqa.md"),
+                        includeText("rmarkdowns/test.txt"),
 
                         #tmap output here
                         tmap::tmapOutput("tmap"),
