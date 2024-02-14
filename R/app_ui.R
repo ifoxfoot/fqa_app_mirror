@@ -40,7 +40,7 @@ app_ui <- function(request) {
                tabPanel("About FQA",
 
                         #rmarkdown output here
-                        includeMarkdown("rmarkdowns/about_fqa.Rmd"),
+                        includeMarkdown("./rmarkdowns/about_fqa.Rmd"),
 
                         #tmap output here
                         tmap::tmapOutput("tmap"),
@@ -103,8 +103,8 @@ app_ui <- function(request) {
                                    br(),
                                    br()),
                           tabPanel("Equations",
-                                   shiny::withMathJax(),
-                                   includeMarkdown("rmarkdowns/equations.Rmd"),
+                                   shiny::withMathJax(
+                                     includeMarkdown("rmarkdowns/equations.Rmd")),
                                    #some spacing at the bottom of the page
                                    br(),
                                    br(),
