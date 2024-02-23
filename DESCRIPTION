@@ -26,6 +26,7 @@ Imports:
     shinyWidgets,
     stringr,
     tmap
+    zip
 Suggests: 
     covr,
     spelling,
