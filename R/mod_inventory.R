@@ -607,10 +607,10 @@ mod_inventory_server <- function(id){
       content = function(file) {
         #set wd to temp directory
         tmpdir <- tempdir()
-        setwd(tempdir())
+        csv_path <- file.path(tmpdir, "FQI_metrics.csv")
 
         # Start a sink file with a CSV extension
-        sink("FQI_metrics.csv")
+        sink(csv_path)
         cat('\n')
         cat(paste0("Calculating metrics based on the ", input$db, " regional FQA database."))
         cat('\n')
@@ -644,13 +644,17 @@ mod_inventory_server <- function(id){
         sink()
 
         #now add two ggplots as pngs
-        ggplot2::ggsave( "binned_hist.png", plot = binned_c_score_plot(metrics()),
-                device = "png", bg = 'white')
-        ggplot2::ggsave( "c_value_hist.png", plot = c_score_plot(accepted()), bg='#ffffff',
-                device = "png")
+        ggplot2::ggsave(filename = file.path(tmpdir, "binned_hist.png"),
+                        plot = binned_c_score_plot(metrics()),
+                        device = "png", bg = 'white')
+        ggplot2::ggsave(filename = file.path(tmpdir, "c_value_hist.png"),
+                        plot = c_score_plot(accepted()), bg='#ffffff',
+                        device = "png")
 
         # Zip them up
-        zip( file, c("FQI_metrics.csv", "binned_hist.png", "c_value_hist.png"))
+        zip::zip(file,
+                 file.path(tmpdir, c("FQI_metrics.csv", "binned_hist.png", "c_value_hist.png")),
+                 mode = "cherry-pick")
       })
 
     #get all metrics
