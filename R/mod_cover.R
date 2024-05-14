@@ -734,7 +734,7 @@ mod_cover_server <- function(id){
            input$plot_column != "")
 
       #if plot column is set, include plot column
-      if( !input$plot_column %in% c("NA")) {
+      if( input$plot_column != "NA" ) {
 
         suppressMessages(accepted(fqacalc::accepted_entries(x = file_upload() %>%
                                                               dplyr::rename(!!key() := !!input$species_column,
