@@ -442,7 +442,7 @@ mod_cover_server <- function(id){
       output$plot_colname <- renderUI({
         #create a dropdown option
         selectizeInput(ns("plot_column"), "Which Column Contains Plot IDs?",
-                       c("NA", column_names()), selected = NULL)
+                       c("NA", column_names()), selected = "")
       })
     })
 
@@ -511,6 +511,10 @@ mod_cover_server <- function(id){
           )
 
       plot_col <- if(input$plot_column == "NA"){NULL} else {input$plot_column}
+
+      #TEMP!!!!
+      showNotification(ui = paste("this is plot column: ", plot_col, duration = NULL))
+
       #list to store warnings
       warning_list <- list()
       #file upload renames
@@ -519,6 +523,13 @@ mod_cover_server <- function(id){
           "cover" = input$cover_column,
           !!as.name(key()) := !!input$species_column
           )
+
+      #TEMP!!!!
+      showNotification(ui = paste("this is column names: ",
+                                  sapply(list(colnames(upload_renamed)), paste, collapse=":"),
+                                  duration = NULL
+                                  ))
+
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = upload_renamed,
