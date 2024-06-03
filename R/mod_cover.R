@@ -442,7 +442,7 @@ mod_cover_server <- function(id){
       output$plot_colname <- renderUI({
         #create a dropdown option
         selectizeInput(ns("plot_column"), "Which Column Contains Plot IDs?",
-                       c("NA", column_names()), selected = "")
+                       c("NA", column_names()), selected = NULL)
       })
     })
 
