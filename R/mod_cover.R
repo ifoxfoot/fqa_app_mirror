@@ -503,12 +503,8 @@ mod_cover_server <- function(id){
 
     #warnings for bad data in file upload
     observe({
-      req(columns_are_good() == TRUE,
-          input$species_column != "",
-          input$plot_column != "",
-          input$cover_column != "",
-          nrow(file_upload()) > 0,
-          )
+
+      req(columns_are_good() == TRUE)
 
       plot_col <- if(input$plot_column == "NA"){NULL} else {input$plot_column}
       #list to store warnings
@@ -519,6 +515,7 @@ mod_cover_server <- function(id){
           "cover" = input$cover_column,
           !!as.name(key()) := !!input$species_column
           )
+
       #catch warnings
       withCallingHandlers(
         fqacalc::accepted_entries(x = upload_renamed,
