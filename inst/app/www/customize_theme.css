@@ -14,15 +14,13 @@
   z-index: 10000;
 }
 
-/* controls location and scrollability of notifications */
+/* controls location and scrollability of notifications*/
 .shiny-notification {
   position:fixed;
-  top: 10px;
-  bottom: 0px;
-  left: 300px;
-  right: 300px;
+  width: 300px; /* Set the width */
+  height: 300px; /* Set the height */
   overflow: auto;
-  z-index: 10001;
+  z-index: 20001;
 }
 
 /* increase the z index of popups */
