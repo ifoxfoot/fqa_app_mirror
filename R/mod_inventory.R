@@ -430,10 +430,11 @@ mod_inventory_server <- function(id){
         #add to list
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
-      for(i in warning_list) {
-        showNotification(ui = i,
-                         duration = NULL,
-                         type = "error") }
+      # for(i in warning_list) {
+      #   showNotification(ui = i,
+      #                    duration = NULL,
+      #                    type = "error")
+      #   }
     })
 
     #render output table from manually entered species on data entry page
