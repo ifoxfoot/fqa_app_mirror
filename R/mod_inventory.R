@@ -417,18 +417,18 @@ mod_inventory_server <- function(id){
 
     #this allows popups for warnings about duplicates/non-matching species
     observeEvent(input$add_species,{
-      #req(nrow(data_entered()) > 0)
+      req(nrow(data_entered()) > 0)
       #list to store warnings
       warning_list <- list()
       #catch warnings
-      withCallingHandlers(
-        fqacalc::accepted_entries(x = data_entered(),
-                                  key = key(),
-                                  db = input$db,
-                                  native = FALSE,
-                                  wetland_warning = FALSE),
-        #add to list
-        message=function(w) {warning_list <<- c(warning_list, list(w$message))})
+      # withCallingHandlers(
+      #   fqacalc::accepted_entries(x = data_entered(),
+      #                             key = key(),
+      #                             db = input$db,
+      #                             native = FALSE,
+      #                             wetland_warning = FALSE),
+      #   #add to list
+      #   message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
       for(i in warning_list) {
         showNotification(ui = i,
