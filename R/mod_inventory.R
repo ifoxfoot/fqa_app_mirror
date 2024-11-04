@@ -417,7 +417,7 @@ mod_inventory_server <- function(id){
 
     #this allows popups for warnings about duplicates/non-matching species
     observeEvent(input$add_species,{
-      req(nrow(data_entered()) > 0)
+      #req(nrow(data_entered()) > 0)
       #list to store warnings
       warning_list <- list()
       #catch warnings
@@ -430,11 +430,10 @@ mod_inventory_server <- function(id){
         #add to list
         message=function(w) {warning_list <<- c(warning_list, list(w$message))})
       #show each list item in notification
-      # for(i in warning_list) {
-      #   showNotification(ui = i,
-      #                    duration = NULL,
-      #                    type = "error")
-      #   }
+      for(i in warning_list) {
+        showNotification(ui = i,
+                         duration = NULL,
+                         type = "error")}
     })
 
     #render output table from manually entered species on data entry page
